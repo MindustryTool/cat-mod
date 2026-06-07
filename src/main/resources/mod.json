@@ -1,0 +1,10 @@
+{
+  "name": "neko-mod",
+  "displayName": "Cat mod",
+  "author": "meohexa1a",
+  "main": "com.neko.NekoMod",
+  "description": "A mod that adding some cats",
+  "version": "1.0.0",
+  "minGameVersion": "158",
+  "java": true
+}
