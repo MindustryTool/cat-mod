@@ -1,7 +1,7 @@
 package com.neko.libs.simpleui.layout;
 
 import arc.scene.Element;
-import com.neko.libs.simpleui.components.UIComponent;
+import com.neko.libs.simpleui.components.Component;
 import com.neko.libs.simpleui.layout.Sizing.SizeMode;
 import com.neko.libs.simpleui.spec.LayoutSpec;
 import com.neko.libs.simpleui.spec.LayoutSpec.Items;
@@ -218,7 +218,7 @@ public class LayoutEngine {
 
     public static Sizing sizingOf(Element e) {
         Object o = e.userObject;
-        if (o instanceof UIComponent) return ((UIComponent) o).sizing();
+        if (o instanceof Component) return ((Component) o).sizing();
         return null;
     }
 }

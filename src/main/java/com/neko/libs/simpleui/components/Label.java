@@ -12,57 +12,57 @@ import java.util.function.Consumer;
 
 import static arc.Core.scene;
 
-public class Label implements UIComponent {
-    public class LabelStyle {
+public class Label implements Component {
+    public class Style {
         public final arc.scene.ui.Label.LabelStyle ls;
         Color textColor;
         int textAlign;
         float fontScale = 1f;
         boolean wrap;
 
-        public LabelStyle(arc.scene.ui.Label.LabelStyle ls) {
+        public Style(arc.scene.ui.Label.LabelStyle ls) {
             this.ls = ls;
         }
 
-        public LabelStyle textColor(Color v) {
+        public Style textColor(Color v) {
             textColor = v;
             ls.fontColor = v;
             return this;
         }
 
-        public LabelStyle textColor(Signal<Color> s) {
+        public Style textColor(Signal<Color> s) {
             textColor = s.get();
             ls.fontColor = textColor;
             subs.add(s.onChange(v -> { textColor = v; ls.fontColor = v; }));
             return this;
         }
 
-        public LabelStyle textAlign(int v) {
+        public Style textAlign(int v) {
             textAlign = v;
             element.setAlignment(v);
             return this;
         }
 
-        public LabelStyle fontScale(float v) {
+        public Style fontScale(float v) {
             fontScale = v;
             element.setFontScale(v);
             return this;
         }
 
-        public LabelStyle fontScale(Signal<Float> s) {
+        public Style fontScale(Signal<Float> s) {
             fontScale = s.get();
             element.setFontScale(fontScale);
             subs.add(s.onChange(v -> { fontScale = v; element.setFontScale(v); }));
             return this;
         }
 
-        public LabelStyle wrap(boolean v) {
+        public Style wrap(boolean v) {
             wrap = v;
             element.setWrap(v);
             return this;
         }
 
-        public LabelStyle wrap(Signal<Boolean> s) {
+        public Style wrap(Signal<Boolean> s) {
             wrap = s.get();
             element.setWrap(wrap);
             subs.add(s.onChange(v -> { wrap = v; element.setWrap(v); }));
@@ -71,7 +71,7 @@ public class Label implements UIComponent {
     }
 
     private final arc.scene.ui.Label element;
-    public final LabelStyle style;
+    public final Style style;
     public final NodeSizing sizing = new NodeSizing();
     private final Seq<Runnable> subs = new Seq<>();
 
@@ -79,7 +79,7 @@ public class Label implements UIComponent {
         var arcStyle = new arc.scene.ui.Label.LabelStyle(scene.getStyle(arc.scene.ui.Label.LabelStyle.class));
         this.element = new arc.scene.ui.Label(text, arcStyle);
         element.userObject = this;
-        this.style = new LabelStyle(arcStyle);
+        this.style = new Style(arcStyle);
         sizing.onInvalidate(() -> {
             apply();
             element.invalidateHierarchy();
@@ -107,7 +107,7 @@ public class Label implements UIComponent {
         return this;
     }
 
-    public Label style(Consumer<LabelStyle> fn) {
+    public Label style(Consumer<Style> fn) {
         fn.accept(style);
         return this;
     }

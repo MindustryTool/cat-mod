@@ -37,7 +37,7 @@ public class NekoMod extends Mod {
             // ── Header ──
             Layout.row(
                 Label.of("Settings").style(s -> s.textColor(Theme.textBright)),
-                TextButton.of().text("✕").onClick(() -> Core.app.exit()).ghostVariant()
+                Button.of(Label.of("✕")).onClick(() -> Core.app.exit()).ghostVariant()
             ).style(s -> s.justify(Justify.BETWEEN).p(0, 0, 16, 0)),
 
             // ── Account ──
@@ -46,7 +46,7 @@ public class NekoMod extends Mod {
                 labelRow("Display Name", "John Doe"),
                 labelRow("Email", "john@example.com"),
                 labelRow("Member Since", "Jan 2026"),
-                TextButton.of().text("✎ Edit Profile").onClick(() -> dirty.set(true)).ghostVariant()
+                Button.of(Label.of("✎ Edit Profile")).onClick(() -> dirty.set(true)).ghostVariant()
             ).style(s -> s.gap(10).p(16)),
 
             // ── Preferences ──
@@ -56,7 +56,7 @@ public class NekoMod extends Mod {
                 toggledRow("Compact View", compact),
                 Layout.row(
                     Label.of("Language").style(s -> s.textColor(Theme.textPrimary)),
-                    TextButton.of().text(langDisplay).onClick(() -> {
+                    Button.of(Label.of(langDisplay)).onClick(() -> {
                         langIndex.set((langIndex.get() + 1) % languages.length);
                         dirty.set(true);
                     }).ghostVariant()
@@ -76,7 +76,7 @@ public class NekoMod extends Mod {
             Layout.column(
                 Label.of("DANGER ZONE").style(s -> s.textColor(Theme.accentRed)),
                 Label.of("These actions cannot be undone.").style(s -> s.textColor(Theme.textSecondary)),
-                TextButton.of().text("☠ Delete Account").onClick(() -> Log.info("Account deleted!"))
+                Button.of(Label.of("☠ Delete Account")).onClick(() -> Log.info("Account deleted!"))
                     .dangerVariant()
             ).style(s -> s.gap(8).p(16)),
 
@@ -84,12 +84,12 @@ public class NekoMod extends Mod {
             Layout.row(
                 Label.of("v2.4.1").style(s -> s.textColor(Theme.textGhost)),
                 Layout.row(
-                    TextButton.of().text("Discard").onClick(() -> {
+                    Button.of(Label.of("Discard")).onClick(() -> {
                             dirty.set(false);
                             Log.info("Changes discarded.");
                         })
                         .ghostVariant(),
-                    TextButton.of().text(saveLabel).onClick(() -> {
+                    Button.of(Label.of(saveLabel)).onClick(() -> {
                             dirty.set(false);
                             Log.info("Settings saved.");
                         })
@@ -115,14 +115,13 @@ public class NekoMod extends Mod {
     private static Layout toggledRow(String label, Signal<Boolean> state) {
         return Layout.row(
             Label.of(label).style(s -> s.textColor(Theme.textPrimary)),
-            TextButton.of()
+            Button.of(Label.of(Signal.computed(() -> state.get() ? "On" : "Off")))
                 .onClick(() -> state.set(!state.get()))
                 .bind(self -> state.onChange(v -> {
                     if (v) self.primaryVariant();
                     else self.ghostVariant();
                 }))
                 .size(s -> s.fixedWidth(64f))
-                .text(Signal.computed(() -> state.get() ? "On" : "Off"))
         ).style(s -> s.gap(8).justify(Justify.BETWEEN));
     }
 

@@ -3,7 +3,7 @@ package com.neko.libs.simpleui;
 import arc.scene.Element;
 import arc.scene.ui.layout.WidgetGroup;
 
-import com.neko.libs.simpleui.components.UIComponent;
+import com.neko.libs.simpleui.components.Component;
 import com.neko.libs.simpleui.layout.LayoutEngine;
 import com.neko.libs.simpleui.layout.Sizing;
 import com.neko.libs.simpleui.layout.Sizing.SizeMode;
@@ -11,11 +11,11 @@ import com.neko.libs.simpleui.spec.LayoutSpec;
 
 import java.util.function.Consumer;
 
-public class Layout implements UIComponent {
+public class Layout implements Component {
     private final LayoutSpec spec;
     private final WidgetGroup group;
 
-    private Layout(boolean isColumn, UIComponent... children) {
+    private Layout(boolean isColumn, Component... children) {
         this.spec = new LayoutSpec();
         if (isColumn) spec.col();
 
@@ -52,11 +52,11 @@ public class Layout implements UIComponent {
 
         group.userObject = this;
         spec.onInvalidate(group::invalidateHierarchy);
-        for (UIComponent c : children) group.addChild(c.element());
+        for (Component c : children) group.addChild(c.element());
     }
 
-    public static Layout column(UIComponent... children) { return new Layout(true, children); }
-    public static Layout row(UIComponent... children) { return new Layout(false, children); }
+    public static Layout column(Component... children) { return new Layout(true, children); }
+    public static Layout row(Component... children) { return new Layout(false, children); }
 
     public Layout style(Consumer<LayoutSpec> fn) {
         fn.accept(spec);
@@ -64,7 +64,7 @@ public class Layout implements UIComponent {
         return this;
     }
 
-    public Layout add(UIComponent child) {
+    public Layout add(Component child) {
         group.addChild(child.element());
         return this;
     }
@@ -82,7 +82,7 @@ public class Layout implements UIComponent {
     public void onDestroy() {
         for (Element child : group.getChildren()) {
             Object o = child.userObject;
-            if (o instanceof UIComponent) ((UIComponent) o).onDestroy();
+            if (o instanceof Component) ((Component) o).onDestroy();
         }
     }
 }

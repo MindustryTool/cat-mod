@@ -4,7 +4,7 @@ import arc.scene.Element;
 
 import com.neko.libs.simpleui.layout.Sizing;
 
-public interface UIComponent {
+public interface Component {
 
     Element element();
 

@@ -12,7 +12,7 @@ import java.util.function.Function;
 
 import static arc.Core.scene;
 
-public class ScrollPane implements UIComponent {
+public class ScrollPane implements Component {
     public class Style {
         boolean fadeScrollBars;
         boolean scrollBarsOnTop;
@@ -83,7 +83,7 @@ public class ScrollPane implements UIComponent {
     private final arc.scene.ui.ScrollPane element;
     public final Style style = new Style();
     public final NodeSizing sizing = new NodeSizing();
-    private UIComponent childComponent;
+    private Component childComponent;
     private final Seq<Runnable> subs = new Seq<>();
 
     private ScrollPane(Element child) {
@@ -95,11 +95,7 @@ public class ScrollPane implements UIComponent {
         });
     }
 
-    public static ScrollPane of(Element child) {
-        return new ScrollPane(child);
-    }
-
-    public static ScrollPane of(UIComponent child) {
+    public static ScrollPane of(Component child) {
         ScrollPane pane = new ScrollPane(child.element());
         pane.childComponent = child;
         return pane;
