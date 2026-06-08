@@ -71,7 +71,8 @@ public class LayoutEngine {
             float cy = y + contentH - offsets[0];
             int idx = 0;
             for (Element c : children) {
-                if (!c.visible || sizingOf(c) == null) { idx++; continue; }
+                if (!c.visible) continue;
+                if (sizingOf(c) == null) { idx++; continue; }
                 cy -= hs[idx];
                 float cx = itemX(x, contentW, ws[idx], spec.items());
                 if (spec.items() == Items.STRETCH) ws[idx] = contentW;
@@ -90,7 +91,8 @@ public class LayoutEngine {
             float cx = x + offsets[0];
             int idx = 0;
             for (Element c : children) {
-                if (!c.visible || sizingOf(c) == null) { idx++; continue; }
+                if (!c.visible) continue;
+                if (sizingOf(c) == null) { idx++; continue; }
                 float cy = itemY(y, contentH, hs[idx], spec.items());
                 if (spec.items() == Items.STRETCH) hs[idx] = contentH;
                 c.setBounds(cx, cy, ws[idx], hs[idx]);
