@@ -1,6 +1,7 @@
-package com.neko.libs.simpleui.layout;
+package org.mindustrytool.ui.layout;
 
 public interface Sizing {
+
     enum SizeMode {WRAP, GROW, FIXED}
 
     SizeMode widthMode();

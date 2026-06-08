@@ -1,4 +1,4 @@
-package com.neko.libs.simpleui.layout;
+package org.mindustrytool.ui.layout;
 
 public class NodeSizing implements Sizing {
     protected Runnable onInvalidate;

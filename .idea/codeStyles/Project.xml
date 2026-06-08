@@ -1,0 +1,48 @@
+<component name="ProjectCodeStyleConfiguration">
+  <code_scheme name="Project" version="173">
+    <option name="RIGHT_MARGIN" value="140" />
+    <option name="WRAP_WHEN_TYPING_REACHES_RIGHT_MARGIN" value="true" />
+    <JavaCodeStyleSettings>
+      <option name="CLASS_COUNT_TO_USE_IMPORT_ON_DEMAND" value="999" />
+      <option name="NAMES_COUNT_TO_USE_IMPORT_ON_DEMAND" value="999" />
+      <option name="PACKAGES_TO_USE_IMPORT_ON_DEMAND">
+        <package name="arc" withSubpackages="true" static="false" />
+        <package name="mindustry" withSubpackages="true" static="false" />
+        <package name="org.mindustrytool" withSubpackages="true" static="false" />
+        <package name="java" withSubpackages="true" static="false" />
+      </option>
+      <option name="IMPORT_LAYOUT_TABLE">
+        <Layout>
+          <Package name="" withSubpackages="true" static="false" />
+          <EmptyLine />
+          <Package name="arc" withSubpackages="true" static="false" />
+          <EmptyLine />
+          <Package name="mindustry" withSubpackages="true" static="false" />
+          <EmptyLine />
+          <Package name="org.mindustrytool" withSubpackages="true" static="false" />
+          <EmptyLine />
+          <Package name="java" withSubpackages="true" static="false" />
+          <EmptyLine />
+          <Package name="javax" withSubpackages="true" static="false" />
+          <EmptyLine />
+          <Package name="" withSubpackages="true" static="true" />
+        </Layout>
+      </option>
+    </JavaCodeStyleSettings>
+    <codeStyleSettings language="JAVA">
+      <option name="KEEP_LINE_BREAKS" value="true" />
+      <option name="KEEP_FIRST_COLUMN_COMMENT" value="true" />
+      <option name="CALL_PARAMETERS_WRAP" value="5" />
+      <option name="METHOD_PARAMETERS_WRAP" value="5" />
+      <option name="METHOD_CALL_CHAIN_WRAP" value="5" />
+      <option name="LAMBDA_BODY_LINE_WRAP" value="2" />
+      <option name="WRAP_LONG_LINES" value="true" />
+      <option name="WRAP_ON_TYPING" value="1" />
+      <indentOptions>
+        <option name="INDENT_SIZE" value="4" />
+        <option name="CONTINUATION_INDENT_SIZE" value="8" />
+        <option name="TAB_SIZE" value="4" />
+      </indentOptions>
+    </codeStyleSettings>
+  </code_scheme>
+</component>

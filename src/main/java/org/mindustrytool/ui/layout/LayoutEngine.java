@@ -1,11 +1,11 @@
-package com.neko.libs.simpleui.layout;
+package org.mindustrytool.ui.layout;
 
 import arc.scene.Element;
-import com.neko.libs.simpleui.components.Component;
-import com.neko.libs.simpleui.layout.Sizing.SizeMode;
-import com.neko.libs.simpleui.spec.LayoutSpec;
-import com.neko.libs.simpleui.spec.LayoutSpec.Items;
-import com.neko.libs.simpleui.spec.LayoutSpec.Justify;
+
+import org.mindustrytool.ui.layout.Sizing.SizeMode;
+import org.mindustrytool.ui.spec.LayoutSpec;
+import org.mindustrytool.ui.spec.LayoutSpec.Items;
+import org.mindustrytool.ui.spec.LayoutSpec.Justify;
 
 public class LayoutEngine {
 
@@ -179,7 +179,7 @@ public class LayoutEngine {
                 offsets[0] = around;
                 for (int i = 1; i <= count; i++) offsets[i] = gap + around * 2f;
             }
-            default -> { // START
+            default -> {
                 offsets[0] = 0f;
                 for (int i = 1; i <= count; i++) offsets[i] = gap;
             }
@@ -218,7 +218,7 @@ public class LayoutEngine {
 
     public static Sizing sizingOf(Element e) {
         Object o = e.userObject;
-        if (o instanceof Component) return ((Component) o).sizing();
+        if (o instanceof SizingProvider) return ((SizingProvider) o).sizing();
         return null;
     }
 }

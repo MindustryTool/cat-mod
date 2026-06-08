@@ -1,8 +1,9 @@
-package com.neko.libs.simpleui.spec;
+package org.mindustrytool.ui.spec;
 
-import com.neko.libs.simpleui.layout.NodeSizing;
+import org.mindustrytool.ui.layout.NodeSizing;
 
 public class LayoutSpec extends NodeSizing {
+
     public enum Justify { START, CENTER, END, BETWEEN, AROUND }
     public enum Items { START, CENTER, END, STRETCH }
 
@@ -37,8 +38,8 @@ public class LayoutSpec extends NodeSizing {
     public LayoutSpec justify(Justify v) { justify = v; return this; }
     public LayoutSpec items(Items v) { items = v; return this; }
 
-    public boolean  isColumn() { return column; }
-    public float    gap()      { return gap; }
-    public Justify  justify()  { return justify; }
-    public Items    items()    { return items; }
+    public boolean isColumn() { return column; }
+    public float gap() { return gap; }
+    public Justify justify() { return justify; }
+    public Items items() { return items; }
 }
