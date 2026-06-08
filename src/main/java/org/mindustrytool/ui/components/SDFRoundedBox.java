@@ -20,7 +20,7 @@ public class SDFRoundedBox implements Component, SizingProvider {
 
     public static class Builder {
         private float cornerRadius = 8f;
-        private final Color color = Color.white.cpy();
+        private final Color color = Color.darkGray.cpy();
         private Cons<NodeSizing> sizeFn;
 
         public Builder cornerRadius(float v) { cornerRadius = v; return this; }
@@ -90,7 +90,7 @@ public class SDFRoundedBox implements Component, SizingProvider {
             shader.setUniformf("u_size", w, h);
 
             Draw.color(color);
-            float packed = Draw.getColorPacked();
+            float packed = color.toFloatBits();
             Texture tex = Core.atlas.white().texture;
             Fill.quad(tex,
                 x, y, packed, 0f, 0f,
