@@ -18,7 +18,7 @@ public class Stack implements Component {
         public Builder size(Cons<NodeSizing> fn) { sizeFn = fn; return this; }
 
         public Stack build() {
-            Stack s = Stack.of(children.toArray());
+            Stack s = Stack.of(children.toArray(Component.class));
             if (sizeFn != null) s.size(sizeFn);
             return s;
         }

@@ -27,7 +27,7 @@ public class Layout implements Component {
         public Builder size(Cons<NodeSizing> fn) { sizeFn = fn; return this; }
 
         public Layout build() {
-            Layout l = new Layout(column, children.toArray());
+            Layout l = new Layout(column, children.toArray(Component.class));
             if (styleFn != null) l.style(styleFn);
             if (sizeFn != null) l.size(sizeFn);
             return l;
