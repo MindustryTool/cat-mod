@@ -36,7 +36,7 @@ repositories {
 }
 
 dependencies {
-    compileOnly("Anuken:Mindustry:v158:dependencies")
+    compileOnly("Anuken:Mindustry:$mindustryVersion:dependencies")
     annotationProcessor("com.github.Anuken:jabel:$jabelVersion")
 
     compileOnly("org.projectlombok:lombok:1.18.42")

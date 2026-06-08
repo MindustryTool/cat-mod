@@ -28,13 +28,23 @@ public class CScrollPane implements UIComponent {
         public Style fadeScrollBars(boolean v) {
             fadeScrollBars = v;
             if (v) element.setupFadeScrollBars(0.5f, 2f);
-            element.setFadeScrollBars(v);
+            if (v && scrollBarsOnTop) {
+                // arc bug: fadeScrollBars prevents widgetAreaBounds expansion
+                // when scrollbarsOnTop is active, causing scrollbar overlap.
+                // Skip setFadeScrollBars so the layout path is correct.
+                // Scrollbar will remain visible (no fade) with proper expansion.
+            } else {
+                element.setFadeScrollBars(v);
+            }
             return this;
         }
 
         public Style scrollBarsOnTop(boolean v) {
             scrollBarsOnTop = v;
             element.setScrollbarsOnTop(v);
+            if (v && fadeScrollBars) {
+                element.setFadeScrollBars(false);
+            }
             return this;
         }
 
