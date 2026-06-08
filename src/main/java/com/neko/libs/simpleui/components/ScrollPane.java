@@ -1,8 +1,6 @@
 package com.neko.libs.simpleui.components;
 
 import arc.scene.Element;
-import arc.scene.ui.ScrollPane;
-import arc.scene.ui.ScrollPane.ScrollPaneStyle;
 import arc.struct.Seq;
 
 import com.neko.libs.simpleui.layout.NodeSizing;
@@ -14,7 +12,7 @@ import java.util.function.Function;
 
 import static arc.Core.scene;
 
-public class CScrollPane implements UIComponent {
+public class ScrollPane implements UIComponent {
     public class Style {
         boolean fadeScrollBars;
         boolean scrollBarsOnTop;
@@ -82,44 +80,44 @@ public class CScrollPane implements UIComponent {
         }
     }
 
-    private final ScrollPane element;
+    private final arc.scene.ui.ScrollPane element;
     public final Style style = new Style();
     public final NodeSizing sizing = new NodeSizing();
     private UIComponent childComponent;
     private final Seq<Runnable> subs = new Seq<>();
 
-    private CScrollPane(Element child) {
-        ScrollPaneStyle s = new ScrollPaneStyle(scene.getStyle(ScrollPaneStyle.class));
-        this.element = new ScrollPane(child, s);
+    private ScrollPane(Element child) {
+        arc.scene.ui.ScrollPane.ScrollPaneStyle s = new arc.scene.ui.ScrollPane.ScrollPaneStyle(scene.getStyle(arc.scene.ui.ScrollPane.ScrollPaneStyle.class));
+        this.element = new arc.scene.ui.ScrollPane(child, s);
         sizing.onInvalidate(() -> {
             applySize();
             element.invalidateHierarchy();
         });
     }
 
-    public static CScrollPane of(Element child) {
-        return new CScrollPane(child);
+    public static ScrollPane of(Element child) {
+        return new ScrollPane(child);
     }
 
-    public static CScrollPane of(UIComponent child) {
-        CScrollPane pane = new CScrollPane(child.element());
+    public static ScrollPane of(UIComponent child) {
+        ScrollPane pane = new ScrollPane(child.element());
         pane.childComponent = child;
         return pane;
     }
 
-    public CScrollPane style(Consumer<Style> fn) {
+    public ScrollPane style(Consumer<Style> fn) {
         fn.accept(style);
         return this;
     }
 
-    public CScrollPane size(Consumer<NodeSizing> fn) {
+    public ScrollPane size(Consumer<NodeSizing> fn) {
         fn.accept(sizing);
         applySize();
         element.invalidateHierarchy();
         return this;
     }
 
-    public CScrollPane bind(Function<CScrollPane, Runnable> fn) {
+    public ScrollPane bind(Function<ScrollPane, Runnable> fn) {
         Runnable cleanup = fn.apply(this);
         if (cleanup != null) subs.add(cleanup);
         return this;

@@ -2,7 +2,6 @@ package com.neko.libs.simpleui.components;
 
 import arc.graphics.Color;
 import arc.scene.Element;
-import arc.scene.ui.Label;
 import arc.struct.Seq;
 
 import com.neko.libs.signal.Signal;
@@ -13,15 +12,15 @@ import java.util.function.Consumer;
 
 import static arc.Core.scene;
 
-public class CLabel implements UIComponent {
+public class Label implements UIComponent {
     public class LabelStyle {
-        public final Label.LabelStyle ls;
+        public final arc.scene.ui.Label.LabelStyle ls;
         Color textColor;
         int textAlign;
         float fontScale = 1f;
         boolean wrap;
 
-        public LabelStyle(Label.LabelStyle ls) {
+        public LabelStyle(arc.scene.ui.Label.LabelStyle ls) {
             this.ls = ls;
         }
 
@@ -71,14 +70,14 @@ public class CLabel implements UIComponent {
         }
     }
 
-    private final Label element;
+    private final arc.scene.ui.Label element;
     public final LabelStyle style;
     public final NodeSizing sizing = new NodeSizing();
     private final Seq<Runnable> subs = new Seq<>();
 
-    private CLabel(String text) {
-        var arcStyle = new Label.LabelStyle(scene.getStyle(Label.LabelStyle.class));
-        this.element = new Label(text, arcStyle);
+    private Label(String text) {
+        var arcStyle = new arc.scene.ui.Label.LabelStyle(scene.getStyle(arc.scene.ui.Label.LabelStyle.class));
+        this.element = new arc.scene.ui.Label(text, arcStyle);
         element.userObject = this;
         this.style = new LabelStyle(arcStyle);
         sizing.onInvalidate(() -> {
@@ -87,33 +86,33 @@ public class CLabel implements UIComponent {
         });
     }
 
-    public static CLabel of(String text) {
-        return new CLabel(text);
+    public static Label of(String text) {
+        return new Label(text);
     }
 
-    public static CLabel of(Signal<String> signal) {
-        CLabel l = new CLabel(signal.get());
+    public static Label of(Signal<String> signal) {
+        Label l = new Label(signal.get());
         l.subs.add(signal.onChange(l.element::setText));
         return l;
     }
 
-    public CLabel text(String text) {
+    public Label text(String text) {
         element.setText(text);
         return this;
     }
 
-    public CLabel text(Signal<String> signal) {
+    public Label text(Signal<String> signal) {
         element.setText(signal.get());
         subs.add(signal.onChange(element::setText));
         return this;
     }
 
-    public CLabel style(Consumer<LabelStyle> fn) {
+    public Label style(Consumer<LabelStyle> fn) {
         fn.accept(style);
         return this;
     }
 
-    public CLabel size(Consumer<NodeSizing> fn) {
+    public Label size(Consumer<NodeSizing> fn) {
         fn.accept(sizing);
         element.invalidateHierarchy();
         return this;

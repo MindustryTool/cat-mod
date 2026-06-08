@@ -2,8 +2,6 @@ package com.neko.libs.simpleui.components;
 
 import arc.graphics.Color;
 import arc.scene.Element;
-import arc.scene.ui.TextButton;
-import arc.scene.ui.TextButton.TextButtonStyle;
 import arc.struct.Seq;
 
 import com.neko.libs.signal.Signal;
@@ -15,16 +13,16 @@ import java.util.function.Function;
 
 import static arc.Core.scene;
 
-public class CTextButton implements UIComponent {
+public class TextButton implements UIComponent {
     public class ButtonStyle {
-        public final TextButtonStyle tbs;
+        public final arc.scene.ui.TextButton.TextButtonStyle tbs;
 
-        ButtonStyle(TextButtonStyle tbs) {
+        ButtonStyle(arc.scene.ui.TextButton.TextButtonStyle tbs) {
             this.tbs = tbs;
         }
 
         public ButtonStyle ghostVariant() {
-            TextButtonStyle skin = scene.getStyle(TextButtonStyle.class);
+            arc.scene.ui.TextButton.TextButtonStyle skin = scene.getStyle(arc.scene.ui.TextButton.TextButtonStyle.class);
             tbs.up = tbs.down = tbs.over = tbs.checked = null;
             tbs.fontColor = Color.gray;
             tbs.downFontColor = Color.lightGray;
@@ -34,7 +32,7 @@ public class CTextButton implements UIComponent {
         }
 
         public ButtonStyle primaryVariant() {
-            TextButtonStyle skin = scene.getStyle(TextButtonStyle.class);
+            arc.scene.ui.TextButton.TextButtonStyle skin = scene.getStyle(arc.scene.ui.TextButton.TextButtonStyle.class);
             tbs.up = skin.up; tbs.down = skin.down;
             tbs.over = skin.over; tbs.checked = skin.checked;
             tbs.fontColor = Color.white;
@@ -45,7 +43,7 @@ public class CTextButton implements UIComponent {
         }
 
         public ButtonStyle dangerVariant() {
-            TextButtonStyle skin = scene.getStyle(TextButtonStyle.class);
+            arc.scene.ui.TextButton.TextButtonStyle skin = scene.getStyle(arc.scene.ui.TextButton.TextButtonStyle.class);
             tbs.up = skin.up; tbs.down = skin.down;
             tbs.over = skin.over; tbs.checked = skin.checked;
             tbs.fontColor = Color.scarlet;
@@ -56,7 +54,7 @@ public class CTextButton implements UIComponent {
         }
 
         public ButtonStyle defaultVariant() {
-            TextButtonStyle skin = scene.getStyle(TextButtonStyle.class);
+            arc.scene.ui.TextButton.TextButtonStyle skin = scene.getStyle(arc.scene.ui.TextButton.TextButtonStyle.class);
             tbs.up = skin.up; tbs.down = skin.down;
             tbs.over = skin.over; tbs.checked = skin.checked;
             tbs.fontColor = Color.lightGray;
@@ -93,72 +91,72 @@ public class CTextButton implements UIComponent {
         }
     }
 
-    private final TextButton element;
+    private final arc.scene.ui.TextButton element;
     public final ButtonStyle style;
     public final NodeSizing sizing = new NodeSizing();
     private final Seq<Runnable> subs = new Seq<>();
 
-    private CTextButton() {
-        TextButtonStyle tbs = new TextButtonStyle(scene.getStyle(TextButtonStyle.class));
-        this.element = new TextButton("", tbs);
+    private TextButton() {
+        arc.scene.ui.TextButton.TextButtonStyle tbs = new arc.scene.ui.TextButton.TextButtonStyle(scene.getStyle(arc.scene.ui.TextButton.TextButtonStyle.class));
+        this.element = new arc.scene.ui.TextButton("", tbs);
         element.getLabel().setWrap(false);
         element.userObject = this;
         this.style = new ButtonStyle(tbs);
         sizing.onInvalidate(element::invalidateHierarchy);
     }
 
-    public static CTextButton of() {
-        return new CTextButton();
+    public static TextButton of() {
+        return new TextButton();
     }
 
-    public CTextButton text(String text) {
+    public TextButton text(String text) {
         element.setText(text);
         return this;
     }
 
-    public CTextButton text(Signal<String> signal) {
+    public TextButton text(Signal<String> signal) {
         element.setText(signal.get());
         subs.add(signal.onChange(element::setText));
         return this;
     }
 
-    public CTextButton onClick(Runnable r) {
+    public TextButton onClick(Runnable r) {
         element.changed(r);
         return this;
     }
 
-    public CTextButton ghostVariant() {
+    public TextButton ghostVariant() {
         style.ghostVariant();
         return this;
     }
 
-    public CTextButton primaryVariant() {
+    public TextButton primaryVariant() {
         style.primaryVariant();
         return this;
     }
 
-    public CTextButton dangerVariant() {
+    public TextButton dangerVariant() {
         style.dangerVariant();
         return this;
     }
 
-    public CTextButton defaultVariant() {
+    public TextButton defaultVariant() {
         style.defaultVariant();
         return this;
     }
 
-    public CTextButton style(Consumer<ButtonStyle> fn) {
+    public TextButton style(Consumer<ButtonStyle> fn) {
         fn.accept(style);
         return this;
     }
 
-    public CTextButton size(Consumer<NodeSizing> fn) {
+    public TextButton size(Consumer<NodeSizing> fn) {
         fn.accept(sizing);
         element.invalidateHierarchy();
         return this;
     }
 
-    public CTextButton bind(Function<CTextButton, Runnable> fn) {
+    public TextButton bind(Function<TextButton, Runnable> fn) {
         Runnable cleanup = fn.apply(this);
         if (cleanup != null) subs.add(cleanup);
         return this;
