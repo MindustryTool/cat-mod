@@ -57,6 +57,7 @@ public class Label implements Component {
         this.element = new arc.scene.ui.Label(text, arcStyle);
         element.userObject = this;
         this.style = new Style(arcStyle);
+        apply();
         sizing.onInvalidate(() -> { apply(); element.invalidateHierarchy(); });
     }
 
@@ -75,8 +76,8 @@ public class Label implements Component {
         return this;
     }
 
-    public Label style(Cons<Style> fn) { fn.get(style); return this; }
-    public Label size(Cons<NodeSizing> fn) { fn.get(sizing); element.invalidateHierarchy(); return this; }
+    public Label style(Cons<Style> fn) { fn.get(style); apply(); return this; }
+    public Label size(Cons<NodeSizing> fn) { fn.get(sizing); apply(); element.invalidateHierarchy(); return this; }
 
     private void apply() {
         if (style.textColor != null) style.ls.fontColor = style.textColor;

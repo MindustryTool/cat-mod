@@ -90,13 +90,13 @@ public class Button implements Component {
     public static Button of(Component child) { return new Button(child); }
 
     public Button clicked(Runnable r) { element.changed(r); return this; }
-    public Button style(Cons<Style> fn) { fn.get(style); return this; }
+    public Button style(Cons<Style> fn) { fn.get(style); element.setStyle(style.tbs); return this; }
     public Button size(Cons<NodeSizing> fn) { fn.get(sizing); element.invalidateHierarchy(); return this; }
 
-    public Button ghostVariant() { style.ghostVariant(); return this; }
-    public Button primaryVariant() { style.primaryVariant(); return this; }
-    public Button dangerVariant() { style.dangerVariant(); return this; }
-    public Button defaultVariant() { style.defaultVariant(); return this; }
+    public Button ghostVariant() { style.ghostVariant(); element.setStyle(style.tbs); return this; }
+    public Button primaryVariant() { style.primaryVariant(); element.setStyle(style.tbs); return this; }
+    public Button dangerVariant() { style.dangerVariant(); element.setStyle(style.tbs); return this; }
+    public Button defaultVariant() { style.defaultVariant(); element.setStyle(style.tbs); return this; }
 
     public Button bind(Func<Button, Runnable> fn) {
         Runnable cleanup = fn.get(this);

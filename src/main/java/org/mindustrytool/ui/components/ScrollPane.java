@@ -74,6 +74,7 @@ public class ScrollPane implements Component {
     private ScrollPane(Element child) {
         arc.scene.ui.ScrollPane.ScrollPaneStyle s = new arc.scene.ui.ScrollPane.ScrollPaneStyle(scene.getStyle(arc.scene.ui.ScrollPane.ScrollPaneStyle.class));
         this.element = new arc.scene.ui.ScrollPane(child, s);
+        element.userObject = this;
         sizing.onInvalidate(() -> { applySize(); element.invalidateHierarchy(); });
     }
 

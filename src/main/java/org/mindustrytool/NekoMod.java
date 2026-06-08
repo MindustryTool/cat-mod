@@ -15,6 +15,7 @@ public class NekoMod extends Mod {
 
     private final Signal<Integer> activeSection = Signal.of(0);
     private final Signal<Boolean> dirty = Signal.of(false);
+    private final float pw = 660f, ph = 720f;
 
     private static final String[] SECTION_NAMES = {
         "Profile", "General", "Editor", "Notifications", "Shortcuts", "About"
@@ -65,28 +66,54 @@ public class NekoMod extends Mod {
         var sidebar = buildSidebar();
         var contentScroll = buildContentScrollPane();
 
-        var body = Layout.build().row().style(s -> s.gap(0).items(Items.STRETCH))
+        var body = Layout.build().row().style(s -> s.gap(0).minW(pw))
             .size(sz -> sz.grow())
             .children(
                 sidebar,
                 buildDividerV(),
-                contentScroll
+                ScrollPane.build()
+                    .child(
+                        Layout.build().col().style(s -> s.gap(12).p(16).minW(pw - 202 - 1))
+                            .children(
+                                contentScroll
+                            )
+                            .build()
+                    )
+                    .style(s -> s.disableX(true).fadeScrollBars(true).scrollBarsOnTop(true))
+                    .size(sz -> sz.grow())
+                    .build()
             )
             .build();
 
-        var rootContent = Layout.build().col().style(s -> s.gap(0))
-            .children(
-                buildHeader(),
-                buildDivider(1f),
-                body,
-                buildDivider(1f),
-                buildFooter()
+        var rootContent = Stack.build()
+            .child(SDFRoundedBox.build().color(Theme.BACKGROUND).cornerRadius(12f).build())
+            .child(
+                Layout.build().col().style(s -> s.gap(0))
+                    .children(
+                        buildHeader(),
+                        buildDivider(1f),
+                        body,
+                        buildDivider(1f),
+                        buildFooter()
+                    )
+                    .build()
             )
             .build();
 
         var rootPanel = Stack.build()
-            .child(SDFRoundedBox.build().color(Theme.BACKGROUND).cornerRadius(12f).build())
-            .child(rootContent)
+            .child(SDFRoundedBox.build().color(Theme.BACKGROUND).cornerRadius(12f).size(sz -> sz.w(pw).h(ph)).build())
+            .child(
+                Layout.build().col().style(s -> s.gap(0))
+                    .size(sz -> sz.w(pw).h(ph))
+                    .children(
+                        buildHeader(),
+                        buildDivider(1f),
+                        body,
+                        buildDivider(1f),
+                        buildFooter()
+                    )
+                    .build()
+            )
             .build();
 
         float pw = 660f, ph = 720f;
@@ -154,7 +181,7 @@ public class NekoMod extends Mod {
                 .child(label)
                 .clicked(() -> activeSection.set(idx))
                 .style(s -> { if (idx == 0) s.primaryVariant(); else s.ghostVariant(); })
-                .size(s -> s.w(170f))
+                .size(s -> s.w(170f).h(40f))
                 .build();
             rows[i + 1] = buttons[i];
         }
@@ -188,6 +215,7 @@ public class NekoMod extends Mod {
             for (int i = 0; i < sections.length; i++) {
                 sections[i].element().visible = i == s;
             }
+            stackGroup.invalidateHierarchy();
         });
         return ScrollPane.build().child(stack)
             .style(s -> s.disableX(true).fadeScrollBars(true).scrollBarsOnTop(true))

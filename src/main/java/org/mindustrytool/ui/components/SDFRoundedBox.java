@@ -55,6 +55,7 @@ public class SDFRoundedBox implements Component, SizingProvider {
     private static final String FRAG = """
         uniform float u_cornerRadius;
         uniform vec2 u_size;
+        uniform vec4 u_color;
         varying vec4 v_color;
         varying vec2 v_texCoord0;
         float roundedBoxSDF(vec2 p, vec2 s, float r) {
@@ -66,13 +67,13 @@ public class SDFRoundedBox implements Component, SizingProvider {
           vec2 pos = v_texCoord0 * u_size - halfSize;
           float dist = roundedBoxSDF(pos, halfSize, u_cornerRadius);
           float alpha = 1.0 - smoothstep(0.0, 2.0, dist);
-          gl_FragColor = v_color * vec4(1.0, 1.0, 1.0, alpha);
+          gl_FragColor = u_color * vec4(1.0, 1.0, 1.0, alpha);
         }
         """;
 
     private final Shader shader = new Shader(VERT, FRAG);
     private final float cornerRadius;
-    private final Color color = new Color();
+    private final Color boxColor = new Color();
     private final LayoutSpec sizing;
 
     private final Element element = new Element() {
@@ -88,9 +89,10 @@ public class SDFRoundedBox implements Component, SizingProvider {
             shader.bind();
             shader.setUniformf("u_cornerRadius", cornerRadius);
             shader.setUniformf("u_size", w, h);
+            shader.setUniformf("u_color", boxColor.r, boxColor.g, boxColor.b, boxColor.a);
 
-            Draw.color(color);
-            float packed = color.toFloatBits();
+            Draw.color(boxColor);
+            float packed = boxColor.toFloatBits();
             Texture tex = Core.atlas.white().texture;
             Fill.quad(tex,
                 x, y, packed, 0f, 0f,
@@ -106,10 +108,11 @@ public class SDFRoundedBox implements Component, SizingProvider {
 
     private SDFRoundedBox(float cornerRadius, Color color) {
         this.cornerRadius = cornerRadius;
-        this.color.set(color);
+        this.boxColor.set(color);
         this.sizing = new LayoutSpec();
         sizing.grow();
         element.touchable = Touchable.disabled;
+        element.userObject = this;
     }
 
     @Override public Element element() { return element; }
