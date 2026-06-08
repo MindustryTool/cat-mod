@@ -10,7 +10,6 @@ public class NodeSizing implements Sizing {
     float minWidth = -1f, maxWidth = -1f, minHeight = -1f, maxHeight = -1f;
 
     public NodeSizing onInvalidate(Runnable r) { this.onInvalidate = r; return this; }
-    public void dispose() {}
 
     @Override public SizeMode widthMode() { return widthMode; }
     @Override public SizeMode heightMode() { return heightMode; }

@@ -9,7 +9,7 @@ import com.neko.libs.signal.Signal;
 import com.neko.libs.simpleui.Layout;
 import com.neko.libs.simpleui.components.*;
 import com.neko.libs.simpleui.spec.LayoutSpec.Justify;
-import com.neko.libs.simpleui.style.Theme;
+import com.neko.libs.ui.style.Theme;
 
 public class NekoMod extends Mod {
 
@@ -100,7 +100,7 @@ public class NekoMod extends Mod {
         ).style(s -> s.gap(20).p(24));
 
         var pane = CScrollPane.of(root)
-            .style(s -> s.fadeScrollBars(true).scrollBarsOnTop(true))
+            .style(s -> s.disableX(true).fadeScrollBars(true).scrollBarsOnTop(true))
             .size(s -> s.w(480f).h(620f));
 
         var el = pane.element();

@@ -1,20 +1,13 @@
 package com.neko.libs.simpleui.layout;
 
 import arc.scene.Element;
-import arc.util.pooling.Pool;
 import com.neko.libs.simpleui.components.UIComponent;
 import com.neko.libs.simpleui.layout.Sizing.SizeMode;
 import com.neko.libs.simpleui.spec.LayoutSpec;
 import com.neko.libs.simpleui.spec.LayoutSpec.Items;
 import com.neko.libs.simpleui.spec.LayoutSpec.Justify;
 
-import java.util.Arrays;
-
 public class LayoutEngine {
-    private static final Pool<float[]> floats = new Pool<>(10) {
-        @Override
-        protected float[] newObject() { return new float[8]; }
-    };
 
     public static float prefWidth(Sizing spec, boolean isColumn, float gap, Iterable<Element> children) {
         float total = spec.padH();
@@ -25,7 +18,7 @@ public class LayoutEngine {
             Sizing cs = sizingOf(c);
             if (cs == null) continue;
             float cw = (cs.widthMode() == SizeMode.FIXED || cs.widthMode() == SizeMode.GROW)
-                ? cs.fixedWidth() : childPrefWidth(c, cs);
+                ? cs.fixedWidth() : childPrefWidth(c);
             cw = cs.constrainW(cw);
             if (isColumn) { maxChild = Math.max(maxChild, cw); } else { total += cw; }
             childCount++;
@@ -44,7 +37,7 @@ public class LayoutEngine {
             Sizing cs = sizingOf(c);
             if (cs == null) continue;
             float ch = (cs.heightMode() == SizeMode.FIXED || cs.heightMode() == SizeMode.GROW)
-                ? cs.fixedHeight() : childPrefHeight(c, cs);
+                ? cs.fixedHeight() : childPrefHeight(c);
             ch = cs.constrainH(ch);
             if (isColumn) { total += ch; } else { maxChild = Math.max(maxChild, ch); }
             childCount++;
@@ -62,10 +55,8 @@ public class LayoutEngine {
         for (Element ignored : children) count++;
         if (count == 0) return;
 
-        float[] ws = floats.obtain();
-        float[] hs = floats.obtain();
-        if (ws.length < count) { ws = new float[count]; } else { Arrays.fill(ws, 0, count, 0f); }
-        if (hs.length < count) { hs = new float[count]; } else { Arrays.fill(hs, 0, count, 0f); }
+        float[] ws = new float[count];
+        float[] hs = new float[count];
 
         if (spec.isColumn()) {
             computeColumnSizes(spec, children, contentW, contentH, gap, count, ws, hs);
@@ -105,8 +96,6 @@ public class LayoutEngine {
                 idx++;
             }
         }
-        floats.free(ws);
-        floats.free(hs);
     }
 
     private static void computeColumnSizes(LayoutSpec spec, Iterable<Element> children,
@@ -119,7 +108,7 @@ public class LayoutEngine {
         for (Element c : children) {
             Sizing cs = sizingOf(c);
             if (cs == null) { idx++; continue; }
-            hs[idx] = childPrefHeight(c, cs);
+            hs[idx] = childPrefHeight(c);
             if (cs.heightMode() == SizeMode.GROW) { hs[idx] = 0f; growCount++; totalGrowH += cs.growWeightY(); }
             else { nonGrowH += hs[idx]; }
             ws[idx] = childWidth(c, cs);
@@ -148,7 +137,7 @@ public class LayoutEngine {
         for (Element c : children) {
             Sizing cs = sizingOf(c);
             if (cs == null) { idx++; continue; }
-            ws[idx] = childPrefWidth(c, cs);
+            ws[idx] = childPrefWidth(c);
             if (cs.widthMode() == SizeMode.GROW) { ws[idx] = 0f; growCount++; totalGrowW += cs.growWeightX(); }
             else { nonGrowW += ws[idx]; }
             hs[idx] = childHeight(c, cs);
@@ -216,16 +205,16 @@ public class LayoutEngine {
 
     private static float childWidth(Element e, Sizing s) {
         return (s.widthMode() == SizeMode.GROW || s.widthMode() == SizeMode.FIXED)
-            ? s.constrainW(s.fixedWidth()) : childPrefWidth(e, s);
+            ? s.constrainW(s.fixedWidth()) : childPrefWidth(e);
     }
 
     private static float childHeight(Element e, Sizing s) {
         return (s.heightMode() == SizeMode.GROW || s.heightMode() == SizeMode.FIXED)
-            ? s.constrainH(s.fixedHeight()) : childPrefHeight(e, s);
+            ? s.constrainH(s.fixedHeight()) : childPrefHeight(e);
     }
 
-    private static float childPrefWidth(Element e, Sizing s) { return e.getPrefWidth(); }
-    private static float childPrefHeight(Element e, Sizing s) { return e.getPrefHeight(); }
+    private static float childPrefWidth(Element e) { return e.getPrefWidth(); }
+    private static float childPrefHeight(Element e) { return e.getPrefHeight(); }
 
     public static Sizing sizingOf(Element e) {
         Object o = e.userObject;

@@ -18,7 +18,6 @@ import static arc.Core.scene;
 public class CTextButton implements UIComponent {
     public class ButtonStyle {
         public final TextButtonStyle tbs;
-        boolean disabled;
 
         ButtonStyle(TextButtonStyle tbs) {
             this.tbs = tbs;
@@ -68,15 +67,13 @@ public class CTextButton implements UIComponent {
         }
 
         public ButtonStyle disabled(boolean v) {
-            disabled = v;
             element.setDisabled(v);
             return this;
         }
 
         public ButtonStyle disabled(Signal<Boolean> s) {
-            disabled = s.get();
-            element.setDisabled(disabled);
-            subs.add(s.onChange(v -> { disabled = v; element.setDisabled(v); }));
+            element.setDisabled(s.get());
+            subs.add(s.onChange(element::setDisabled));
             return this;
         }
 
