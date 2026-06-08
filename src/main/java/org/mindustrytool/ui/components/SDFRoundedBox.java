@@ -53,7 +53,9 @@ public class SDFRoundedBox implements Component, SizingProvider {
         """;
 
     private static final String FRAG = """
+        #ifdef GL_ES
         precision mediump float;
+        #endif
         uniform float u_cornerRadius;
         uniform vec2 u_size;
         varying vec4 v_color;
