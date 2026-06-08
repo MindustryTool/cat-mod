@@ -68,6 +68,30 @@ public final class Theme {
     /** Accent-colored text — links, highlights. */
     public static final Color textAccent    = accentGold;
 
+    // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+    // CSS dark-theme design tokens (shadcn/ui convention)
+    // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+    public static final Color background           = Color.valueOf("0f0f1a");
+    public static final Color foreground           = Color.valueOf("e2e2f5");
+    public static final Color card                 = Color.valueOf("1a1a2e");
+    public static final Color cardForeground       = Color.valueOf("e2e2f5");
+    public static final Color popover              = Color.valueOf("1a1a2e");
+    public static final Color popoverForeground    = Color.valueOf("e2e2f5");
+    public static final Color primary              = Color.valueOf("a48fff");
+    public static final Color primaryForeground    = Color.valueOf("0f0f1a");
+    public static final Color secondary            = Color.valueOf("2d2b55");
+    public static final Color secondaryForeground  = Color.valueOf("c4c2ff");
+    public static final Color muted                = Color.valueOf("222244");
+    public static final Color mutedForeground      = Color.valueOf("a0a0c0");
+    public static final Color accent               = Color.valueOf("303060");
+    public static final Color accentForeground     = Color.valueOf("e2e2f5");
+    public static final Color destructive          = Color.valueOf("ff5470");
+    public static final Color destructiveForeground= Color.valueOf("ffffff");
+    public static final Color border               = Color.valueOf("303052");
+    public static final Color input                = Color.valueOf("303052");
+    public static final Color ring                 = Color.valueOf("a48fff");
+
     // ── Expression resolver ─────────────────────────────────────────────────
 
     public static Color resolve(String name) {
