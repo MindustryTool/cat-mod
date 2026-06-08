@@ -15,6 +15,7 @@ public class LayoutEngine {
         float maxChild = 0f;
         int childCount = 0;
         for (Element c : children) {
+            if (!c.visible) continue;
             Sizing cs = sizingOf(c);
             if (cs == null) continue;
             float cw = (cs.widthMode() == SizeMode.FIXED || cs.widthMode() == SizeMode.GROW)
@@ -34,6 +35,7 @@ public class LayoutEngine {
         int childCount = 0;
         float maxChild = 0f;
         for (Element c : children) {
+            if (!c.visible) continue;
             Sizing cs = sizingOf(c);
             if (cs == null) continue;
             float ch = (cs.heightMode() == SizeMode.FIXED || cs.heightMode() == SizeMode.GROW)
@@ -52,7 +54,7 @@ public class LayoutEngine {
         float contentW = w, contentH = h;
 
         int count = 0;
-        for (Element ignored : children) count++;
+        for (Element c : children) { if (c.visible) count++; }
         if (count == 0) return;
 
         float[] ws = new float[count];
@@ -69,7 +71,7 @@ public class LayoutEngine {
             float cy = y + contentH - offsets[0];
             int idx = 0;
             for (Element c : children) {
-                if (sizingOf(c) == null) { idx++; continue; }
+                if (!c.visible || sizingOf(c) == null) { idx++; continue; }
                 cy -= hs[idx];
                 float cx = itemX(x, contentW, ws[idx], spec.items());
                 if (spec.items() == Items.STRETCH) ws[idx] = contentW;
@@ -88,7 +90,7 @@ public class LayoutEngine {
             float cx = x + offsets[0];
             int idx = 0;
             for (Element c : children) {
-                if (sizingOf(c) == null) { idx++; continue; }
+                if (!c.visible || sizingOf(c) == null) { idx++; continue; }
                 float cy = itemY(y, contentH, hs[idx], spec.items());
                 if (spec.items() == Items.STRETCH) hs[idx] = contentH;
                 c.setBounds(cx, cy, ws[idx], hs[idx]);
@@ -106,6 +108,7 @@ public class LayoutEngine {
         int idx = 0, growCount = 0;
         float totalGrowH = 0f, nonGrowH = 0f;
         for (Element c : children) {
+            if (!c.visible) continue;
             Sizing cs = sizingOf(c);
             if (cs == null) { idx++; continue; }
             hs[idx] = childPrefHeight(c);
@@ -118,6 +121,7 @@ public class LayoutEngine {
         if (growCount > 0 && availH > 0) {
             idx = 0;
             for (Element c : children) {
+                if (!c.visible) continue;
                 Sizing cs = sizingOf(c);
                 if (cs != null && cs.heightMode() == SizeMode.GROW) {
                     hs[idx] = (totalGrowH > 0f ? (cs.growWeightY() / totalGrowH) : (1f / growCount)) * availH;
@@ -135,6 +139,7 @@ public class LayoutEngine {
         int idx = 0, growCount = 0;
         float totalGrowW = 0f, nonGrowW = 0f;
         for (Element c : children) {
+            if (!c.visible) continue;
             Sizing cs = sizingOf(c);
             if (cs == null) { idx++; continue; }
             ws[idx] = childPrefWidth(c);
@@ -147,6 +152,7 @@ public class LayoutEngine {
         if (growCount > 0 && availW > 0) {
             idx = 0;
             for (Element c : children) {
+                if (!c.visible) continue;
                 Sizing cs = sizingOf(c);
                 if (cs != null && cs.widthMode() == SizeMode.GROW) {
                     ws[idx] = (totalGrowW > 0f ? (cs.growWeightX() / totalGrowW) : (1f / growCount)) * availW;
