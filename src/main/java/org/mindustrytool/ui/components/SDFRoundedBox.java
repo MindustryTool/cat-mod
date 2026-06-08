@@ -100,6 +100,7 @@ public class SDFRoundedBox implements Component, SizingProvider {
 
             Draw.flush();
             Draw.shader(prev);
+            Draw.color();
         }
     };
 

@@ -63,33 +63,38 @@ public class NekoMod extends Mod {
     @Override
     public void init() {
         var sidebar = buildSidebar();
-        var content = buildContentStack();
+        var contentScroll = buildContentScrollPane();
 
-        var root = Layout.build().col().style(s -> s.gap(0).p(0))
+        var body = Layout.build().row().style(s -> s.gap(0).items(Items.STRETCH))
+            .size(sz -> sz.grow())
+            .children(
+                sidebar,
+                buildDividerV(),
+                contentScroll
+            )
+            .build();
+
+        var rootContent = Layout.build().col().style(s -> s.gap(0))
             .children(
                 buildHeader(),
                 buildDivider(1f),
-                Layout.build().row().style(s -> s.gap(0).items(Items.STRETCH))
-                    .children(
-                        sidebar,
-                        buildDividerV(),
-                        content
-                    )
-                    .build(),
+                body,
                 buildDivider(1f),
                 buildFooter()
             )
             .build();
 
-        var pane = ScrollPane.build().child(root)
-            .style(s -> s.disableX(true).fadeScrollBars(true).scrollBarsOnTop(true))
-            .size(s -> s.w(640f).h(700f))
+        var rootPanel = Stack.build()
+            .child(SDFRoundedBox.build().color(Theme.BACKGROUND).cornerRadius(12f).build())
+            .child(rootContent)
             .build();
 
-        var el = pane.element();
+        float pw = 660f, ph = 720f;
+        var el = rootPanel.element();
+        el.setSize(pw, ph);
         el.setPosition(
-            (Core.graphics.getWidth() - 640f) / 2f,
-            (Core.graphics.getHeight() - 700f) / 2f
+            (Core.graphics.getWidth() - pw) / 2f,
+            (Core.graphics.getHeight() - ph) / 2f
         );
         Core.scene.add(el);
         Log.info("Settings panel rendered.");
@@ -164,7 +169,7 @@ public class NekoMod extends Mod {
             .build();
     }
 
-    private Layout buildContentStack() {
+    private Component buildContentScrollPane() {
         var sections = new Layout[]{
             buildProfileSection(),
             buildGeneralSection(),
@@ -184,7 +189,10 @@ public class NekoMod extends Mod {
                 sections[i].element().visible = i == s;
             }
         });
-        return stack;
+        return ScrollPane.build().child(stack)
+            .style(s -> s.disableX(true).fadeScrollBars(true).scrollBarsOnTop(true))
+            .size(sz -> sz.grow())
+            .build();
     }
 
     private Layout buildProfileSection() {
@@ -320,6 +328,7 @@ public class NekoMod extends Mod {
 
     private static Layout toggleRow(String label, Signal<Boolean> signal) {
         return Layout.build().row().style(s -> s.gap(8).justify(Justify.BETWEEN))
+            .size(sz -> sz.growX())
             .children(
                 Label.build().text(label).style(s -> s.textColor(Theme.TEXT_PRIMARY)).build(),
                 Checkbox.build().bind(signal).build()
@@ -329,6 +338,7 @@ public class NekoMod extends Mod {
 
     private static Layout sliderRow(String label, Signal<Float> signal, float min, float max, float step) {
         return Layout.build().row().style(s -> s.gap(8).justify(Justify.BETWEEN))
+            .size(sz -> sz.growX())
             .children(
                 Label.build().text(label).style(s -> s.textColor(Theme.TEXT_PRIMARY)).build(),
                 Layout.build().row().style(s -> s.gap(8))
@@ -344,6 +354,7 @@ public class NekoMod extends Mod {
 
     private static Layout inputRow(String label, Signal<String> signal) {
         return Layout.build().row().style(s -> s.gap(8).justify(Justify.BETWEEN))
+            .size(sz -> sz.growX())
             .children(
                 Label.build().text(label).style(s -> s.textColor(Theme.TEXT_PRIMARY)).build(),
                 InputField.build().bind(signal).size(sz -> sz.w(200f)).build()
@@ -353,6 +364,7 @@ public class NekoMod extends Mod {
 
     private static Layout displayRow(String label, Signal<String> value) {
         return Layout.build().row().style(s -> s.gap(8).justify(Justify.BETWEEN))
+            .size(sz -> sz.growX())
             .children(
                 Label.build().text(label).style(s -> s.textColor(Theme.TEXT_SECONDARY)).build(),
                 Label.build().text(value).style(s -> s.textColor(Theme.TEXT_BRIGHT)).build()
@@ -362,6 +374,7 @@ public class NekoMod extends Mod {
 
     private static Layout buttonRow(String label, Signal<String> signal, String[] options) {
         return Layout.build().row().style(s -> s.gap(8).justify(Justify.BETWEEN))
+            .size(sz -> sz.growX())
             .children(
                 Label.build().text(label).style(s -> s.textColor(Theme.TEXT_PRIMARY)).build(),
                 Button.build()
