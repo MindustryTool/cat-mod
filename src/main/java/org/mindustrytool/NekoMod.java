@@ -136,14 +136,20 @@ public class NekoMod extends Mod {
         int n = SECTION_NAMES.length;
         var buttons = new Button[n];
         var rows = new Component[n + 1];
-        rows[0] = Label.build().text("NAVIGATION").style(s -> s.textColor(Theme.TEXT_GHOST).fontScale(0.7f)).build();
+        rows[0] = Label.build().text("SECTIONS").style(s -> s.textColor(Theme.TEXT_GHOST).fontScale(0.7f)).build();
         for (int i = 0; i < n; i++) {
             int idx = i;
+            var label = Label.build().text(Signal.computed(() ->
+                (idx == activeSection.get() ? "\u25CF " : "\u25CB ") + SECTION_NAMES[idx]
+            )).style(s -> {
+                if (idx == 0) s.textColor(Theme.ACCENT_PRIMARY);
+                else s.textColor(Theme.TEXT_PRIMARY);
+            }).build();
             buttons[i] = Button.build()
-                .child(Label.build().text(SECTION_NAMES[i]).build())
+                .child(label)
                 .clicked(() -> activeSection.set(idx))
                 .style(s -> { if (idx == 0) s.primaryVariant(); else s.ghostVariant(); })
-                .size(s -> s.w(160f))
+                .size(s -> s.w(170f))
                 .build();
             rows[i + 1] = buttons[i];
         }
@@ -153,7 +159,7 @@ public class NekoMod extends Mod {
                 else buttons[i].ghostVariant();
             }
         });
-        return Layout.build().col().style(s -> s.gap(2).p(12, 0, 12, 12))
+        return Layout.build().col().style(s -> s.gap(2).p(16, 0, 12, 16))
             .children(rows)
             .build();
     }
@@ -297,12 +303,18 @@ public class NekoMod extends Mod {
     }
 
     private static Layout sectionPanel(String title, int count, Component... fields) {
-        var children = new Component[count + 2];
-        children[0] = Label.build().text(title).style(s -> s.textColor(Theme.TEXT_SECONDARY).fontScale(0.7f)).build();
-        System.arraycopy(fields, 0, children, 1, count);
-        children[count + 1] = Layout.build().row().size(s -> s.h(4f)).build();
-        return Layout.build().col().style(s -> s.gap(8))
-            .children(children)
+        var items = new Component[count + 2];
+        items[0] = Label.build().text(title).style(s -> s.textColor(Theme.TEXT_BRIGHT).fontScale(0.7f)).build();
+        items[1] = Layout.build().row().size(sz -> sz.h(1f)).build();
+        System.arraycopy(fields, 0, items, 2, count);
+        var content = Layout.build().col().style(s -> s.gap(10).p(16))
+            .children(items)
+            .build();
+        return Layout.build().col()
+            .add(Stack.build()
+                .child(SDFRoundedBox.build().color(Theme.SURFACE).cornerRadius(10f).build())
+                .child(content)
+                .build())
             .build();
     }
 
