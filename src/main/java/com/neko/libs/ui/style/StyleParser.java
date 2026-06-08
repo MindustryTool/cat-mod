@@ -81,6 +81,16 @@ public final class StyleParser {
         String val = tok.length > 1 ? tok[1] : null;
         float  fv  = val != null ? StyleExpr.eval(val, ctx) : 0f;
 
+        // @name syntax — reference a registered style from StyleRegistry
+        if (key.startsWith("@")) {
+            String ref = key.substring(1);
+            String resolved = StyleRegistry.INSTANCE.resolvedString(ref);
+            if (resolved != null) {
+                for (String[] t : tokenize(resolved)) apply(s, t, ctx);
+            }
+            return;
+        }
+
         switch (key) {
 
             // ── Core ──────────────────────────────────────────────────────────

@@ -1,91 +1,58 @@
 package com.neko.libs.ui;
 
 import arc.func.Cons;
-import arc.graphics.Color;
 import arc.graphics.g2d.Draw;
 import arc.graphics.g2d.Fill;
 import arc.graphics.g2d.Lines;
-import com.neko.libs.state.State;
+import arc.scene.ui.layout.WidgetGroup;
+import com.neko.libs.signal.Signal;
 import com.neko.libs.ui.layout.LayoutCtx;
 import com.neko.libs.ui.layout.LayoutEngine;
 import com.neko.libs.ui.style.StyleParser;
 import com.neko.libs.ui.style.StyleSpec;
+import com.neko.libs.ui.style.StyleSpec.SizeMode;
 
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-/**
- * Core node of the NekoUI tree.
- *
- * <h3>Two construction modes</h3>
- * <pre>
- * // Single style (most common)
- * new El("col gap:8 p:16")
- *
- * // Named variants — style selected by a State<String>
- * new El(variantState,
- *     "desktop: col gap:8  p:16 w:400",
- *     "mobile:  col gap:4  p:8  w:{sw-16}")
- * </pre>
- *
- * <h3>Building the tree</h3>
- * <pre>
- * El root = new El("col gap:8").add(
- *     new NLabel("Hello"),
- *     new NDivider()
- * );
- * </pre>
- */
-public class El {
+public class El extends WidgetGroup {
 
-    // ── Style variants ────────────────────────────────────────────────────────
-    // Key = variant label ("" for single-style mode), Value = raw style string.
+    // ── Style variants ────────────────────────────────────────────────────
+
     private final Map<String, String> variants = new LinkedHashMap<>();
+    private Signal<String> variantState = null;
 
-    // If non-null, active variant key is driven by this state.
-    private State<String> variantState = null;
+    // ── Spec ──────────────────────────────────────────────────────────────
 
-    // ── Tree structure ────────────────────────────────────────────────────────
-    protected final List<El>  children = new ArrayList<>();
-    private         El        parent   = null;
-
-    // ── Layout result ─────────────────────────────────────────────────────────
-    float x, y, w, h;
-
-    // ── Dirty flag ────────────────────────────────────────────────────────────
-    private boolean dirty = true;
-
-    // ── Resolved spec (set during layout pass) ────────────────────────────────
     protected StyleSpec spec = null;
+    private boolean specExplicit = false;
+    private boolean bound = false;
+    private Runnable bind;
 
-    // ── Visibility (reactive, external) ──────────────────────────────────────
-    private boolean visible = true;
+    // ── Hover / press (for child widgets; containers ignore these) ────────
 
-    // ── Animation (opacity) ───────────────────────────────────────────────────
-    private float curOpacity  = 1f;
-    private float animElapsed = 0f;
-
-    // ── Events ────────────────────────────────────────────────────────────────
-    private Runnable onClick  = null;
     boolean hovered  = false;
     boolean pressed  = false;
 
-    // ── State bindings (for cleanup on detach) ────────────────────────────────
+    // ── Cleanup on detach ─────────────────────────────────────────────────
+
     private final List<Runnable> detachCallbacks = new ArrayList<>();
 
-    // ── Constructors ──────────────────────────────────────────────────────────
+    // ── Constructors ──────────────────────────────────────────────────────
+
+    public El() {
+        setTransform(true);
+    }
 
     public El(String style) {
+        setTransform(true);
         variants.put("", style);
     }
 
-    /**
-     * Named-variant constructor.
-     * Each {@code variantDef} must be {@code "label: style tokens..."}.
-     */
-    public El(State<String> variantState, String... variantDefs) {
+    public El(Signal<String> variantState, String... variantDefs) {
+        setTransform(true);
         this.variantState = variantState;
         for (String def : variantDefs) {
             int colon = def.indexOf(':');
@@ -96,213 +63,133 @@ public class El {
                              def.substring(colon + 1).trim());
             }
         }
-        // Auto-invalidate when variant key changes
-        detachCallbacks.add(variantState.subscribe(v -> invalidate()));
+        detachCallbacks.add(variantState.onChange(v -> invalidate()));
     }
 
-    // ── Tree building ─────────────────────────────────────────────────────────
+    public El(StyleSpec spec) {
+        setTransform(true);
+        this.spec = spec;
+        this.specExplicit = true;
+    }
 
-    /** Add one or more children. Returns {@code this} for chaining. */
-    public El add(El... els) {
-        for (El e : els) {
-            if (e.parent != null) e.parent.children.remove(e);
-            e.parent = this;
-            children.add(e);
-        }
-        invalidate();
+    // ── Bind (runs once on first layout) ─────────────────────────────────────
+
+    public El bind(Runnable r) {
+        this.bind = r;
         return this;
     }
 
-    public El remove(El e) {
-        if (children.remove(e)) {
-            e.parent = null;
-            invalidate();
-        }
-        return this;
-    }
-
-    public void clearChildren() {
-        for (El c : children) c.parent = null;
-        children.clear();
-        invalidate();
-    }
-
-    // ── Visibility ────────────────────────────────────────────────────────────
-
-    public El setVisible(boolean v) {
-        if (this.visible != v) { this.visible = v; invalidate(); }
-        return this;
-    }
-
-    public boolean isVisible() { return visible; }
-
-    public <T> El visibleWhen(State<T> state, java.util.function.Predicate<T> pred) {
-        return bind(state, v -> setVisible(pred.test(v)));
-    }
-
-    // ── Events ────────────────────────────────────────────────────────────────
-
-    public El onClick(Runnable r)  { this.onClick = r; return this; }
-    boolean isTouchable()          { return onClick != null; }
-
-    public void fireClick()               { if (onClick != null) onClick.run(); }
-    public void setHovered(boolean h)     { this.hovered = h; invalidate(); }
-    public void setPressed(boolean p)     { this.pressed = p; invalidate(); }
-    public boolean isHovered()            { return hovered; }
-    public boolean isPressed()            { return pressed; }
-
-    // ── State binding ─────────────────────────────────────────────────────────
-
-    public <T> El bind(State<T> state, Cons<T> apply) {
+    public <T> El bind(Signal<T> state, Cons<T> apply) {
         detachCallbacks.add(state.onChange(apply));
         return this;
     }
 
-    // ── Hit testing ───────────────────────────────────────────────────────────
+    // ── Hover / press ────────────────────────────────────────────────────────
 
-    public boolean hitTest(float px, float py) {
-        return px >= x && px < x + w && py >= y && py < y + h;
+    public void setHovered(boolean h) { this.hovered = h; }
+    public void setPressed(boolean p) { this.pressed = p; }
+    public boolean isHovered()        { return hovered; }
+    public boolean isPressed()        { return pressed; }
+
+    // ── Style resolution ─────────────────────────────────────────────────────
+
+    public StyleSpec resolveSpec() {
+        return resolveSpec(LayoutCtx.INSTANCE);
     }
-
-    /**
-     * Returns the deepest touchable El at (px, py), or {@code null}.
-     * Searches children back-to-front (last child rendered on top).
-     */
-    public El hitAt(float px, float py) {
-        if (!visible || spec == null || spec.hidden) return null;
-        if (!hitTest(px, py)) return null;
-        for (int i = children.size() - 1; i >= 0; i--) {
-            El hit = children.get(i).hitAt(px, py);
-            if (hit != null) return hit;
-        }
-        return isTouchable() ? this : null;
-    }
-
-    // ── Invalidation ──────────────────────────────────────────────────────────
-
-    public void invalidate() {
-        if (dirty) return;
-        dirty = true;
-        if (parent != null) parent.invalidate();
-    }
-
-    public boolean isDirty() { return dirty; }
-
-    // ── Style resolution ──────────────────────────────────────────────────────
 
     public StyleSpec resolveSpec(LayoutCtx ctx) {
-        return StyleParser.parse(activeStyle(), ctx);
+        if (specExplicit) return spec;
+        spec = StyleParser.parse(activeStyle(), ctx);
+        if (!bound) { bound = true; if (bind != null) bind.run(); }
+        return spec;
     }
 
     private String activeStyle() {
         if (variantState != null) {
-            String key = variantState.getValue();
+            String key = variantState.get();
             if (variants.containsKey(key)) return variants.get(key);
         }
-        // Fallback: first variant
         return variants.isEmpty() ? "" : variants.values().iterator().next();
     }
 
-    // ── Preferred sizing (called by LayoutEngine) ─────────────────────────────
+    // ── Preferred sizing ─────────────────────────────────────────────────────
 
-    public float prefWidth(LayoutCtx ctx, float availW) {
-        StyleSpec s = resolveSpec(ctx);
-        if (!visible || s.hidden) return 0f;
-        if (s.widthMode == StyleSpec.SizeMode.FIXED)
-            return s.constrainW(s.fixedWidth);
-        if (s.widthMode == StyleSpec.SizeMode.GROW) return 0f;
-        // WRAP: measure content
-        float inner = Math.max(0f, availW - s.padH());
-        float cw = contentPrefWidth(ctx, inner, s);
-        return s.constrainW(cw + s.padH());
+    @Override
+    public float getPrefWidth() {
+        if (spec == null) return 0f;
+        if (spec.widthMode() == SizeMode.FIXED) return spec.constrainW(spec.fixedWidth());
+        if (spec.widthMode() == SizeMode.GROW) return 0f;
+        float contentW = LayoutEngine.prefWidth(spec, getChildren());
+        return spec.constrainW(contentW + spec.padH());
     }
 
-    public float prefHeight(LayoutCtx ctx, float availW, float availH) {
-        StyleSpec s = resolveSpec(ctx);
-        if (!visible || s.hidden) return 0f;
-        if (s.heightMode == StyleSpec.SizeMode.FIXED)
-            return s.constrainH(s.fixedHeight);
-        if (s.heightMode == StyleSpec.SizeMode.GROW) return 0f;
-        float innerW = Math.max(0f, availW - s.padH());
-        float ch = contentPrefHeight(ctx, innerW, availH, s);
-        return s.constrainH(ch + s.padV());
+    @Override
+    public float getPrefHeight() {
+        if (spec == null) return 0f;
+        if (spec.heightMode() == SizeMode.FIXED) return spec.constrainH(spec.fixedHeight());
+        if (spec.heightMode() == SizeMode.GROW) return 0f;
+        float contentH = LayoutEngine.prefHeight(spec, getChildren());
+        return spec.constrainH(contentH + spec.padV());
     }
 
-    /** Override in subclasses (leaf widgets) to report content size. */
-    protected float contentPrefWidth(LayoutCtx ctx, float innerW, StyleSpec s) {
-        return LayoutEngine.prefWidth(ctx, s, children, innerW);
+    // ── Layout ───────────────────────────────────────────────────────────────
+
+    @Override
+    public void layout() {
+        resolveSpec();
+        if (!visible) return;
+        if (spec != null && spec.hidden()) return;
+
+        float w = getWidth();
+        float h = getHeight();
+
+        if (spec != null) {
+            LayoutCtx.INSTANCE.pushParent(w, h);
+
+            float innerX = spec.padLeft();
+            float innerY = spec.padBottom();
+            float innerW = Math.max(0f, w - spec.padH());
+            float innerH = Math.max(0f, h - spec.padV());
+
+            LayoutEngine.layout(spec, getChildren(), innerX, innerY, innerW, innerH);
+
+            LayoutCtx.INSTANCE.popParent();
+        }
     }
 
-    protected float contentPrefHeight(LayoutCtx ctx, float innerW, float availH, StyleSpec s) {
-        return LayoutEngine.prefHeight(ctx, s, children, innerW, availH);
-    }
+    // ── Drawing ──────────────────────────────────────────────────────────────
 
-    // ── Layout ────────────────────────────────────────────────────────────────
-
-    public void layout(LayoutCtx ctx, float x, float y, float w, float h) {
-        this.x = x; this.y = y; this.w = w; this.h = h;
-        this.dirty = false;
-
-        spec = resolveSpec(ctx);
-        if (!visible || spec.hidden) return;
-
-        float innerX = x + spec.padLeft();
-        float innerY = y + spec.padBottom();   // Arc Y-up: padBottom = space at the bottom
-        float innerW = Math.max(0f, w - spec.padH());
-        float innerH = Math.max(0f, h - spec.padV());
-
-        LayoutEngine.layout(ctx, spec, children, innerX, innerY, innerW, innerH);
-    }
-
-    // ── Drawing ───────────────────────────────────────────────────────────────
-
+    @Override
     public void draw() {
-        if (!visible || spec == null || spec.hidden) return;
+        if (transform) applyTransform(computeTransform());
 
-        float alpha = spec.opacity() * curOpacity;
+        validate();
 
-        // Background
-        if (spec.background() != null) {
-            Color prev = Draw.getColor().cpy();
-            Draw.color(spec.background(), alpha);
-            Fill.rect(x + w / 2f, y + h / 2f, w, h);
-            Draw.color(prev);
+        if (spec != null && !spec.hidden()) {
+            if (spec.background() != null) {
+                Draw.color(spec.background(), spec.opacity());
+                Fill.rect(getWidth() / 2f, getHeight() / 2f, getWidth(), getHeight());
+            }
+            if (spec.borderColor() != null) {
+                Draw.color(spec.borderColor(), spec.opacity());
+                Lines.stroke(spec.borderWidth());
+                Lines.rect(0, 0, getWidth(), getHeight());
+            }
+            Draw.color();
+            Lines.stroke(1f);
         }
 
-        // Border
-        if (spec.borderColor() != null) {
-            Color prev       = Draw.getColor().cpy();
-            float prevStroke = Lines.getStroke();
-            Draw.color(spec.borderColor(), alpha);
-            Lines.stroke(spec.borderWidth());
-            Lines.rect(x, y, w, h);
-            Lines.stroke(prevStroke);
-            Draw.color(prev);
-        }
+        drawChildren();
 
-        // Content (overridden by widget subclasses)
-        drawContent(alpha);
-
-        // Children
-        for (El child : children) child.draw();
+        if (transform) resetTransform();
     }
 
-    /** Override to draw widget-specific content (text, icon, etc.). */
-    protected void drawContent(float alpha) {}
+    // ── Cleanup ──────────────────────────────────────────────────────────────
 
-    // ── Getters (for external access) ─────────────────────────────────────────
-
-    public float getX() { return x; }
-    public float getY() { return y; }
-    public float getW() { return w; }
-    public float getH() { return h; }
-
-    // ── Detach (cleanup) ──────────────────────────────────────────────────────
-
-    public void detach() {
+    @Override
+    public boolean remove() {
         for (Runnable r : detachCallbacks) r.run();
         detachCallbacks.clear();
-        for (El child : children) child.detach();
-        if (parent != null) parent.remove(this);
+        return super.remove();
     }
 }

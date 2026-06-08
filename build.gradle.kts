@@ -125,3 +125,23 @@ tasks.register<Jar>("deploy") {
         delete(layout.buildDirectory.file("libs/${project.name}-android.jar"))
     }
 }
+
+tasks.register<JavaExec>("runGame") {
+    description = "Build mod, install to Mindustry mods, and launch game"
+    dependsOn(shadowJar)
+
+    doFirst {
+        val modsDir = file(System.getenv("APPDATA") + "/Mindustry/mods")
+        modsDir.mkdirs()
+        copy {
+            from(shadowJar.get().archiveFile)
+            into(modsDir)
+        }
+        println("Copied mod to " + modsDir.resolve("${project.name}-desktop.jar"))
+    }
+
+    standardInput = System.`in`
+    workingDir = file("test")
+    classpath = files("test/Mindustry.jar")
+    mainClass.set("mindustry.desktop.DesktopLauncher")
+}

@@ -54,7 +54,7 @@ public final class Theme {
     public static final Color accentBlue    = Color.valueOf("5bc0de");
 
     // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-    // Text colors
+    // Label colors
     // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
     /** High-contrast white — headings, important values. */
@@ -67,6 +67,32 @@ public final class Theme {
     public static final Color textGhost     = Color.valueOf("55556a");
     /** Accent-colored text — links, highlights. */
     public static final Color textAccent    = accentGold;
+
+    // ── Expression resolver ─────────────────────────────────────────────────
+
+    public static Color resolve(String name) {
+        return switch (name) {
+            case "bgVoid"       -> bgVoid;
+            case "bgBase"       -> bgBase;
+            case "bgSurface"    -> bgSurface;
+            case "bgRaised"     -> bgRaised;
+            case "bgInput"      -> bgInput;
+            case "borderSubtle" -> borderSubtle;
+            case "borderDefault"-> borderDefault;
+            case "borderActive" -> borderActive;
+            case "accentPrimary"-> accentPrimary;
+            case "accentGold"   -> accentGold;
+            case "accentRed"    -> accentRed;
+            case "accentGreen"  -> accentGreen;
+            case "accentBlue"   -> accentBlue;
+            case "textBright"   -> textBright;
+            case "textPrimary"  -> textPrimary;
+            case "textSecondary"-> textSecondary;
+            case "textGhost"    -> textGhost;
+            case "textAccent"   -> textAccent;
+            default -> throw new IllegalArgumentException("Unknown theme constant: " + name);
+        };
+    }
 
     // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
     // Fonts (lazy — Fonts registry initialized after game boot)

@@ -1,12 +1,16 @@
 package com.neko.libs.ui.style;
 
 import com.neko.libs.ui.layout.LayoutCtx;
+import java.util.HashMap;
+import java.util.Map;
+import arc.graphics.Color;
 
 /**
  * Tiny arithmetic expression evaluator for style values.
  *
  * <p>Supports: numbers, {@code +}, {@code -}, {@code *}, {@code /},
- * parentheses, and context variables ({@code scl}, {@code sw}, {@code sh}).
+ * parentheses, and context variables ({@code scl}, {@code sw}, {@code sh},
+ * {@code pw}, {@code ph}).
  *
  * <p>Examples:
  * <pre>
@@ -17,6 +21,10 @@ import com.neko.libs.ui.layout.LayoutCtx;
  * </pre>
  */
 public final class StyleExpr {
+
+    // ── Pre-compile cache ────────────────────────────────────────────────────
+
+    private static final Map<String, Float> CONST_CACHE = new HashMap<>();
 
     /**
      * Evaluate a raw value string.
@@ -35,7 +43,52 @@ public final class StyleExpr {
         // Fast path: plain number
         try { return Float.parseFloat(s); } catch (NumberFormatException ignored) {}
 
-        return new StyleExpr(s, ctx).parseExpr();
+        // Constant cache (expressions with no ctx-dependent variables)
+        Float cached = CONST_CACHE.get(s);
+        if (cached != null) return cached;
+
+        float result = new StyleExpr(s, ctx).parseExpr();
+
+        // Cache if no variable tokens were used (determined after eval)
+        if (!containsVar(s)) {
+            CONST_CACHE.put(s, result);
+        }
+
+        return result;
+    }
+
+    /**
+     * Evaluate a colour expression.
+     * Supports {@code theme.<name>} (resolved via {@link Theme#resolve}),
+     * or a plain hex colour string (e.g. {@code ff8800} / {@code #ff8800}).
+     */
+    public static Color evalColor(String raw) {
+        if (raw == null || raw.isEmpty()) return Color.white.cpy();
+
+        String s = raw.trim();
+        if (s.startsWith("theme.")) {
+            return Theme.resolve(s.substring(6));
+        }
+        // Accept with or without #
+        if (s.charAt(0) == '#') s = s.substring(1);
+        return Color.valueOf(s);
+    }
+
+    private static boolean containsVar(String s) {
+        // Quick heuristic: expressions containing only digits, ., +, -, *, /, (, ), scl
+        // are constant. Everything else may be variable.
+        for (int i = 0; i < s.length(); i++) {
+            char c = s.charAt(i);
+            if (Character.isLetter(c)) {
+                if (s.length() - i >= 3 && s.substring(i, i + 3).equals("scl")) {
+                    // scl doesn't change frame-to-frame, so it's effectively constant
+                    i += 2;
+                    continue;
+                }
+                return true;
+            }
+        }
+        return false;
     }
 
     // ── Parser state ─────────────────────────────────────────────────────────

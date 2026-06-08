@@ -17,9 +17,34 @@ public final class LayoutCtx {
     /** Current screen height in pixels. */
     public float sh  = 600f;
 
+    /** Parent width (set by containing El before layout). */
+    public float pw = 0f;
+    /** Parent height (set by containing El before layout). */
+    public float ph = 0f;
+
+    // ── Parent-dimension shadow stack ──────────────────────────────────────
+    // Each push stores the previous pw/ph so pop can restore them.
+    // Depth-first layout guarantees paired LIFO usage.
+
+    private float prevPw, prevPh;
+
+    /** Push {@code pw/ph} to {@code w/h}, saving current values for restoration. */
+    public void pushParent(float w, float h) {
+        prevPw = pw;
+        prevPh = ph;
+        pw = w;
+        ph = h;
+    }
+
+    /** Restore {@code pw/ph} to the values saved at the preceding {@link #pushParent}. */
+    public void popParent() {
+        pw = prevPw;
+        ph = prevPh;
+    }
+
     private LayoutCtx() {}
 
-    /** Call once before each layout pass (NPanel does this automatically). */
+    /** Call once before each layout pass. */
     public void refresh() {
         if (Core.graphics == null) return;
         sw  = Core.graphics.getWidth();
@@ -34,6 +59,8 @@ public final class LayoutCtx {
             case "scl" -> scl;
             case "sw"  -> sw;
             case "sh"  -> sh;
+            case "pw"  -> pw;
+            case "ph"  -> ph;
             default    -> 0f;
         };
     }
