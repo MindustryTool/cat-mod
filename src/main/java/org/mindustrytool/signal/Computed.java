@@ -4,6 +4,7 @@ import arc.func.Prov;
 import arc.util.Log;
 
 import java.util.HashSet;
+import java.util.Objects;
 import java.util.Set;
 
 public class Computed<T> extends ReadOnlySignal<T> implements Subscriber {
@@ -56,7 +57,7 @@ public class Computed<T> extends ReadOnlySignal<T> implements Subscriber {
             ReactiveContext.push(this);
             computing = true;
             T newVal = computeFn.get();
-            if (value != newVal && (value == null || !value.equals(newVal))) {
+            if (!Objects.equals(value, newVal)) {
                 notifyValue(newVal);
             }
             dirty = false;
