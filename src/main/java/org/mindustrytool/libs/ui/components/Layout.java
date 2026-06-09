@@ -33,8 +33,7 @@ public class Layout implements Component {
 
     // Reactive effects managing layout rebuilds and style changes
     private final Effect rebuildEffect;
-    private Effect styleEffect;
-    private Effect sizeEffect;
+    private final Seq<Effect> subscriptions = new Seq<>();
 
     private Layout() {
         this.spec = new LayoutSpec();
@@ -99,6 +98,7 @@ public class Layout implements Component {
             Seq<Component> newChildren = childrenProvider.get();
             rebuild(newChildren);
         });
+        subscriptions.add(rebuildEffect);
     }
 
     /**
@@ -173,13 +173,11 @@ public class Layout implements Component {
      * @return this layout instance for chaining
      */
     public Layout style(Cons<LayoutSpec> configurator) {
-        if (styleEffect != null) {
-            styleEffect.dispose();
-        }
-        styleEffect = new Effect(() -> {
+        Effect styleEffect = new Effect(() -> {
             configurator.get(spec);
             group.invalidateHierarchy();
         });
+        subscriptions.add(styleEffect);
         return this;
     }
 
@@ -190,13 +188,11 @@ public class Layout implements Component {
      * @return this layout instance for chaining
      */
     public Layout size(Cons<NodeSizing> configurator) {
-        if (sizeEffect != null) {
-            sizeEffect.dispose();
-        }
-        sizeEffect = new Effect(() -> {
+        Effect sizeEffect = new Effect(() -> {
             configurator.get(spec);
             group.invalidateHierarchy();
         });
+        subscriptions.add(sizeEffect);
         return this;
     }
 
@@ -212,13 +208,8 @@ public class Layout implements Component {
 
     @Override
     public void dispose() {
-        rebuildEffect.dispose();
-        if (styleEffect != null) {
-            styleEffect.dispose();
-        }
-        if (sizeEffect != null) {
-            sizeEffect.dispose();
-        }
+        subscriptions.each(Effect::dispose);
+        subscriptions.clear();
         for (int i = 0; i < currentChildren.size; i++) {
             currentChildren.get(i).dispose();
         }
