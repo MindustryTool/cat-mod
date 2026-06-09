@@ -1,24 +1,23 @@
-package org.mindustrytool.signal;
+package org.mindustrytool.libs.signal;
 
 import arc.func.Prov;
 
 public final class Computed<T> {
-
     private final Signal<T> signal;
     private final Reaction reaction;
 
-    public Computed(Prov<T> fn) {
-        signal = new Signal<>(null);
-
-        reaction = new Reaction() {
+    public Computed(Prov<T> action) {
+        this.signal = new Signal<>(null);
+        this.reaction = new Reaction() {
 
             @Override
             protected void execute() {
-                signal.set(fn.get());
+                signal.set(action.get());
             }
         };
-    }
 
+        this.reaction.run();
+    }
 
     public T get() {
         return signal.get();

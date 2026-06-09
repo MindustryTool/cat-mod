@@ -18,16 +18,22 @@ public class Checkbox extends AbstractComponent {
         Style(NodeSizing sizing) { super(sizing);
             var base = scene.getStyle(arc.scene.ui.CheckBox.CheckBoxStyle.class);
             this.ls = new arc.scene.ui.CheckBox.CheckBoxStyle();
+            ls.font = base.font;
             ls.fontColor = base.fontColor;
             ls.checkedFontColor = base.checkedFontColor;
             ls.up = base.up;
             ls.down = base.down;
             ls.over = base.over;
             ls.checked = base.checked;
+            ls.checkboxOn = base.checkboxOn;
+            ls.checkboxOff = base.checkboxOff;
+            ls.checkboxOver = base.checkboxOver;
         }
 
+        private void apply() { element.setStyle(ls); }
+
         public Style text(String v) { element.setText(v); return this; }
-        public Style textColor(Color v) { ls.fontColor = v; element.setStyle(ls); return this; }
+        public Style textColor(Color v) { ls.fontColor = v; apply(); return this; }
         public Style checked(boolean v) { element.setChecked(v); return this; }
         public Style size(Cons<NodeSizing> fn) { fn.get(sizing); return this; }
     }

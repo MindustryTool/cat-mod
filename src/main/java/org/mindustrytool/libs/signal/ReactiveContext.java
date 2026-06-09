@@ -1,10 +1,9 @@
-package org.mindustrytool.signal;
+package org.mindustrytool.libs.signal;
 
 import java.util.ArrayDeque;
 import java.util.Deque;
 
 final class ReactiveContext {
-
     private static final Deque<Reaction> STACK = new ArrayDeque<>();
 
     static void push(Reaction r) {
@@ -16,7 +15,7 @@ final class ReactiveContext {
     }
 
     static void active(Signal<?> signal) {
-        Reaction active = STACK.peek();
+        var active = STACK.peek();
         if (active == null) return;
 
         active.link(signal);

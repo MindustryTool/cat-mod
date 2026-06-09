@@ -27,7 +27,7 @@ public class Button extends AbstractComponent {
         public Style ghostVariant() { tbs.up = tbs.down = tbs.over = tbs.checked = null; element.setStyle(tbs); return this; }
         public Style primaryVariant() { applySkin(); element.setStyle(tbs); return this; }
         public Style dangerVariant() { applySkin(); element.setStyle(tbs); return this; }
-        public Style defaultVariant() { applySkin(); element.setStyle(tbs); return this; }
+
         public Style size(Cons<NodeSizing> fn) { fn.get(sizing); return this; }
     }
 

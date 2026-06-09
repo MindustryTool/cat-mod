@@ -1,21 +1,21 @@
-package org.mindustrytool.signal;
+package org.mindustrytool.libs.signal;
 
 public final class Effect {
-
     private final Reaction reaction;
 
-    public Effect(Runnable fn) {
-        reaction = new Reaction() {
+    public Effect(Runnable action) {
+        this.reaction = new Reaction() {
 
             @Override
             protected void execute() {
-                fn.run();
+                action.run();
             }
         };
+
+        this.reaction.run();
     }
 
     public void dispose() {
         reaction.dispose();
     }
 }
-

@@ -1,7 +1,7 @@
-package org.mindustrytool.ui.spec;
+package org.mindustrytool.libs.ui.spec;
 
-import org.mindustrytool.ui.layout.Sizing;
-import org.mindustrytool.ui.layout.NodeSizing;
+import org.mindustrytool.libs.ui.layout.Sizing;
+import org.mindustrytool.libs.ui.layout.NodeSizing;
 import arc.func.Cons;
 
 public class LayoutSpec {

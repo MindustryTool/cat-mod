@@ -1,8 +1,6 @@
-package org.mindustrytool.ui.style;
+package org.mindustrytool.libs.ui.style;
 
-import org.mindustrytool.ui.layout.NodeSizing;
-
-import arc.func.Cons;
+import org.mindustrytool.libs.ui.layout.NodeSizing;
 
 public abstract class ComponentStyle {
     protected final NodeSizing sizing;
