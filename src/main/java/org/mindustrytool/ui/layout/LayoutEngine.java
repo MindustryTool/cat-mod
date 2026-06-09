@@ -2,6 +2,7 @@ package org.mindustrytool.ui.layout;
 
 import arc.scene.Element;
 
+import org.mindustrytool.ui.components.Component;
 import org.mindustrytool.ui.layout.Sizing.SizeMode;
 import org.mindustrytool.ui.spec.LayoutSpec;
 import org.mindustrytool.ui.spec.LayoutSpec.Items;
@@ -10,43 +11,41 @@ import org.mindustrytool.ui.spec.LayoutSpec.Justify;
 public class LayoutEngine {
 
     public static float prefWidth(Sizing spec, boolean isColumn, float gap, Iterable<Element> children) {
-        float total = spec.padH();
-        if (spec.widthMode() == SizeMode.FIXED) return spec.constrainW(spec.fixedWidth());
-        float maxChild = 0f;
-        int childCount = 0;
-        for (Element c : children) {
-            if (!c.visible) continue;
-            Sizing cs = sizingOf(c);
-            if (cs == null) continue;
-            float cw = (cs.widthMode() == SizeMode.FIXED || cs.widthMode() == SizeMode.GROW)
-                ? cs.fixedWidth() : childPrefWidth(c);
-            cw = cs.constrainW(cw);
-            if (isColumn) { maxChild = Math.max(maxChild, cw); } else { total += cw; }
-            childCount++;
-        }
-        if (isColumn) total += maxChild;
-        if (childCount > 1) total += gap * (childCount - 1);
-        return spec.constrainW(total);
+        return prefAxis(spec, isColumn, true, gap, children);
     }
 
     public static float prefHeight(Sizing spec, boolean isColumn, float gap, Iterable<Element> children) {
-        float total = spec.padV();
-        if (spec.heightMode() == SizeMode.FIXED) return spec.constrainH(spec.fixedHeight());
-        int childCount = 0;
+        return prefAxis(spec, isColumn, false, gap, children);
+    }
+
+    private static float prefAxis(Sizing spec, boolean isColumn, boolean axisX, float gap, Iterable<Element> children) {
+        float total = axisX ? spec.padH() : spec.padV();
+        SizeMode fixedMode = axisX ? spec.widthMode() : spec.heightMode();
+        float fixedSize = axisX ? spec.fixedWidth() : spec.fixedHeight();
+        if (fixedMode == SizeMode.FIXED) return axisX ? spec.constrainW(fixedSize) : spec.constrainH(fixedSize);
+
         float maxChild = 0f;
+        int childCount = 0;
+        boolean mainAxis = (isColumn != axisX);
         for (Element c : children) {
             if (!c.visible) continue;
             Sizing cs = sizingOf(c);
-            if (cs == null) continue;
-            float ch = (cs.heightMode() == SizeMode.FIXED || cs.heightMode() == SizeMode.GROW)
-                ? cs.fixedHeight() : childPrefHeight(c);
-            ch = cs.constrainH(ch);
-            if (isColumn) { total += ch; } else { maxChild = Math.max(maxChild, ch); }
+            float cv;
+            if (cs == null) {
+                cv = axisX ? childPrefWidth(c) : childPrefHeight(c);
+            } else {
+                SizeMode childFixed = axisX ? cs.widthMode() : cs.heightMode();
+                float cf = (childFixed == SizeMode.FIXED)
+                    ? (axisX ? cs.fixedWidth() : cs.fixedHeight())
+                    : (axisX ? childPrefWidth(c) : childPrefHeight(c));
+                cv = axisX ? cs.constrainW(cf) : cs.constrainH(cf);
+            }
+            if (mainAxis) { total += cv; } else { maxChild = Math.max(maxChild, cv); }
             childCount++;
         }
-        if (!isColumn) total += maxChild;
+        if (!mainAxis) total += maxChild;
         if (childCount > 1) total += gap * (childCount - 1);
-        return spec.constrainH(total);
+        return axisX ? spec.constrainW(total) : spec.constrainH(total);
     }
 
     public static void layout(LayoutSpec spec, Iterable<Element> children, float x, float y, float w, float h) {
@@ -59,105 +58,73 @@ public class LayoutEngine {
 
         float[] ws = new float[count];
         float[] hs = new float[count];
+        computeSizes(spec, children, contentW, contentH, gap, count, ws, hs);
 
-        if (spec.isColumn()) {
-            computeColumnSizes(spec, children, contentW, contentH, gap, count, ws, hs);
-            float totalH = 0f;
-            for (int i = 0; i < count; i++) totalH += hs[i];
-            totalH += gap * (count - 1);
-            float extra = contentH - totalH;
+        float extra, totalMain = 0f;
+        boolean isColumn = spec.isColumn();
+        for (int i = 0; i < count; i++) totalMain += isColumn ? hs[i] : ws[i];
+        totalMain += gap * (count - 1);
+        extra = (isColumn ? contentH : contentW) - totalMain;
 
-            float[] offsets = computeJustifyOffsets(extra, count, gap, spec.justify());
-            float cy = y + contentH - offsets[0];
-            int idx = 0;
-            for (Element c : children) {
-                if (!c.visible) continue;
-                if (sizingOf(c) == null) { idx++; continue; }
-                cy -= hs[idx];
-                float cx = itemX(x, contentW, ws[idx], spec.items());
+        float[] offsets = computeJustifyOffsets(extra, count, gap, spec.justify());
+        float cp = (isColumn ? y + contentH : x) + offsets[0];
+        int idx = 0;
+        for (Element c : children) {
+            if (!c.visible) continue;
+            if (isColumn) {
+                cp -= hs[idx];
+                float cx = itemPos(x, contentW, ws[idx], spec.items());
                 if (spec.items() == Items.STRETCH) ws[idx] = contentW;
-                c.setBounds(cx, cy, ws[idx], hs[idx]);
-                cy -= offsets[idx + 1];
-                idx++;
-            }
-        } else {
-            computeRowSizes(spec, children, contentW, contentH, gap, count, ws, hs);
-            float totalW = 0f;
-            for (int i = 0; i < count; i++) totalW += ws[i];
-            totalW += gap * (count - 1);
-            float extra = contentW - totalW;
-
-            float[] offsets = computeJustifyOffsets(extra, count, gap, spec.justify());
-            float cx = x + offsets[0];
-            int idx = 0;
-            for (Element c : children) {
-                if (!c.visible) continue;
-                if (sizingOf(c) == null) { idx++; continue; }
-                float cy = itemY(y, contentH, hs[idx], spec.items());
+                c.setBounds(cx, cp, ws[idx], hs[idx]);
+                cp -= offsets[idx + 1];
+            } else {
+                float cy = itemPos(y, contentH, hs[idx], spec.items());
                 if (spec.items() == Items.STRETCH) hs[idx] = contentH;
-                c.setBounds(cx, cy, ws[idx], hs[idx]);
-                cx += ws[idx] + offsets[idx + 1];
-                idx++;
+                c.setBounds(cp, cy, ws[idx], hs[idx]);
+                cp += ws[idx] + offsets[idx + 1];
             }
+            idx++;
         }
     }
 
-    private static void computeColumnSizes(LayoutSpec spec, Iterable<Element> children,
-                                            float contentW, float contentH, float gap,
-                                            int count, float[] ws, float[] hs) {
+    private static void computeSizes(LayoutSpec spec, Iterable<Element> children,
+                                      float contentW, float contentH, float gap,
+                                      int count, float[] ws, float[] hs) {
+        boolean isColumn = spec.isColumn();
         float totalGap = gap * (count - 1);
-        float availH = contentH - totalGap;
+        float avail = (isColumn ? contentH : contentW) - totalGap;
         int idx = 0, growCount = 0;
-        float totalGrowH = 0f, nonGrowH = 0f;
+        float totalGrow = 0f, nonGrow = 0f;
         for (Element c : children) {
             if (!c.visible) continue;
             Sizing cs = sizingOf(c);
-            if (cs == null) { idx++; continue; }
-            hs[idx] = childPrefHeight(c);
-            if (cs.heightMode() == SizeMode.GROW) { hs[idx] = 0f; growCount++; totalGrowH += cs.growWeightY(); }
-            else { nonGrowH += hs[idx]; }
-            ws[idx] = childWidth(c, cs);
+            if (cs == null) {
+                if (isColumn) { hs[idx] = childPrefHeight(c); nonGrow += hs[idx]; ws[idx] = childPrefWidth(c); }
+                else { ws[idx] = childPrefWidth(c); nonGrow += ws[idx]; hs[idx] = childPrefHeight(c); }
+            } else {
+                boolean grow = isColumn ? (cs.heightMode() == SizeMode.GROW) : (cs.widthMode() == SizeMode.GROW);
+                float mainSize = isColumn ? childHeight(c, cs) : childWidth(c, cs);
+                if (grow) { mainSize = 0f; growCount++; totalGrow += isColumn ? cs.growWeightY() : cs.growWeightX(); }
+                else { nonGrow += mainSize; }
+                if (isColumn) { hs[idx] = mainSize; ws[idx] = childWidth(c, cs); }
+                else { ws[idx] = mainSize; hs[idx] = childHeight(c, cs); }
+            }
             idx++;
         }
-        availH -= nonGrowH;
-        if (growCount > 0 && availH > 0) {
+        avail -= nonGrow;
+        if (growCount > 0 && avail > 0) {
             idx = 0;
             for (Element c : children) {
                 if (!c.visible) continue;
                 Sizing cs = sizingOf(c);
-                if (cs != null && cs.heightMode() == SizeMode.GROW) {
-                    hs[idx] = (totalGrowH > 0f ? (cs.growWeightY() / totalGrowH) : (1f / growCount)) * availH;
-                }
-                idx++;
-            }
-        }
-    }
-
-    private static void computeRowSizes(LayoutSpec spec, Iterable<Element> children,
-                                         float contentW, float contentH, float gap,
-                                         int count, float[] ws, float[] hs) {
-        float totalGap = gap * (count - 1);
-        float availW = contentW - totalGap;
-        int idx = 0, growCount = 0;
-        float totalGrowW = 0f, nonGrowW = 0f;
-        for (Element c : children) {
-            if (!c.visible) continue;
-            Sizing cs = sizingOf(c);
-            if (cs == null) { idx++; continue; }
-            ws[idx] = childPrefWidth(c);
-            if (cs.widthMode() == SizeMode.GROW) { ws[idx] = 0f; growCount++; totalGrowW += cs.growWeightX(); }
-            else { nonGrowW += ws[idx]; }
-            hs[idx] = childHeight(c, cs);
-            idx++;
-        }
-        availW -= nonGrowW;
-        if (growCount > 0 && availW > 0) {
-            idx = 0;
-            for (Element c : children) {
-                if (!c.visible) continue;
-                Sizing cs = sizingOf(c);
-                if (cs != null && cs.widthMode() == SizeMode.GROW) {
-                    ws[idx] = (totalGrowW > 0f ? (cs.growWeightX() / totalGrowW) : (1f / growCount)) * availW;
+                if (cs != null) {
+                    boolean grow = isColumn ? (cs.heightMode() == SizeMode.GROW) : (cs.widthMode() == SizeMode.GROW);
+                    if (grow) {
+                        float share = (totalGrow > 0f
+                            ? ((isColumn ? cs.growWeightY() : cs.growWeightX()) / totalGrow)
+                            : (1f / growCount)) * avail;
+                        if (isColumn) hs[idx] = share; else ws[idx] = share;
+                    }
                 }
                 idx++;
             }
@@ -165,7 +132,7 @@ public class LayoutEngine {
     }
 
     private static float[] computeJustifyOffsets(float extra, int count, float gap,
-                                                  Justify justify) {
+                                                   Justify justify) {
         float[] offsets = new float[count + 1];
         switch (justify) {
             case END -> {
@@ -195,30 +162,22 @@ public class LayoutEngine {
         return offsets;
     }
 
-    private static float itemX(float x, float contentW, float cw, Items items) {
+    private static float itemPos(float start, float contentSize, float itemSize, Items items) {
         return switch (items) {
-            case CENTER -> x + (contentW - cw) / 2f;
-            case END -> x + (contentW - cw);
-            default -> x;
-        };
-    }
-
-    private static float itemY(float y, float contentH, float ch, Items items) {
-        return switch (items) {
-            case CENTER -> y + (contentH - ch) / 2f;
-            case END -> y + (contentH - ch);
-            default -> y;
+            case CENTER -> start + (contentSize - itemSize) / 2f;
+            case END -> start + (contentSize - itemSize);
+            default -> start;
         };
     }
 
     private static float childWidth(Element e, Sizing s) {
-        return (s.widthMode() == SizeMode.GROW || s.widthMode() == SizeMode.FIXED)
-            ? s.constrainW(s.fixedWidth()) : childPrefWidth(e);
+        float w = (s.widthMode() == SizeMode.FIXED) ? s.fixedWidth() : childPrefWidth(e);
+        return s.constrainW(w);
     }
 
     private static float childHeight(Element e, Sizing s) {
-        return (s.heightMode() == SizeMode.GROW || s.heightMode() == SizeMode.FIXED)
-            ? s.constrainH(s.fixedHeight()) : childPrefHeight(e);
+        float h = (s.heightMode() == SizeMode.FIXED) ? s.fixedHeight() : childPrefHeight(e);
+        return s.constrainH(h);
     }
 
     private static float childPrefWidth(Element e) { return e.getPrefWidth(); }
@@ -226,7 +185,7 @@ public class LayoutEngine {
 
     public static Sizing sizingOf(Element e) {
         Object o = e.userObject;
-        if (o instanceof SizingProvider) return ((SizingProvider) o).sizing();
+        if (o instanceof Component) return ((Component) o).sizing();
         return null;
     }
 }
