@@ -1,18 +1,18 @@
-package org.mindustrytool.ui.components;
+package org.mindustrytool.libs.ui.components;
 
 import arc.graphics.Color;
 import arc.scene.Element;
 
-import org.mindustrytool.ui.kernel.AbstractComponent;
-import org.mindustrytool.ui.style.ComponentStyle;
-import org.mindustrytool.ui.layout.NodeSizing;
+import org.mindustrytool.libs.ui.component.AbstractComponent;
+import org.mindustrytool.libs.ui.component.ComponentStyle;
+import org.mindustrytool.libs.ui.layout.NodeSizing;
 
 import arc.func.Cons;
 
 import static arc.Core.scene;
 
 public class Checkbox extends AbstractComponent {
-    public class Style extends ComponentStyle {
+    public class Style extends ComponentStyle<Style> {
         public arc.scene.ui.CheckBox.CheckBoxStyle ls;
 
         Style(NodeSizing sizing) { super(sizing);
@@ -38,13 +38,6 @@ public class Checkbox extends AbstractComponent {
         public Style size(Cons<NodeSizing> fn) { fn.get(sizing); return this; }
     }
 
-    public class ListenerBuilder {
-        public ListenerBuilder changed(Cons<Boolean> fn) {
-            element.changed(() -> fn.get(element.isChecked()));
-            return this;
-        }
-    }
-
     private final arc.scene.ui.CheckBox element;
     public final Style style;
 
@@ -61,7 +54,6 @@ public class Checkbox extends AbstractComponent {
 
     public Checkbox style(Cons<Style> fn) { fn.get(style); element.invalidateHierarchy(); return this; }
     public Checkbox size(Cons<NodeSizing> fn) { fn.get(sizing); element.invalidateHierarchy(); return this; }
-    public Checkbox listener(Cons<ListenerBuilder> fn) { fn.get(new ListenerBuilder()); return this; }
 
     @Override public Element element() { return element; }
 }

@@ -1,18 +1,19 @@
-package org.mindustrytool.ui.components;
+package org.mindustrytool.libs.ui.components;
 
 import arc.scene.Element;
 
-import org.mindustrytool.ui.kernel.AbstractComponent;
-import org.mindustrytool.ui.style.ComponentStyle;
-import org.mindustrytool.ui.layout.NodeSizing;
-import org.mindustrytool.ui.layout.Sizing.SizeMode;
+import org.mindustrytool.libs.ui.component.AbstractComponent;
+import org.mindustrytool.libs.ui.component.Component;
+import org.mindustrytool.libs.ui.component.ComponentStyle;
+import org.mindustrytool.libs.ui.layout.NodeSizing;
+import org.mindustrytool.libs.ui.layout.NodeSizing.SizeMode;
 
 import arc.func.Cons;
 
 import static arc.Core.scene;
 
 public class ScrollPane extends AbstractComponent {
-    public class Style extends ComponentStyle {
+    public class Style extends ComponentStyle<Style> {
         boolean fadeScrollBars;
         boolean scrollBarsOnTop;
         boolean disableX;
@@ -74,8 +75,8 @@ public class ScrollPane extends AbstractComponent {
     public ScrollPane size(Cons<NodeSizing> fn) { fn.get(sizing); element.invalidateHierarchy(); return this; }
 
     private void applySize() {
-        if (sizing.widthMode() == SizeMode.FIXED) element.setWidth(sizing.fixedWidth());
-        if (sizing.heightMode() == SizeMode.FIXED) element.setHeight(sizing.fixedHeight());
+        if (sizing.getWidthMode() == SizeMode.FIXED) element.setWidth(sizing.getFixedWidth());
+        if (sizing.getHeightMode() == SizeMode.FIXED) element.setHeight(sizing.getFixedHeight());
     }
 
     @Override public Element element() { return element; }

@@ -1,4 +1,4 @@
-package org.mindustrytool.ui.components;
+package org.mindustrytool.libs.ui.components;
 
 import arc.Core;
 import arc.graphics.Color;
@@ -9,15 +9,15 @@ import arc.graphics.gl.Shader;
 import arc.scene.Element;
 import arc.scene.event.Touchable;
 
-import org.mindustrytool.ui.kernel.AbstractComponent;
-import org.mindustrytool.ui.style.ComponentStyle;
-import org.mindustrytool.ui.layout.NodeSizing;
+import org.mindustrytool.libs.ui.component.AbstractComponent;
+import org.mindustrytool.libs.ui.component.ComponentStyle;
+import org.mindustrytool.libs.ui.layout.NodeSizing;
 
 import arc.func.Cons;
 
 public class CustomUIComponent extends AbstractComponent {
 
-    public class Style extends ComponentStyle {
+    public class Style extends ComponentStyle<Style> {
         float cornerRadius = 8f;
         final Color boxColor = new Color(Color.darkGray);
 
@@ -70,12 +70,12 @@ public class CustomUIComponent extends AbstractComponent {
     private final Element element = new Element() {
         @Override
         public float getPrefWidth() {
-            return sizing.fixedWidth();
+            return sizing.getFixedWidth();
         }
 
         @Override
         public float getPrefHeight() {
-            return sizing.fixedHeight();
+            return sizing.getFixedHeight();
         }
 
         @Override

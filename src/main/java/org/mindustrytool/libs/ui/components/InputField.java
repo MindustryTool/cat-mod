@@ -1,19 +1,18 @@
-package org.mindustrytool.ui.components;
+package org.mindustrytool.libs.ui.components;
 
 import arc.graphics.Color;
 import arc.scene.Element;
-import arc.scene.event.ChangeListener;
 
-import org.mindustrytool.ui.kernel.AbstractComponent;
-import org.mindustrytool.ui.style.ComponentStyle;
-import org.mindustrytool.ui.layout.NodeSizing;
+import org.mindustrytool.libs.ui.component.AbstractComponent;
+import org.mindustrytool.libs.ui.component.ComponentStyle;
+import org.mindustrytool.libs.ui.layout.NodeSizing;
 
 import arc.func.Cons;
 
 import static arc.Core.scene;
 
 public class InputField extends AbstractComponent {
-    public class Style extends ComponentStyle {
+    public class Style extends ComponentStyle<Style> {
         public final arc.scene.ui.TextField.TextFieldStyle ls;
 
         Style(NodeSizing sizing, arc.scene.ui.TextField.TextFieldStyle ls) { super(sizing); this.ls = ls; }
@@ -22,15 +21,6 @@ public class InputField extends AbstractComponent {
         public Style placeholder(String v) { element.setMessageText(v); return this; }
         public Style textColor(Color v) { ls.fontColor = v; element.setStyle(ls); return this; }
         public Style size(Cons<NodeSizing> fn) { fn.get(sizing); return this; }
-    }
-
-    public class ListenerBuilder {
-        public ListenerBuilder changed(Cons<String> fn) {
-            element.addListener(new ChangeListener() {
-                @Override public void changed(ChangeEvent event, Element actor) { fn.get(element.getText()); }
-            });
-            return this;
-        }
     }
 
     private final arc.scene.ui.TextField element;
@@ -49,7 +39,6 @@ public class InputField extends AbstractComponent {
 
     public InputField style(Cons<Style> fn) { fn.get(style); element.invalidateHierarchy(); return this; }
     public InputField size(Cons<NodeSizing> fn) { fn.get(sizing); element.invalidateHierarchy(); return this; }
-    public InputField listener(Cons<ListenerBuilder> fn) { fn.get(new ListenerBuilder()); return this; }
 
     @Override public Element element() { return element; }
 }

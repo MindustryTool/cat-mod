@@ -1,4 +1,4 @@
-package org.mindustrytool.ui.components;
+package org.mindustrytool.libs.ui.components;
 
 import arc.Core;
 import arc.files.Fi;
@@ -25,10 +25,10 @@ import mindustry.graphics.Pal;
 
 import java.util.concurrent.ConcurrentHashMap;
 
-import org.mindustrytool.ui.layout.NodeSizing;
-import org.mindustrytool.ui.layout.Sizing;
+import org.mindustrytool.libs.ui.component.Component;
+import org.mindustrytool.libs.ui.layout.NodeSizing;
 
-public class NetworkImage extends Image implements Component {
+public class NetworkImage implements Component {
     public static final Fi imageDir = Vars.dataDirectory.child("neko-content-caches");
 
     public Color borderColor = Pal.gray;
@@ -44,98 +44,53 @@ public class NetworkImage extends Image implements Component {
 
     private static final ConcurrentHashMap<String, TextureRegion> cache = new ConcurrentHashMap<>();
 
+    private final Image element;
+
     public NetworkImage(String url) {
-        super(Tex.clear);
         this.url = url;
-        setScaling(Scaling.fit);
-    }
+        this.element = new Image(Tex.clear) {
+            @Override
+            public void draw() {
+                super.draw();
 
-    public static boolean isValidImageLink(String url) {
-        return url != null && url.matches("^https?://[^?\\s]+\\.(png|jpg|jpeg)(\\?.*)?$");
-    }
+                var next = cache.get(url);
 
-    @Override
-    public void draw() {
-        super.draw();
+                if (lastTexture != next) {
+                    lastTexture = next;
+                    setDrawable(next);
 
-        var next = cache.get(url);
+                    Draw.color(borderColor);
+                    Lines.stroke(Scl.scl(thickness));
+                    Lines.rect(x, y, width, height);
+                    Draw.reset();
+                }
 
-        if (lastTexture != next) {
-            lastTexture = next;
-            setDrawable(next);
-
-            Draw.color(borderColor);
-            Lines.stroke(Scl.scl(thickness));
-            Lines.rect(x, y, width, height);
-            Draw.reset();
-        }
-
-        if (isError) {
-            return;
-        }
-
-        try {
-            if (!cache.containsKey(url)) {
-                cache.put(url, Icon.refresh.getRegion());
-
-                if (!url.endsWith("png") && !url.endsWith("jpg") && !url.endsWith("jpeg")) {
+                if (isError) {
                     return;
                 }
 
-                imageDir.mkdirs();
+                try {
+                    if (!cache.containsKey(url)) {
+                        cache.put(url, Icon.refresh.getRegion());
 
-                var file = imageDir.child(url
-                        .replace(":", "-")
-                        .replace("/", "-")
-                        .replace("?", "-")
-                        .replace("&", "-"));
+                        if (!url.endsWith("png") && !url.endsWith("jpg") && !url.endsWith("jpeg")) {
+                            return;
+                        }
 
-                if (file.exists()) {
-                    try {
-                        byte[] result = file.readBytes();
-                        Pixmap pix = new Pixmap(result);
-                        Core.app.post(() -> {
+                        imageDir.mkdirs();
+
+                        var file = imageDir.child(url
+                                .replace(":", "-")
+                                .replace("/", "-")
+                                .replace("?", "-")
+                                .replace("&", "-"));
+
+                        if (file.exists()) {
                             try {
-                                var tex = new Texture(pix);
-                                tex.setFilter(TextureFilter.linear);
-                                cache.put(url, new TextureRegion(tex));
-                                pix.dispose();
-                            } catch (Exception e) {
-                                Log.err(url, e);
-                                isError = true;
-                            }
-                        });
-                    } catch (Exception e) {
-                        isError = true;
-                        file.delete();
-                        Log.err(url, e);
-                    }
-                } else {
-                    Http.get(url + "?format=jpeg")
-                            .timeout(10000)
-                            .error(error -> {
-                                isError = true;
-                                if (!(error instanceof HttpStatusException requestError)
-                                        || requestError.status != HttpStatus.NOT_FOUND) {
-                                    Log.err(url, error);
-                                }
-                            })
-                            .submit(res -> {
-                                byte[] result = res.getResult();
-                                if (result.length == 0) {
-                                    return;
-                                }
-
-                                try {
-                                    file.writeBytes(result);
-                                } catch (Exception error) {
-                                    Log.err(url, error);
-                                    isError = true;
-                                }
-
+                                byte[] result = file.readBytes();
+                                Pixmap pix = new Pixmap(result);
                                 Core.app.post(() -> {
                                     try {
-                                        Pixmap pix = new Pixmap(result);
                                         var tex = new Texture(pix);
                                         tex.setFilter(TextureFilter.linear);
                                         cache.put(url, new TextureRegion(tex));
@@ -145,17 +100,64 @@ public class NetworkImage extends Image implements Component {
                                         isError = true;
                                     }
                                 });
-                            });
+                            } catch (Exception e) {
+                                isError = true;
+                                file.delete();
+                                Log.err(url, e);
+                            }
+                        } else {
+                            Http.get(url + "?format=jpeg")
+                                    .timeout(10000)
+                                    .error(error -> {
+                                        isError = true;
+                                        if (!(error instanceof HttpStatusException requestError)
+                                                || requestError.status != HttpStatus.NOT_FOUND) {
+                                            Log.err(url, error);
+                                        }
+                                    })
+                                    .submit(res -> {
+                                        byte[] result = res.getResult();
+                                        if (result.length == 0) {
+                                            return;
+                                        }
+
+                                        try {
+                                            file.writeBytes(result);
+                                        } catch (Exception error) {
+                                            Log.err(url, error);
+                                            isError = true;
+                                        }
+
+                                        Core.app.post(() -> {
+                                            try {
+                                                Pixmap pix = new Pixmap(result);
+                                                var tex = new Texture(pix);
+                                                tex.setFilter(TextureFilter.linear);
+                                                cache.put(url, new TextureRegion(tex));
+                                                pix.dispose();
+                                            } catch (Exception e) {
+                                                Log.err(url, e);
+                                                isError = true;
+                                            }
+                                        });
+                                    });
+                        }
+                    }
+                } catch (Exception error) {
+                    Log.err(url, error);
+                    isError = true;
                 }
             }
-        } catch (Exception error) {
-            Log.err(url, error);
-            isError = true;
-        }
+        };
+        element.setScaling(Scaling.fit);
     }
 
-    @Override public Element element() { return this; }
-    @Override public Sizing sizing() { return sizing; }
+    public static boolean isValidImageLink(String url) {
+        return url != null && url.matches("^https?://[^?\\s]+\\.(png|jpg|jpeg)(\\?.*)?$");
+    }
+
+    @Override public Element element() { return element; }
+    @Override public NodeSizing sizing() { return sizing; }
 
     @Override
     public void dispose() {

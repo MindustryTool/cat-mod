@@ -1,21 +1,18 @@
-package org.mindustrytool.ui.components;
+package org.mindustrytool.libs.ui.components;
 
 import arc.graphics.Color;
 import arc.scene.Element;
-import arc.scene.event.InputEvent;
-import arc.scene.event.InputListener;
-import arc.input.KeyCode;
 
-import org.mindustrytool.ui.kernel.AbstractComponent;
-import org.mindustrytool.ui.style.ComponentStyle;
-import org.mindustrytool.ui.layout.NodeSizing;
+import org.mindustrytool.libs.ui.component.AbstractComponent;
+import org.mindustrytool.libs.ui.component.ComponentStyle;
+import org.mindustrytool.libs.ui.layout.NodeSizing;
 
 import arc.func.Cons;
 
 import static arc.Core.scene;
 
 public class Label extends AbstractComponent {
-    public class Style extends ComponentStyle {
+    public class Style extends ComponentStyle<Style> {
         public final arc.scene.ui.Label.LabelStyle ls;
         Color textColor;
         int textAlign;
@@ -32,16 +29,6 @@ public class Label extends AbstractComponent {
         public Style size(Cons<NodeSizing> fn) { fn.get(sizing); return this; }
     }
 
-    public class ListenerBuilder {
-        private final arc.scene.ui.Label lbl;
-        ListenerBuilder(arc.scene.ui.Label lbl) { this.lbl = lbl; }
-        public ListenerBuilder clicked(Runnable r) {
-            lbl.addListener(new InputListener() {
-                @Override public boolean touchDown(InputEvent event, float x, float y, int pointer, KeyCode button) { r.run(); return true; }
-            });
-            return this;
-        }
-    }
 
     private final arc.scene.ui.Label element;
     public final Style style;
@@ -58,7 +45,6 @@ public class Label extends AbstractComponent {
 
     public Label style(Cons<Style> fn) { fn.get(style); element.invalidateHierarchy(); return this; }
     public Label size(Cons<NodeSizing> fn) { fn.get(sizing); element.invalidateHierarchy(); return this; }
-    public Label listener(Cons<ListenerBuilder> fn) { fn.get(new ListenerBuilder(element)); return this; }
 
     @Override public Element element() { return element; }
 }

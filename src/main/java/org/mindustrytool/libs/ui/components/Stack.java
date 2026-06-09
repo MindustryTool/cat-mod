@@ -1,16 +1,17 @@
-package org.mindustrytool.ui.components;
+package org.mindustrytool.libs.ui.components;
 
 import arc.scene.Element;
 import arc.struct.Seq;
 
-import org.mindustrytool.ui.kernel.AbstractComponent;
-import org.mindustrytool.ui.style.ComponentStyle;
-import org.mindustrytool.ui.layout.NodeSizing;
+import org.mindustrytool.libs.ui.component.AbstractComponent;
+import org.mindustrytool.libs.ui.component.Component;
+import org.mindustrytool.libs.ui.component.ComponentStyle;
+import org.mindustrytool.libs.ui.layout.NodeSizing;
 
 import arc.func.Cons;
 
 public class Stack extends AbstractComponent {
-    public class Style extends ComponentStyle {
+    public class Style extends ComponentStyle<Style> {
         Style(NodeSizing sizing) { super(sizing); }
         public Style size(Cons<NodeSizing> fn) { fn.get(sizing); return this; }
     }

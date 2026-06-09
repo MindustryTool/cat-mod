@@ -1,39 +1,210 @@
-package org.mindustrytool.libs.ui.spec;
+package org.mindustrytool.libs.ui.layout;
 
-import org.mindustrytool.libs.ui.layout.Sizing;
-import org.mindustrytool.libs.ui.layout.NodeSizing;
 import arc.func.Cons;
 
+/**
+ * LayoutSpec specifies the layout configuration properties for a container element.
+ * It configures alignment, direction, spacing, and wraps properties, matching CSS Flexbox specifications.
+ * All properties are fully detailed and written without abbreviations.
+ */
 public class LayoutSpec {
 
-    public enum Justify { START, CENTER, END, BETWEEN, AROUND }
-    public enum Items { START, CENTER, END, STRETCH }
+    /**
+     * JustifyContent defines how the layout items are distributed along the main axis (justify-content).
+     */
+    public enum JustifyContent {
+        /** Pack items toward the start boundary of the main axis. */
+        START,
+        /** Pack items toward the center of the main axis. */
+        CENTER,
+        /** Pack items toward the end boundary of the main axis. */
+        END,
+        /** Distribute items evenly: spacing between elements is equal, boundary margins are zero. */
+        SPACE_BETWEEN,
+        /** Distribute items evenly: boundary margins are half the spacing between elements. */
+        SPACE_AROUND,
+        /** Distribute items evenly: spacing to boundaries and between elements is identical. */
+        SPACE_EVENLY
+    }
+
+    /**
+     * AlignItems defines how the layout items are aligned along the cross axis (align-items).
+     */
+    public enum AlignItems {
+        /** Align items to the start boundary of the cross axis. */
+        START,
+        /** Align items to the center of the cross axis. */
+        CENTER,
+        /** Align items to the end boundary of the cross axis. */
+        END,
+        /** Stretch items to fill the entire cross-axis limit. */
+        STRETCH
+    }
 
     public final NodeSizing sizing = new NodeSizing();
-    boolean column;
-    float gap;
-    Justify justify = Justify.START;
-    Items items = Items.STRETCH;
+    private boolean isColumn = false;
+    private boolean isWrap = false;
+    private boolean isReverse = false;
+    private float gap = 0.0f;
+    private JustifyContent justifyContent = JustifyContent.START;
+    private AlignItems alignItems = AlignItems.STRETCH;
 
-    public Sizing sizing() { return sizing; }
+    /**
+     * Retrieves the sizing specification for this layout container.
+     *
+     * @return the node sizing instance
+     */
+    public NodeSizing sizing() {
+        return sizing;
+    }
 
-    public LayoutSpec col() { column = true; return this; }
-    public LayoutSpec row() { column = false; return this; }
-    public LayoutSpec gap(float v) { gap = v; return this; }
-    public LayoutSpec justify(Justify v) { justify = v; return this; }
-    public LayoutSpec items(Items v) { items = v; return this; }
-    public LayoutSpec p(float all) { sizing.p(all); return this; }
-    public LayoutSpec p(float v, float h) { sizing.p(v, h); return this; }
-    public LayoutSpec p(float t, float r, float b, float l) { sizing.p(t, r, b, l); return this; }
-    public LayoutSpec minW(float v) { sizing.minW(v); return this; }
-    public LayoutSpec maxW(float v) { sizing.maxW(v); return this; }
-    public LayoutSpec minH(float v) { sizing.minH(v); return this; }
-    public LayoutSpec maxH(float v) { sizing.maxH(v); return this; }
-    public LayoutSpec size(Cons<NodeSizing> fn) { fn.get(sizing); return this; }
-    public LayoutSpec onInvalidate(Runnable r) { sizing.onInvalidate(r); return this; }
+    /**
+     * Configures the layout direction to be vertical (column).
+     *
+     * @return this instance for chaining
+     */
+    public LayoutSpec column() {
+        this.isColumn = true;
+        return this;
+    }
 
-    public boolean isColumn() { return column; }
+    /**
+     * Configures the layout direction to be horizontal (row).
+     *
+     * @return this instance for chaining
+     */
+    public LayoutSpec row() {
+        this.isColumn = false;
+        return this;
+    }
+
+    /**
+     * Enables wrapping of layout lines when elements exceed the container bounds.
+     *
+     * @return this instance for chaining
+     */
+    public LayoutSpec wrap() {
+        this.isWrap = true;
+        return this;
+    }
+
+    /**
+     * Disables wrapping of layout lines (nowrap).
+     *
+     * @return this instance for chaining
+     */
+    public LayoutSpec noWrap() {
+        this.isWrap = false;
+        return this;
+    }
+
+    /**
+     * Enables reverse layout ordering along the main axis.
+     *
+     * @return this instance for chaining
+     */
+    public LayoutSpec reverse() {
+        this.isReverse = true;
+        return this;
+    }
+
+    /**
+     * Sets the reverse layout ordering flag.
+     *
+     * @param reverse true to reverse layout ordering, false otherwise
+     * @return this instance for chaining
+     */
+    public LayoutSpec reverse(boolean reverse) {
+        this.isReverse = reverse;
+        return this;
+    }
+
+    /**
+     * Sets the spacing gap between elements.
+     *
+     * @param value the spacing coordinate value
+     * @return this instance for chaining
+     */
+    public LayoutSpec gap(float value) {
+        this.gap = value;
+        return this;
+    }
+
+    /**
+     * Sets the main-axis alignment policy.
+     *
+     * @param justifyContent the justify content alignment mode
+     * @return this instance for chaining
+     */
+    public LayoutSpec justifyContent(JustifyContent justifyContent) {
+        this.justifyContent = justifyContent;
+        return this;
+    }
+
+    /**
+     * Sets the cross-axis alignment policy.
+     *
+     * @param alignItems the align items mode
+     * @return this instance for chaining
+     */
+    public LayoutSpec alignItems(AlignItems alignItems) {
+        this.alignItems = alignItems;
+        return this;
+    }
+
+    // --- Delegate sizing methods to keep fluent builder API clean ---
+
+    public LayoutSpec padding(float all) {
+        sizing.padding(all);
+        return this;
+    }
+
+    public LayoutSpec padding(float vertical, float horizontal) {
+        sizing.padding(vertical, horizontal);
+        return this;
+    }
+
+    public LayoutSpec padding(float top, float right, float bottom, float left) {
+        sizing.padding(top, right, bottom, left);
+        return this;
+    }
+
+    public LayoutSpec minimumWidth(float width) {
+        sizing.minimumWidth(width);
+        return this;
+    }
+
+    public LayoutSpec maximumWidth(float width) {
+        sizing.maximumWidth(width);
+        return this;
+    }
+
+    public LayoutSpec minimumHeight(float height) {
+        sizing.minimumHeight(height);
+        return this;
+    }
+
+    public LayoutSpec maximumHeight(float height) {
+        sizing.maximumHeight(height);
+        return this;
+    }
+
+    public LayoutSpec size(Cons<NodeSizing> configurator) {
+        configurator.get(sizing);
+        return this;
+    }
+
+    public LayoutSpec onInvalidate(Runnable callback) {
+        sizing.onInvalidate(callback);
+        return this;
+    }
+
+    // --- Getters ---
+
+    public boolean isColumn() { return isColumn; }
+    public boolean isWrap() { return isWrap; }
+    public boolean isReverse() { return isReverse; }
     public float gap() { return gap; }
-    public Justify justify() { return justify; }
-    public Items items() { return items; }
+    public JustifyContent justifyContent() { return justifyContent; }
+    public AlignItems alignItems() { return alignItems; }
 }
