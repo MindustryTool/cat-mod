@@ -5,25 +5,38 @@ import arc.func.Cons;
 /**
  * LayoutSpec specifies the layout configuration properties for a container element.
  * It configures alignment, direction, spacing, and wraps properties, matching CSS Flexbox specifications.
+ * It extends {@link NodeSizing} directly to combine sizing, padding, and layout configurations.
  * All properties are fully detailed and written without abbreviations.
  */
-public class LayoutSpec {
+public class LayoutSpec extends NodeSizing {
 
     /**
      * JustifyContent defines how the layout items are distributed along the main axis (justify-content).
      */
     public enum JustifyContent {
-        /** Pack items toward the start boundary of the main axis. */
+        /**
+         * Pack items toward the start boundary of the main axis.
+         */
         START,
-        /** Pack items toward the center of the main axis. */
+        /**
+         * Pack items toward the center of the main axis.
+         */
         CENTER,
-        /** Pack items toward the end boundary of the main axis. */
+        /**
+         * Pack items toward the end boundary of the main axis.
+         */
         END,
-        /** Distribute items evenly: spacing between elements is equal, boundary margins are zero. */
+        /**
+         * Distribute items evenly: spacing between elements is equal, boundary margins are zero.
+         */
         SPACE_BETWEEN,
-        /** Distribute items evenly: boundary margins are half the spacing between elements. */
+        /**
+         * Distribute items evenly: boundary margins are half the spacing between elements.
+         */
         SPACE_AROUND,
-        /** Distribute items evenly: spacing to boundaries and between elements is identical. */
+        /**
+         * Distribute items evenly: spacing to boundaries and between elements is identical.
+         */
         SPACE_EVENLY
     }
 
@@ -31,17 +44,24 @@ public class LayoutSpec {
      * AlignItems defines how the layout items are aligned along the cross axis (align-items).
      */
     public enum AlignItems {
-        /** Align items to the start boundary of the cross axis. */
+        /**
+         * Align items to the start boundary of the cross axis.
+         */
         START,
-        /** Align items to the center of the cross axis. */
+        /**
+         * Align items to the center of the cross axis.
+         */
         CENTER,
-        /** Align items to the end boundary of the cross axis. */
+        /**
+         * Align items to the end boundary of the cross axis.
+         */
         END,
-        /** Stretch items to fill the entire cross-axis limit. */
+        /**
+         * Stretch items to fill the entire cross-axis limit.
+         */
         STRETCH
     }
 
-    public final NodeSizing sizing = new NodeSizing();
     private boolean isColumn = false;
     private boolean isWrap = false;
     private boolean isReverse = false;
@@ -49,14 +69,6 @@ public class LayoutSpec {
     private JustifyContent justifyContent = JustifyContent.START;
     private AlignItems alignItems = AlignItems.STRETCH;
 
-    /**
-     * Retrieves the sizing specification for this layout container.
-     *
-     * @return the node sizing instance
-     */
-    public NodeSizing sizing() {
-        return sizing;
-    }
 
     /**
      * Configures the layout direction to be vertical (column).
@@ -152,59 +164,180 @@ public class LayoutSpec {
         return this;
     }
 
-    // --- Delegate sizing methods to keep fluent builder API clean ---
+    // --- Covariant overrides of NodeSizing builder methods ---
 
+    @Override
+    public LayoutSpec widthMode(SizeMode mode) {
+        super.widthMode(mode);
+        return this;
+    }
+
+    @Override
+    public LayoutSpec heightMode(SizeMode mode) {
+        super.heightMode(mode);
+        return this;
+    }
+
+    @Override
+    public LayoutSpec fixedWidth(float width) {
+        super.fixedWidth(width);
+        return this;
+    }
+
+    @Override
+    public LayoutSpec fixedHeight(float height) {
+        super.fixedHeight(height);
+        return this;
+    }
+
+    @Override
+    public LayoutSpec growWeightHorizontal(float weight) {
+        super.growWeightHorizontal(weight);
+        return this;
+    }
+
+    @Override
+    public LayoutSpec growWeightVertical(float weight) {
+        super.growWeightVertical(weight);
+        return this;
+    }
+
+    @Override
+    public LayoutSpec alignSelf(AlignSelf alignSelf) {
+        super.alignSelf(alignSelf);
+        return this;
+    }
+
+    @Override
+    public LayoutSpec grow() {
+        super.grow();
+        return this;
+    }
+
+    @Override
+    public LayoutSpec growX() {
+        super.growX();
+        return this;
+    }
+
+    @Override
+    public LayoutSpec growY() {
+        super.growY();
+        return this;
+    }
+
+    @Override
+    public LayoutSpec width(float width) {
+        super.width(width);
+        return this;
+    }
+
+    @Override
+    public LayoutSpec height(float height) {
+        super.height(height);
+        return this;
+    }
+
+    @Override
     public LayoutSpec padding(float all) {
-        sizing.padding(all);
+        super.padding(all);
         return this;
     }
 
+    @Override
     public LayoutSpec padding(float vertical, float horizontal) {
-        sizing.padding(vertical, horizontal);
+        super.padding(vertical, horizontal);
         return this;
     }
 
+    @Override
     public LayoutSpec padding(float top, float right, float bottom, float left) {
-        sizing.padding(top, right, bottom, left);
+        super.padding(top, right, bottom, left);
         return this;
     }
 
+    @Override
+    public LayoutSpec paddingTop(float padding) {
+        super.paddingTop(padding);
+        return this;
+    }
+
+    @Override
+    public LayoutSpec paddingBottom(float padding) {
+        super.paddingBottom(padding);
+        return this;
+    }
+
+    @Override
+    public LayoutSpec paddingLeft(float padding) {
+        super.paddingLeft(padding);
+        return this;
+    }
+
+    @Override
+    public LayoutSpec paddingRight(float padding) {
+        super.paddingRight(padding);
+        return this;
+    }
+
+    @Override
     public LayoutSpec minimumWidth(float width) {
-        sizing.minimumWidth(width);
+        super.minimumWidth(width);
         return this;
     }
 
+    @Override
     public LayoutSpec maximumWidth(float width) {
-        sizing.maximumWidth(width);
+        super.maximumWidth(width);
         return this;
     }
 
+    @Override
     public LayoutSpec minimumHeight(float height) {
-        sizing.minimumHeight(height);
+        super.minimumHeight(height);
         return this;
     }
 
+    @Override
     public LayoutSpec maximumHeight(float height) {
-        sizing.maximumHeight(height);
+        super.maximumHeight(height);
+        return this;
+    }
+
+    @Override
+    public LayoutSpec onInvalidate(Runnable callback) {
+        super.onInvalidate(callback);
         return this;
     }
 
     public LayoutSpec size(Cons<NodeSizing> configurator) {
-        configurator.get(sizing);
-        return this;
-    }
-
-    public LayoutSpec onInvalidate(Runnable callback) {
-        sizing.onInvalidate(callback);
+        configurator.get(this);
         return this;
     }
 
     // --- Getters ---
 
-    public boolean isColumn() { return isColumn; }
-    public boolean isWrap() { return isWrap; }
-    public boolean isReverse() { return isReverse; }
-    public float gap() { return gap; }
-    public JustifyContent justifyContent() { return justifyContent; }
-    public AlignItems alignItems() { return alignItems; }
+    public boolean isColumn() {
+        return isColumn;
+    }
+
+    public boolean isWrap() {
+        return isWrap;
+    }
+
+    public boolean isReverse() {
+        return isReverse;
+    }
+
+    public float gap() {
+        return gap;
+    }
+
+    public JustifyContent justifyContent() {
+        return justifyContent;
+    }
+
+    public AlignItems alignItems() {
+        return alignItems;
+    }
 }

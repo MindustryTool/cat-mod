@@ -1,9 +1,12 @@
 package org.mindustrytool.auth.dto;
 
+import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
+
 import lombok.Data;
-import org.mindustrytool.chat.dto.ChatUser.SimpleRole;
+
+import org.mindustrytool.auth.dto.SimpleRole;
 
 @Data
 public class UserData {
@@ -13,9 +16,8 @@ public class UserData {
     private List<SimpleRole> roles;
 
     public Optional<SimpleRole> getHighestRole() {
-        if (roles == null || roles.isEmpty()) {
-            return Optional.empty();
-        }
-        return getRoles().stream().max((a, b) -> Integer.compare(a.getLevel(), b.getLevel()));
+        if (roles == null || roles.isEmpty()) return Optional.empty();
+
+        return getRoles().stream().max(Comparator.comparingInt(SimpleRole::getLevel));
     }
 }

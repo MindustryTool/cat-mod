@@ -10,7 +10,9 @@ public abstract class AbstractComponent implements Component {
     protected final Seq<Effect> subscriptions = new Seq<>();
 
     @Override
-    public NodeSizing sizing() { return sizing; }
+    public NodeSizing sizing() {
+        return sizing;
+    }
 
     @Override
     public void dispose() {

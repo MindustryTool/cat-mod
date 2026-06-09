@@ -15,6 +15,10 @@ public final class Effect {
         this.reaction.run();
     }
 
+    public void run() {
+        reaction.run();
+    }
+
     public void dispose() {
         reaction.dispose();
     }

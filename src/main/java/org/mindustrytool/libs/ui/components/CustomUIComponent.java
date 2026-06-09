@@ -7,30 +7,79 @@ import arc.graphics.g2d.Draw;
 import arc.graphics.g2d.Fill;
 import arc.graphics.gl.Shader;
 import arc.scene.Element;
+import arc.scene.Scene;
 import arc.scene.event.Touchable;
 
+import org.mindustrytool.libs.signal.Effect;
 import org.mindustrytool.libs.ui.component.AbstractComponent;
 import org.mindustrytool.libs.ui.component.ComponentStyle;
 import org.mindustrytool.libs.ui.layout.NodeSizing;
 
 import arc.func.Cons;
 
+/**
+ * CustomUIComponent is a specialized UI component that renders a shader-based rounded box background.
+ * It supports reactive custom parameters such as corner radius and background color, and disposes of its GL resources cleanly.
+ */
 public class CustomUIComponent extends AbstractComponent {
 
+    /**
+     * Style builder for CustomUIComponent, supporting custom corner radius, background color, and sizing.
+     */
     public class Style extends ComponentStyle<Style> {
-        float cornerRadius = 8f;
+        float cornerRadius = 8.0f;
         final Color boxColor = new Color(Color.darkGray);
 
-        Style(NodeSizing sizing) { super(sizing); }
+        Style() {
+        }
 
-        public Style cornerRadius(float v) { cornerRadius = v; return this; }
-        public Style color(Color v) { boxColor.set(v); return this; }
-        public Style size(Cons<NodeSizing> fn) { fn.get(sizing); return this; }
+        @Override
+        protected NodeSizing sizing() {
+            return sizing;
+        }
+
+        @Override
+        protected Element styledElement() {
+            return element;
+        }
+
+        /**
+         * Sets the corner radius of the rounded box shader.
+         *
+         * @param value the corner radius value
+         * @return this style builder instance
+         */
+        public Style cornerRadius(float value) {
+            this.cornerRadius = value;
+            return this;
+        }
+
+        /**
+         * Sets the background color.
+         *
+         * @param value the background color
+         * @return this style builder instance
+         */
+        public Style color(Color value) {
+            this.boxColor.set(value);
+            return this;
+        }
+
+        /**
+         * Configures layout sizing.
+         *
+         * @param configurator the node sizing configurator callback
+         * @return this style builder instance
+         */
+        public Style size(Cons<NodeSizing> configurator) {
+            configurator.get(sizing);
+            return this;
+        }
     }
 
     public final Style style;
 
-    private static final String VERT = """
+    private static final String VERTEX_SHADER_SOURCE = """
         attribute vec4 a_position;
         attribute vec4 a_color;
         attribute vec2 a_texCoord0;
@@ -46,7 +95,7 @@ public class CustomUIComponent extends AbstractComponent {
         }
         """;
 
-    private static final String FRAG = """
+    private static final String FRAGMENT_SHADER_SOURCE = """
         uniform float u_cornerRadius;
         uniform vec2 u_size;
         uniform vec4 u_color;
@@ -65,7 +114,7 @@ public class CustomUIComponent extends AbstractComponent {
         }
         """;
 
-    private final Shader shader = new Shader(VERT, FRAG);
+    private final Shader shader = new Shader(VERTEX_SHADER_SOURCE, FRAGMENT_SHADER_SOURCE);
 
     private final Element element = new Element() {
         @Override
@@ -79,51 +128,110 @@ public class CustomUIComponent extends AbstractComponent {
         }
 
         @Override
+        protected void setScene(Scene sceneInstance) {
+            super.setScene(sceneInstance);
+            if (sceneInstance == null) {
+                CustomUIComponent.this.dispose();
+            }
+        }
+
+        @Override
         public void draw() {
-            float x = this.x, y = this.y, w = getWidth(), h = getHeight();
-            if (w <= 0f || h <= 0f) return;
+            float xPosition = this.x;
+            float yPosition = this.y;
+            float width = getWidth();
+            float height = getHeight();
+            if (width <= 0.0f || height <= 0.0f) return;
 
             Draw.flush();
-            Shader prev = Draw.getShader();
+            Shader previousShader = Draw.getShader();
             Draw.shader(shader);
 
             shader.bind();
             shader.setUniformf("u_cornerRadius", style.cornerRadius);
-            shader.setUniformf("u_size", w, h);
+            shader.setUniformf("u_size", width, height);
             shader.setUniformf("u_color", style.boxColor.r, style.boxColor.g, style.boxColor.b, style.boxColor.a);
             Draw.color(style.boxColor);
-            drawQuad(x, y, w, h, style.boxColor);
+            drawQuad(xPosition, yPosition, width, height, style.boxColor);
 
             Draw.flush();
-            Draw.shader(prev);
+            Draw.shader(previousShader);
             Draw.color();
         }
     };
 
-    private void drawQuad(float x, float y, float w, float h, Color color) {
-        float packed = color.toFloatBits();
-        Texture tex = Core.atlas.white().texture;
-        Fill.quad(tex,
-            x, y, packed, 0f, 0f,
-            x + w, y, packed, 1f, 0f,
-            x + w, y + h, packed, 1f, 1f,
-            x, y + h, packed, 0f, 1f);
+    private Effect styleEffect;
+    private Effect sizeEffect;
+
+    private void drawQuad(float xPosition, float yPosition, float width, float height, Color color) {
+        float packedColor = color.toFloatBits();
+        Texture whiteTexture = Core.atlas.white().texture;
+        Fill.quad(whiteTexture,
+            xPosition, yPosition, packedColor, 0f, 0f,
+            xPosition + width, yPosition, packedColor, 1f, 0f,
+            xPosition + width, yPosition + height, packedColor, 1f, 1f,
+            xPosition, yPosition + height, packedColor, 0f, 1f);
     }
 
     private CustomUIComponent() {
-        this.style = new Style(sizing);
+        this.style = new Style();
         sizing.onInvalidate(element::invalidateHierarchy);
         sizing.grow();
         element.touchable = Touchable.disabled;
         element.userObject = this;
     }
 
-    public static CustomUIComponent of() { return new CustomUIComponent(); }
+    /**
+     * Factory method to create a new CustomUIComponent instance.
+     *
+     * @return a new CustomUIComponent component instance
+     */
+    public static CustomUIComponent of() {
+        return new CustomUIComponent();
+    }
 
-    public CustomUIComponent style(Cons<Style> fn) { fn.get(style); element.invalidateHierarchy(); return this; }
-    public CustomUIComponent size(Cons<NodeSizing> fn) { fn.get(sizing); element.invalidateHierarchy(); return this; }
+    /**
+     * Configures the component style properties reactively.
+     *
+     * @param configurator the style configurator callback
+     * @return this custom component instance for chaining
+     */
+    public CustomUIComponent style(Cons<Style> configurator) {
+        if (styleEffect != null) {
+            styleEffect.dispose();
+            subscriptions.remove(styleEffect);
+        }
+        styleEffect = new Effect(() -> {
+            configurator.get(style);
+            element.invalidateHierarchy();
+        });
+        subscriptions.add(styleEffect);
+        return this;
+    }
 
-    @Override public Element element() { return element; }
+    /**
+     * Configures the component sizing constraints reactively.
+     *
+     * @param configurator the sizing configurator callback
+     * @return this custom component instance for chaining
+     */
+    public CustomUIComponent size(Cons<NodeSizing> configurator) {
+        if (sizeEffect != null) {
+            sizeEffect.dispose();
+            subscriptions.remove(sizeEffect);
+        }
+        sizeEffect = new Effect(() -> {
+            configurator.get(sizing);
+            element.invalidateHierarchy();
+        });
+        subscriptions.add(sizeEffect);
+        return this;
+    }
+
+    @Override
+    public Element element() {
+        return element;
+    }
 
     @Override
     public void dispose() {

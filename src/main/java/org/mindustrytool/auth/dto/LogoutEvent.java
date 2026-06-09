@@ -1,4 +1,5 @@
 package org.mindustrytool.auth.dto;
 
-public class LogoutEvent {
+public record LogoutEvent() {
+
 }

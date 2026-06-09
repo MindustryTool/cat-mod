@@ -1,7 +1,9 @@
 package org.mindustrytool.libs.ui.components;
 
 import arc.scene.Element;
+import arc.scene.Scene;
 
+import org.mindustrytool.libs.signal.Effect;
 import org.mindustrytool.libs.ui.component.AbstractComponent;
 import org.mindustrytool.libs.ui.component.Component;
 import org.mindustrytool.libs.ui.component.ComponentStyle;
@@ -12,7 +14,15 @@ import arc.func.Cons;
 
 import static arc.Core.scene;
 
+/**
+ * ScrollPane is a container component that wraps a child component and allows scrolling (both vertical and horizontal).
+ * It supports reactive custom configurations such as scrollbar behavior, smooth scrolling, and sizing.
+ */
 public class ScrollPane extends AbstractComponent {
+
+    /**
+     * Style builder for ScrollPane, supporting scrollbar visibility, fade, scroll directions, and sizing.
+     */
     public class Style extends ComponentStyle<Style> {
         boolean fadeScrollBars;
         boolean scrollBarsOnTop;
@@ -23,67 +33,246 @@ public class ScrollPane extends AbstractComponent {
         boolean flickScroll = true;
         boolean clip = true;
 
-        Style(NodeSizing sizing) { super(sizing); }
+        public final arc.scene.ui.ScrollPane.ScrollPaneStyle scrollPaneStyle;
 
-        public Style fadeScrollBars(boolean v) {
-            fadeScrollBars = v;
-            if (v) element.setupFadeScrollBars(0.5f, 2f);
-            if (v && scrollBarsOnTop) {
+        Style() {
+            this.scrollPaneStyle = element.getStyle();
+        }
+
+        @Override
+        protected NodeSizing sizing() {
+            return sizing;
+        }
+
+        @Override
+        protected Element styledElement() {
+            return element;
+        }
+
+        /**
+         * Sets whether scrollbars should automatically fade out when not in use.
+         *
+         * @param value true to fade scrollbars, false to show them permanently
+         * @return this style builder instance
+         */
+        public Style fadeScrollBars(boolean value) {
+            fadeScrollBars = value;
+            if (value) {
+                element.setupFadeScrollBars(0.5f, 2.0f);
+            }
+            if (value && scrollBarsOnTop) {
+                // Do nothing if scrollbars are on top and fading is enabled
             } else {
-                element.setFadeScrollBars(v);
+                element.setFadeScrollBars(value);
             }
             return this;
         }
 
-        public Style scrollBarsOnTop(boolean v) {
-            scrollBarsOnTop = v;
-            element.setScrollbarsOnTop(v);
-            if (v && fadeScrollBars) element.setFadeScrollBars(false);
+        /**
+         * Sets whether scrollbars are positioned on top of the content layer instead of taking layout space.
+         *
+         * @param value true to show scrollbars on top
+         * @return this style builder instance
+         */
+        public Style scrollBarsOnTop(boolean value) {
+            scrollBarsOnTop = value;
+            element.setScrollbarsOnTop(value);
+            if (value && fadeScrollBars) {
+                element.setFadeScrollBars(false);
+            }
             return this;
         }
 
-        public Style disableX(boolean v) { disableX = v; element.setScrollingDisabledX(v); return this; }
-        public Style disableY(boolean v) { disableY = v; element.setScrollingDisabledY(v); return this; }
-        public Style overscroll(boolean v) { overscroll = v; element.setOverscroll(v, v); return this; }
-        public Style smoothScrolling(boolean v) { smoothScrolling = v; element.setSmoothScrolling(v); return this; }
-        public Style flickScroll(boolean v) { flickScroll = v; element.setFlickScroll(v); return this; }
-        public Style clip(boolean v) { clip = v; element.setClip(v); return this; }
-        public Style size(Cons<NodeSizing> fn) { fn.get(sizing); applySize(); return this; }
+        /**
+         * Sets whether horizontal scrolling is disabled.
+         *
+         * @param value true to disable horizontal scrolling
+         * @return this style builder instance
+         */
+        public Style disableX(boolean value) {
+            disableX = value;
+            element.setScrollingDisabledX(value);
+            return this;
+        }
+
+        /**
+         * Sets whether vertical scrolling is disabled.
+         *
+         * @param value true to disable vertical scrolling
+         * @return this style builder instance
+         */
+        public Style disableY(boolean value) {
+            disableY = value;
+            element.setScrollingDisabledY(value);
+            return this;
+        }
+
+        /**
+         * Sets whether overscroll (elastic boundary bounce) is enabled.
+         *
+         * @param value true to enable overscroll
+         * @return this style builder instance
+         */
+        public Style overscroll(boolean value) {
+            overscroll = value;
+            element.setOverscroll(value, value);
+            return this;
+        }
+
+        /**
+         * Sets whether smooth scrolling (lerping to target scroll position) is enabled.
+         *
+         * @param value true to enable smooth scrolling
+         * @return this style builder instance
+         */
+        public Style smoothScrolling(boolean value) {
+            smoothScrolling = value;
+            element.setSmoothScrolling(value);
+            return this;
+        }
+
+        /**
+         * Sets whether flick-to-scroll (kinetic scrolling) is enabled.
+         *
+         * @param value true to enable flick scrolling
+         * @return this style builder instance
+         */
+        public Style flickScroll(boolean value) {
+            flickScroll = value;
+            element.setFlickScroll(value);
+            return this;
+        }
+
+        /**
+         * Sets whether clipping is enabled to hide children components extending past scroll pane borders.
+         *
+         * @param value true to enable clipping
+         * @return this style builder instance
+         */
+        public Style clip(boolean value) {
+            clip = value;
+            element.setClip(value);
+            return this;
+        }
+
+        /**
+         * Configures layout sizing.
+         *
+         * @param configurator the node sizing configurator callback
+         * @return this style builder instance
+         */
+        public Style size(Cons<NodeSizing> configurator) {
+            configurator.get(sizing);
+            applySize();
+            return this;
+        }
     }
 
     public final Style style;
     private final arc.scene.ui.ScrollPane element;
     private Component childComponent;
 
+    private Effect styleEffect;
+    private Effect sizeEffect;
+
     private ScrollPane() {
-        this.style = new Style(sizing);
-        arc.scene.ui.ScrollPane.ScrollPaneStyle s = new arc.scene.ui.ScrollPane.ScrollPaneStyle(scene.getStyle(arc.scene.ui.ScrollPane.ScrollPaneStyle.class));
-        this.element = new arc.scene.ui.ScrollPane(new arc.scene.ui.Label(""), s);
+        arc.scene.ui.ScrollPane.ScrollPaneStyle scrollPaneStyle =
+            new arc.scene.ui.ScrollPane.ScrollPaneStyle(scene.getStyle(arc.scene.ui.ScrollPane.ScrollPaneStyle.class));
+        this.element = new arc.scene.ui.ScrollPane(new arc.scene.ui.Label(""), scrollPaneStyle) {
+            @Override
+            protected void setScene(Scene sceneInstance) {
+                super.setScene(sceneInstance);
+                if (sceneInstance == null) {
+                    ScrollPane.this.dispose();
+                }
+            }
+        };
         element.userObject = this;
-        sizing.onInvalidate(() -> { applySize(); element.invalidateHierarchy(); });
+        this.style = new Style();
+        sizing.onInvalidate(() -> {
+            applySize();
+            element.invalidateHierarchy();
+        });
     }
 
-    public static ScrollPane of() { return new ScrollPane(); }
+    /**
+     * Factory method to create a new ScrollPane instance.
+     *
+     * @return a new ScrollPane component instance
+     */
+    public static ScrollPane of() {
+        return new ScrollPane();
+    }
 
-    public ScrollPane child(Component c) {
-        childComponent = c;
-        element.setWidget(c.element());
+    /**
+     * Sets the child component contained inside the scrollable view.
+     *
+     * @param child the scrollable child component
+     * @return this scroll pane instance for chaining
+     */
+    public ScrollPane child(Component child) {
+        this.childComponent = child;
+        element.setWidget(child.element());
         return this;
     }
 
-    public ScrollPane style(Cons<Style> fn) { fn.get(style); element.invalidateHierarchy(); return this; }
-    public ScrollPane size(Cons<NodeSizing> fn) { fn.get(sizing); element.invalidateHierarchy(); return this; }
-
-    private void applySize() {
-        if (sizing.getWidthMode() == SizeMode.FIXED) element.setWidth(sizing.getFixedWidth());
-        if (sizing.getHeightMode() == SizeMode.FIXED) element.setHeight(sizing.getFixedHeight());
+    /**
+     * Configures the scroll pane style properties reactively.
+     *
+     * @param configurator the style configurator callback
+     * @return this scroll pane instance for chaining
+     */
+    public ScrollPane style(Cons<Style> configurator) {
+        if (styleEffect != null) {
+            styleEffect.dispose();
+            subscriptions.remove(styleEffect);
+        }
+        styleEffect = new Effect(() -> {
+            configurator.get(style);
+            element.invalidateHierarchy();
+        });
+        subscriptions.add(styleEffect);
+        return this;
     }
 
-    @Override public Element element() { return element; }
+    /**
+     * Configures the scroll pane sizing constraints reactively.
+     *
+     * @param configurator the sizing configurator callback
+     * @return this scroll pane instance for chaining
+     */
+    public ScrollPane size(Cons<NodeSizing> configurator) {
+        if (sizeEffect != null) {
+            sizeEffect.dispose();
+            subscriptions.remove(sizeEffect);
+        }
+        sizeEffect = new Effect(() -> {
+            configurator.get(sizing);
+            element.invalidateHierarchy();
+        });
+        subscriptions.add(sizeEffect);
+        return this;
+    }
+
+    private void applySize() {
+        if (sizing.getWidthMode() == SizeMode.FIXED) {
+            element.setWidth(sizing.getFixedWidth());
+        }
+        if (sizing.getHeightMode() == SizeMode.FIXED) {
+            element.setHeight(sizing.getFixedHeight());
+        }
+    }
+
+    @Override
+    public Element element() {
+        return element;
+    }
 
     @Override
     public void dispose() {
         super.dispose();
-        if (childComponent != null) childComponent.dispose();
+        if (childComponent != null) {
+            childComponent.dispose();
+        }
     }
 }

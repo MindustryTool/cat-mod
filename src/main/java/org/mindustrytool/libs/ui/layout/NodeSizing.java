@@ -11,11 +11,17 @@ public class NodeSizing {
      * Sizing mode determines how the node's dimensions are calculated.
      */
     public enum SizeMode {
-        /** Size is based on the preferred size of the node's content (wrap content). */
+        /**
+         * Size is based on the preferred size of the node's content (wrap content).
+         */
         WRAP,
-        /** Size expands to fill the remaining available space in the parent container. */
+        /**
+         * Size expands to fill the remaining available space in the parent container.
+         */
         GROW,
-        /** Size is fixed to a specific coordinate value. */
+        /**
+         * Size is fixed to a specific coordinate value.
+         */
         FIXED
     }
 
@@ -23,15 +29,25 @@ public class NodeSizing {
      * AlignSelf allows an individual child to override the cross-axis alignment of its parent container.
      */
     public enum AlignSelf {
-        /** Inherit cross-axis alignment from the parent container. */
+        /**
+         * Inherit cross-axis alignment from the parent container.
+         */
         AUTO,
-        /** Align to the start boundary of the cross axis. */
+        /**
+         * Align to the start boundary of the cross axis.
+         */
         START,
-        /** Align to the center of the cross axis. */
+        /**
+         * Align to the center of the cross axis.
+         */
         CENTER,
-        /** Align to the end boundary of the cross axis. */
+        /**
+         * Align to the end boundary of the cross axis.
+         */
         END,
-        /** Stretch to fill the entire cross-axis space of the line. */
+        /**
+         * Stretch to fill the entire cross-axis space of the line.
+         */
         STRETCH
     }
 
@@ -77,23 +93,65 @@ public class NodeSizing {
 
     // --- Getters ---
 
-    public SizeMode getWidthMode() { return widthMode; }
-    public SizeMode getHeightMode() { return heightMode; }
-    public float getFixedWidth() { return fixedWidth; }
-    public float getFixedHeight() { return fixedHeight; }
-    public float getGrowWeightHorizontal() { return growWeightHorizontal; }
-    public float getGrowWeightVertical() { return growWeightVertical; }
-    public AlignSelf getAlignSelf() { return alignSelf; }
+    public SizeMode getWidthMode() {
+        return widthMode;
+    }
 
-    public float getPaddingTop() { return paddingTop; }
-    public float getPaddingBottom() { return paddingBottom; }
-    public float getPaddingLeft() { return paddingLeft; }
-    public float getPaddingRight() { return paddingRight; }
+    public SizeMode getHeightMode() {
+        return heightMode;
+    }
 
-    public float getMinimumWidth() { return minimumWidth; }
-    public float getMaximumWidth() { return maximumWidth; }
-    public float getMinimumHeight() { return minimumHeight; }
-    public float getMaximumHeight() { return maximumHeight; }
+    public float getFixedWidth() {
+        return fixedWidth;
+    }
+
+    public float getFixedHeight() {
+        return fixedHeight;
+    }
+
+    public float getGrowWeightHorizontal() {
+        return growWeightHorizontal;
+    }
+
+    public float getGrowWeightVertical() {
+        return growWeightVertical;
+    }
+
+    public AlignSelf getAlignSelf() {
+        return alignSelf;
+    }
+
+    public float getPaddingTop() {
+        return paddingTop;
+    }
+
+    public float getPaddingBottom() {
+        return paddingBottom;
+    }
+
+    public float getPaddingLeft() {
+        return paddingLeft;
+    }
+
+    public float getPaddingRight() {
+        return paddingRight;
+    }
+
+    public float getMinimumWidth() {
+        return minimumWidth;
+    }
+
+    public float getMaximumWidth() {
+        return maximumWidth;
+    }
+
+    public float getMinimumHeight() {
+        return minimumHeight;
+    }
+
+    public float getMaximumHeight() {
+        return maximumHeight;
+    }
 
     // --- Fluent Setters ---
 

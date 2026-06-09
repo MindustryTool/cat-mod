@@ -8,6 +8,7 @@ import java.util.concurrent.CompletableFuture;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
+import lombok.NoArgsConstructor;
 
 import arc.Core;
 import arc.Events;
@@ -18,6 +19,7 @@ import arc.util.Http;
 import arc.util.Log;
 import arc.util.Timer;
 import arc.util.serialization.Jval;
+import arc.util.serialization.Json;
 import mindustry.Vars;
 import mindustry.gen.Icon;
 import mindustry.ui.Styles;
@@ -25,33 +27,21 @@ import org.mindustrytool.auth.dto.LoginEvent;
 import org.mindustrytool.auth.dto.LogoutEvent;
 import org.mindustrytool.auth.dto.UserSession;
 import org.mindustrytool.auth.dto.SessionLoadEvent;
-import org.mindustrytool.chat.ChatUtils;
-import org.mindustrytool.ui.components.NetworkImage;
+import org.mindustrytool.libs.ui.components.NetworkImage;
 
 @Singleton
+@NoArgsConstructor(onConstructor_ = @Inject)
 public class AuthService {
-    private static AuthService instance;
-
-    public static final String API_URL = "https://api.mindustry-tool.com/api/v4/";
-    public static final String KEY_ACCESS_TOKEN = "mindustrytool.auth.access-token";
-    public static final String KEY_REFRESH_TOKEN = "mindustrytool.auth.refresh-token";
-    public static final String KEY_LOGIN_ID = "mindustrytool.auth.login-id";
-    public static final String KEY_LOGIN_EXPIRY = "mindustrytool.auth.login-expiry";
+    static final String API_URL = "https://api.mindustry-tool.com/api/v4/";
+    static final String KEY_ACCESS_TOKEN = "mindustrytool.auth.access-token";
+    static final String KEY_REFRESH_TOKEN = "mindustrytool.auth.refresh-token";
+    static final String KEY_LOGIN_ID = "mindustrytool.auth.login-id";
+    static final String KEY_LOGIN_EXPIRY = "mindustrytool.auth.login-expiry";
 
     private UserSession currentSession;
     private CompletableFuture<Boolean> refreshFuture;
     private CompletableFuture<Void> loginFuture;
     private AuthLoginDialog loginDialog;
-    private Table authWindow;
-
-    public static AuthService getInstance() {
-        return instance;
-    }
-
-    @Inject
-    public AuthService() {
-        instance = this;
-    }
 
     public void init() {
         fetchSession();
@@ -81,7 +71,7 @@ public class AuthService {
         wholeViewport.setFillParent(true);
         wholeViewport.top().right();
 
-        authWindow = wholeViewport.table().get();
+        Table authWindow = wholeViewport.table().get();
         authWindow.top().right();
         authWindow.touchable = Touchable.childrenOnly;
 
@@ -98,9 +88,9 @@ public class AuthService {
         authWindow.toFront();
 
         Events.on(SessionLoadEvent.class, e -> {
-            var user = e.user;
-            var error = e.error;
-            var isLoading = e.isLoading;
+            var user = e.user();
+            var error = e.error();
+            var isLoading = e.isLoading();
 
             if (isLoading) {
                 content.clear();
@@ -117,7 +107,7 @@ public class AuthService {
             } else {
                 content.clear();
                 if (user.getImageUrl() != null) {
-                    content.add(new NetworkImage(user.getImageUrl())).size(64);
+                    content.add(new NetworkImage(user.getImageUrl()).element()).size(64);
                 }
                 if (!Vars.mobile) {
                     content.add(user.getName()).labelAlign(Align.left).padLeft(8);
@@ -149,8 +139,15 @@ public class AuthService {
         Core.app.post(() -> Events.fire(new SessionLoadEvent(currentSession, null, true)));
         CompletableFuture<String> future = new CompletableFuture<>();
 
-        AuthHttp.get(API_URL + "auth/session", res -> future.complete(res.getResultAsString()),
-                err -> future.completeExceptionally(err));
+        refreshTokenIfNeeded().thenRun(() -> {
+            var req = Http.get(API_URL + "auth/session").timeout(10000);
+            if (getAccessToken() != null) req.header("Authorization", "Bearer " + getAccessToken());
+            req.error(future::completeExceptionally);
+            req.submit(res -> future.complete(res.getResultAsString()));
+        }).exceptionally(e -> {
+            future.completeExceptionally(e);
+            return null;
+        });
 
         return future.handle((json, err) -> {
             if (err != null) {
@@ -158,7 +155,7 @@ public class AuthService {
                 throw new RuntimeException(err);
             }
 
-            UserSession session = json.isEmpty() ? null : ChatUtils.fromJson(UserSession.class, json);
+            UserSession session = json.isEmpty() ? null : new Json().fromJson(UserSession.class, json);
             this.currentSession = session;
             Core.app.post(() -> Events.fire(new SessionLoadEvent(session, null, false)));
             if (session != null) {

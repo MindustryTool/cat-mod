@@ -48,6 +48,13 @@ dependencies {
     implementation("net.jodah:expiringmap:0.5.11")
 
     compileOnly("org.jetbrains:annotations:26.0.1")
+
+    testImplementation("org.junit.jupiter:junit-jupiter:5.10.1")
+    testRuntimeOnly("org.junit.platform:junit-platform-launcher:1.10.1")
+}
+
+tasks.withType<Test>().configureEach {
+    useJUnitPlatform()
 }
 
 tasks.named<ShadowJar>("shadowJar") {

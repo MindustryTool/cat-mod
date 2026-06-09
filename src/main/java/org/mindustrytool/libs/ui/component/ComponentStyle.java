@@ -1,5 +1,8 @@
 package org.mindustrytool.libs.ui.component;
 
+import arc.graphics.Color;
+import arc.scene.Element;
+import arc.scene.event.Touchable;
 import org.mindustrytool.libs.ui.layout.NodeSizing;
 import org.mindustrytool.libs.ui.layout.NodeSizing.AlignSelf;
 import org.mindustrytool.libs.ui.layout.NodeSizing.SizeMode;
@@ -7,17 +10,160 @@ import org.mindustrytool.libs.ui.layout.NodeSizing.SizeMode;
 /**
  * ComponentStyle serves as the base class for component-specific styling builders.
  * It uses the Curiously Recurring Template Pattern (CRTP) to allow fluent method chaining
- * across inheritance hierarchies, exposing all of {@link NodeSizing}'s sizing and padding properties.
+ * across inheritance hierarchies, exposing all of {@link NodeSizing}'s sizing and padding properties,
+ * as well as all common {@link Element} visual and interactive configuration properties.
  *
  * @param <S> the concrete style subclass type
  */
 @SuppressWarnings("unchecked")
 public abstract class ComponentStyle<S extends ComponentStyle<S>> {
-    protected final NodeSizing sizing;
 
-    protected ComponentStyle(NodeSizing sizing) {
-        this.sizing = sizing;
+    protected abstract NodeSizing sizing();
+    protected abstract Element styledElement();
+
+    protected ComponentStyle() { }
+
+    // --- Core Element Configuration Builders ---
+
+    /**
+     * Sets the visibility status of the element.
+     *
+     * @param visible true to show, false to hide
+     * @return this style builder instance
+     */
+    public S visible(boolean visible) {
+        styledElement().visible = visible;
+        return (S) this;
     }
+
+    /**
+     * Sets the touchable behavior of the element.
+     *
+     * @param touchable the touchable mode
+     * @return this style builder instance
+     */
+    public S touchable(Touchable touchable) {
+        styledElement().touchable = touchable;
+        return (S) this;
+    }
+
+    /**
+     * Sets the color overlay of the element.
+     *
+     * @param color the overlay color
+     * @return this style builder instance
+     */
+    public S color(Color color) {
+        styledElement().color.set(color);
+        return (S) this;
+    }
+
+    /**
+     * Sets the overlay color coordinates.
+     *
+     * @param red   the red color channel (0.0 to 1.0)
+     * @param green the green color channel (0.0 to 1.0)
+     * @param blue  the blue color channel (0.0 to 1.0)
+     * @param alpha the alpha transparency channel (0.0 to 1.0)
+     * @return this style builder instance
+     */
+    public S color(float red, float green, float blue, float alpha) {
+        styledElement().color.set(red, green, blue, alpha);
+        return (S) this;
+    }
+
+    /**
+     * Sets the rotation angle in degrees.
+     *
+     * @param rotation the rotation angle
+     * @return this style builder instance
+     */
+    public S rotation(float rotation) {
+        styledElement().setRotation(rotation);
+        return (S) this;
+    }
+
+    /**
+     * Sets a uniform scaling factor.
+     *
+     * @param scale the scale factor
+     * @return this style builder instance
+     */
+    public S scale(float scale) {
+        styledElement().setScale(scale);
+        return (S) this;
+    }
+
+    /**
+     * Sets separate horizontal and vertical scale factors.
+     *
+     * @param scaleX the horizontal scale factor
+     * @param scaleY the vertical scale factor
+     * @return this style builder instance
+     */
+    public S scale(float scaleX, float scaleY) {
+        styledElement().setScale(scaleX, scaleY);
+        return (S) this;
+    }
+
+    /**
+     * Sets the local translation coordinates relative to its layout position.
+     *
+     * @param x the horizontal offset coordinate
+     * @param y the vertical offset coordinate
+     * @return this style builder instance
+     */
+    public S translation(float x, float y) {
+        styledElement().setTranslation(x, y);
+        return (S) this;
+    }
+
+    /**
+     * Sets the origin point using alignment flags (e.g. Align.center).
+     *
+     * @param align the align bitmask flags
+     * @return this style builder instance
+     */
+    public S origin(int align) {
+        styledElement().setOrigin(align);
+        return (S) this;
+    }
+
+    /**
+     * Sets separate horizontal and vertical origin coordinates.
+     *
+     * @param originX the horizontal origin coordinate
+     * @param originY the vertical origin coordinate
+     * @return this style builder instance
+     */
+    public S origin(float originX, float originY) {
+        styledElement().setOrigin(originX, originY);
+        return (S) this;
+    }
+
+    /**
+     * Sets the debug or lookup name.
+     *
+     * @param name the name of the element
+     * @return this style builder instance
+     */
+    public S name(String name) {
+        styledElement().name = name;
+        return (S) this;
+    }
+
+    /**
+     * Sets whether rendering culling is enabled.
+     *
+     * @param cullable true to enable culling
+     * @return this style builder instance
+     */
+    public S cullable(boolean cullable) {
+        styledElement().cullable = cullable;
+        return (S) this;
+    }
+
+    // --- NodeSizing Sizing & Padding Builders ---
 
     /**
      * Sets the width sizing mode.
@@ -26,7 +172,7 @@ public abstract class ComponentStyle<S extends ComponentStyle<S>> {
      * @return this style builder instance
      */
     public S widthMode(SizeMode mode) {
-        sizing.widthMode(mode);
+        sizing().widthMode(mode);
         return (S) this;
     }
 
@@ -37,7 +183,7 @@ public abstract class ComponentStyle<S extends ComponentStyle<S>> {
      * @return this style builder instance
      */
     public S heightMode(SizeMode mode) {
-        sizing.heightMode(mode);
+        sizing().heightMode(mode);
         return (S) this;
     }
 
@@ -48,7 +194,7 @@ public abstract class ComponentStyle<S extends ComponentStyle<S>> {
      * @return this style builder instance
      */
     public S fixedWidth(float width) {
-        sizing.fixedWidth(width);
+        sizing().fixedWidth(width);
         return (S) this;
     }
 
@@ -59,7 +205,7 @@ public abstract class ComponentStyle<S extends ComponentStyle<S>> {
      * @return this style builder instance
      */
     public S fixedHeight(float height) {
-        sizing.fixedHeight(height);
+        sizing().fixedHeight(height);
         return (S) this;
     }
 
@@ -70,7 +216,7 @@ public abstract class ComponentStyle<S extends ComponentStyle<S>> {
      * @return this style builder instance
      */
     public S growWeightHorizontal(float weight) {
-        sizing.growWeightHorizontal(weight);
+        sizing().growWeightHorizontal(weight);
         return (S) this;
     }
 
@@ -81,7 +227,7 @@ public abstract class ComponentStyle<S extends ComponentStyle<S>> {
      * @return this style builder instance
      */
     public S growWeightVertical(float weight) {
-        sizing.growWeightVertical(weight);
+        sizing().growWeightVertical(weight);
         return (S) this;
     }
 
@@ -92,7 +238,7 @@ public abstract class ComponentStyle<S extends ComponentStyle<S>> {
      * @return this style builder instance
      */
     public S alignSelf(AlignSelf alignSelf) {
-        sizing.alignSelf(alignSelf);
+        sizing().alignSelf(alignSelf);
         return (S) this;
     }
 
@@ -102,7 +248,7 @@ public abstract class ComponentStyle<S extends ComponentStyle<S>> {
      * @return this style builder instance
      */
     public S grow() {
-        sizing.grow();
+        sizing().grow();
         return (S) this;
     }
 
@@ -112,7 +258,7 @@ public abstract class ComponentStyle<S extends ComponentStyle<S>> {
      * @return this style builder instance
      */
     public S growX() {
-        sizing.growX();
+        sizing().growX();
         return (S) this;
     }
 
@@ -122,7 +268,7 @@ public abstract class ComponentStyle<S extends ComponentStyle<S>> {
      * @return this style builder instance
      */
     public S growY() {
-        sizing.growY();
+        sizing().growY();
         return (S) this;
     }
 
@@ -133,7 +279,7 @@ public abstract class ComponentStyle<S extends ComponentStyle<S>> {
      * @return this style builder instance
      */
     public S width(float width) {
-        sizing.width(width);
+        sizing().width(width);
         return (S) this;
     }
 
@@ -144,7 +290,7 @@ public abstract class ComponentStyle<S extends ComponentStyle<S>> {
      * @return this style builder instance
      */
     public S height(float height) {
-        sizing.height(height);
+        sizing().height(height);
         return (S) this;
     }
 
@@ -155,7 +301,7 @@ public abstract class ComponentStyle<S extends ComponentStyle<S>> {
      * @return this style builder instance
      */
     public S padding(float all) {
-        sizing.padding(all);
+        sizing().padding(all);
         return (S) this;
     }
 
@@ -167,7 +313,7 @@ public abstract class ComponentStyle<S extends ComponentStyle<S>> {
      * @return this style builder instance
      */
     public S padding(float vertical, float horizontal) {
-        sizing.padding(vertical, horizontal);
+        sizing().padding(vertical, horizontal);
         return (S) this;
     }
 
@@ -181,7 +327,7 @@ public abstract class ComponentStyle<S extends ComponentStyle<S>> {
      * @return this style builder instance
      */
     public S padding(float top, float right, float bottom, float left) {
-        sizing.padding(top, right, bottom, left);
+        sizing().padding(top, right, bottom, left);
         return (S) this;
     }
 
@@ -192,7 +338,7 @@ public abstract class ComponentStyle<S extends ComponentStyle<S>> {
      * @return this style builder instance
      */
     public S paddingTop(float padding) {
-        sizing.paddingTop(padding);
+        sizing().paddingTop(padding);
         return (S) this;
     }
 
@@ -203,7 +349,7 @@ public abstract class ComponentStyle<S extends ComponentStyle<S>> {
      * @return this style builder instance
      */
     public S paddingBottom(float padding) {
-        sizing.paddingBottom(padding);
+        sizing().paddingBottom(padding);
         return (S) this;
     }
 
@@ -214,7 +360,7 @@ public abstract class ComponentStyle<S extends ComponentStyle<S>> {
      * @return this style builder instance
      */
     public S paddingLeft(float padding) {
-        sizing.paddingLeft(padding);
+        sizing().paddingLeft(padding);
         return (S) this;
     }
 
@@ -225,7 +371,7 @@ public abstract class ComponentStyle<S extends ComponentStyle<S>> {
      * @return this style builder instance
      */
     public S paddingRight(float padding) {
-        sizing.paddingRight(padding);
+        sizing().paddingRight(padding);
         return (S) this;
     }
 
@@ -236,7 +382,7 @@ public abstract class ComponentStyle<S extends ComponentStyle<S>> {
      * @return this style builder instance
      */
     public S minimumWidth(float width) {
-        sizing.minimumWidth(width);
+        sizing().minimumWidth(width);
         return (S) this;
     }
 
@@ -247,7 +393,7 @@ public abstract class ComponentStyle<S extends ComponentStyle<S>> {
      * @return this style builder instance
      */
     public S maximumWidth(float width) {
-        sizing.maximumWidth(width);
+        sizing().maximumWidth(width);
         return (S) this;
     }
 
@@ -258,7 +404,7 @@ public abstract class ComponentStyle<S extends ComponentStyle<S>> {
      * @return this style builder instance
      */
     public S minimumHeight(float height) {
-        sizing.minimumHeight(height);
+        sizing().minimumHeight(height);
         return (S) this;
     }
 
@@ -269,7 +415,7 @@ public abstract class ComponentStyle<S extends ComponentStyle<S>> {
      * @return this style builder instance
      */
     public S maximumHeight(float height) {
-        sizing.maximumHeight(height);
+        sizing().maximumHeight(height);
         return (S) this;
     }
 }

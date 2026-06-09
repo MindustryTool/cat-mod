@@ -1,6 +1,7 @@
 package org.mindustrytool.libs.ui.layout;
 
 import arc.scene.Element;
+
 import org.mindustrytool.libs.ui.component.Component;
 import org.mindustrytool.libs.ui.layout.NodeSizing.SizeMode;
 import org.mindustrytool.libs.ui.layout.NodeSizing.AlignSelf;
@@ -36,6 +37,8 @@ import org.mindustrytool.libs.ui.layout.LayoutSpec.JustifyContent;
  *   <li><b>2026-06-09:</b> Implemented wrapping layout logic (FlexWrap), individual cross alignment overrides (AlignSelf),
  *       reverse layout direction (Reverse), and Space Evenly alignment.</li>
  *   <li><b>2026-06-09:</b> Decoupled layout math from the Arc UI framework using LayoutAccessor to allow clean unit testing.</li>
+ *   <li><b>2026-06-09:</b> Overrode setScene in Layout's WidgetGroup to intercept detachment from Scene and force component
+ *   cleanup/disposal.</li>
  * </ul>
  */
 public class LayoutEngine {
@@ -75,29 +78,80 @@ public class LayoutEngine {
      */
     private interface Axis {
         <T> float getPreferred(T node, LayoutAccessor<T> accessor);
+
         float getFixed(NodeSizing sizing);
+
         SizeMode getMode(NodeSizing sizing);
+
         float getGrowWeight(NodeSizing sizing);
+
         float getPadding(NodeSizing sizing);
+
         float constrain(NodeSizing sizing, float value);
     }
 
     private static final Axis AXIS_X = new Axis() {
-        @Override public <T> float getPreferred(T node, LayoutAccessor<T> accessor) { return accessor.getPreferredWidth(node); }
-        @Override public float getFixed(NodeSizing s) { return s.getFixedWidth(); }
-        @Override public SizeMode getMode(NodeSizing s) { return s.getWidthMode(); }
-        @Override public float getGrowWeight(NodeSizing s) { return s.getGrowWeightHorizontal(); }
-        @Override public float getPadding(NodeSizing s) { return s.getHorizontalPadding(); }
-        @Override public float constrain(NodeSizing s, float value) { return s.constrainWidth(value); }
+        @Override
+        public <T> float getPreferred(T node, LayoutAccessor<T> accessor) {
+            return accessor.getPreferredWidth(node);
+        }
+
+        @Override
+        public float getFixed(NodeSizing s) {
+            return s.getFixedWidth();
+        }
+
+        @Override
+        public SizeMode getMode(NodeSizing s) {
+            return s.getWidthMode();
+        }
+
+        @Override
+        public float getGrowWeight(NodeSizing s) {
+            return s.getGrowWeightHorizontal();
+        }
+
+        @Override
+        public float getPadding(NodeSizing s) {
+            return s.getHorizontalPadding();
+        }
+
+        @Override
+        public float constrain(NodeSizing s, float value) {
+            return s.constrainWidth(value);
+        }
     };
 
     private static final Axis AXIS_Y = new Axis() {
-        @Override public <T> float getPreferred(T node, LayoutAccessor<T> accessor) { return accessor.getPreferredHeight(node); }
-        @Override public float getFixed(NodeSizing s) { return s.getFixedHeight(); }
-        @Override public SizeMode getMode(NodeSizing s) { return s.getHeightMode(); }
-        @Override public float getGrowWeight(NodeSizing s) { return s.getGrowWeightVertical(); }
-        @Override public float getPadding(NodeSizing s) { return s.getVerticalPadding(); }
-        @Override public float constrain(NodeSizing s, float value) { return s.constrainHeight(value); }
+        @Override
+        public <T> float getPreferred(T node, LayoutAccessor<T> accessor) {
+            return accessor.getPreferredHeight(node);
+        }
+
+        @Override
+        public float getFixed(NodeSizing s) {
+            return s.getFixedHeight();
+        }
+
+        @Override
+        public SizeMode getMode(NodeSizing s) {
+            return s.getHeightMode();
+        }
+
+        @Override
+        public float getGrowWeight(NodeSizing s) {
+            return s.getGrowWeightVertical();
+        }
+
+        @Override
+        public float getPadding(NodeSizing s) {
+            return s.getVerticalPadding();
+        }
+
+        @Override
+        public float constrain(NodeSizing s, float value) {
+            return s.constrainHeight(value);
+        }
     };
 
     // --- Backward Compatible Overloads for Element ---
@@ -124,7 +178,12 @@ public class LayoutEngine {
         return preferredAxis(spec, isColumn, AXIS_Y, gap, children, accessor);
     }
 
-    private static <T> float preferredAxis(NodeSizing spec, boolean isColumn, Axis axis, float gapSpacing, Iterable<T> children, LayoutAccessor<T> accessor) {
+    private static <T> float preferredAxis(NodeSizing spec,
+                                           boolean isColumn,
+                                           Axis axis,
+                                           float gapSpacing,
+                                           Iterable<T> children,
+                                           LayoutAccessor<T> accessor) {
         if (axis.getMode(spec) == SizeMode.FIXED) {
             return axis.constrain(spec, axis.getFixed(spec));
         }
@@ -142,7 +201,8 @@ public class LayoutEngine {
             if (childSizing == null) {
                 childValue = axis.getPreferred(childNode, accessor);
             } else {
-                float fixedValue = (axis.getMode(childSizing) == SizeMode.FIXED) ? axis.getFixed(childSizing) : axis.getPreferred(childNode, accessor);
+                float fixedValue = (axis.getMode(childSizing) == SizeMode.FIXED) ? axis.getFixed(childSizing) : axis.getPreferred(childNode,
+                    accessor);
                 childValue = axis.constrain(childSizing, fixedValue);
             }
 
@@ -190,7 +250,13 @@ public class LayoutEngine {
         float totalGrowWeight = 0.0f;
     }
 
-    public static <T> void layout(LayoutSpec spec, Iterable<T> children, float xPosition, float yPosition, float width, float height, LayoutAccessor<T> accessor) {
+    public static <T> void layout(LayoutSpec spec,
+                                  Iterable<T> children,
+                                  float xPosition,
+                                  float yPosition,
+                                  float width,
+                                  float height,
+                                  LayoutAccessor<T> accessor) {
         float gapSpacing = spec.gap();
         boolean isColumn = spec.isColumn();
         Axis mainAxis = isColumn ? AXIS_Y : AXIS_X;
@@ -221,7 +287,7 @@ public class LayoutEngine {
             }
 
             // Create new line if wrapping is enabled and current line overflows
-            if (spec.isWrap() && !currentLayoutLine.items.isEmpty() && 
+            if (spec.isWrap() && !currentLayoutLine.items.isEmpty() &&
                 currentLayoutLine.mainSize + gapSpacing + mainSize > mainLimit) {
                 currentLayoutLine = new LayoutLine<>();
                 layoutLines.add(currentLayoutLine);
@@ -254,7 +320,8 @@ public class LayoutEngine {
                     NodeSizing childSizing = accessor.getSizing(item.node);
                     if (childSizing != null && mainAxis.getMode(childSizing) == SizeMode.GROW) {
                         float weight = mainAxis.getGrowWeight(childSizing);
-                        float allocatedShare = (line.totalGrowWeight > 0.0f ? (weight / line.totalGrowWeight) : (1.0f / line.growCount)) * extraMain;
+                        float allocatedShare =
+                            (line.totalGrowWeight > 0.0f ? (weight / line.totalGrowWeight) : (1.0f / line.growCount)) * extraMain;
                         item.mainSize = allocatedShare;
                     }
                 }
@@ -294,7 +361,7 @@ public class LayoutEngine {
         for (LayoutLine<T> line : layoutLines) {
             float extraMainSpace = mainLimit - line.mainSize;
             float[] offsets = computeJustifyOffsets(extraMainSpace, line.items.size(), gapSpacing, spec.justifyContent());
-            
+
             float cursorPosition;
             if (isForwardDirection) {
                 // Moving forward (increasing coordinates)
@@ -316,7 +383,10 @@ public class LayoutEngine {
                 }
 
                 // Determine local cross offset inside the layout line space
-                item.crossPosition = line.crossPosition + calculateItemCrossPositionOffset(0.0f, line.crossSize, item.crossSize, childAlignment);
+                item.crossPosition = line.crossPosition + calculateItemCrossPositionOffset(0.0f,
+                    line.crossSize,
+                    item.crossSize,
+                    childAlignment);
 
                 if (isForwardDirection) {
                     item.mainPosition = cursorPosition;

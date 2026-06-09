@@ -1,11 +1,11 @@
-package org.mindustrytool.ui.style;
+package org.mindustrytool.libs.ui.style;
 
 import arc.graphics.Color;
 
-public final class Theme {
+import lombok.experimental.UtilityClass;
 
-    private Theme() {}
-
+@UtilityClass
+public class Theme {
     public static final Color TEXT_BRIGHT    = Color.valueOf("f2f2f5");
     public static final Color TEXT_PRIMARY   = Color.valueOf("c8c8d8");
     public static final Color TEXT_SECONDARY = Color.valueOf("8888aa");
