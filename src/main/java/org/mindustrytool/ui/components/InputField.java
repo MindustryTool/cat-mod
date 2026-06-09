@@ -1,60 +1,55 @@
 package org.mindustrytool.ui.components;
 
-import arc.func.Cons;
+import arc.graphics.Color;
 import arc.scene.Element;
 import arc.scene.event.ChangeListener;
-import arc.struct.Seq;
 
-import org.mindustrytool.signal.Signal;
+import org.mindustrytool.ui.kernel.AbstractComponent;
+import org.mindustrytool.ui.style.ComponentStyle;
 import org.mindustrytool.ui.layout.NodeSizing;
-import org.mindustrytool.ui.layout.Sizing;
+
+import arc.func.Cons;
 
 import static arc.Core.scene;
 
-public class InputField implements Component {
-    public static class Builder {
-        private String placeholder;
-        private Signal<String> signal;
-        private Cons<NodeSizing> sizeFn;
+public class InputField extends AbstractComponent {
+    public class Style extends ComponentStyle {
+        public final arc.scene.ui.TextField.TextFieldStyle ls;
 
-        public Builder placeholder(String v) { placeholder = v; return this; }
-        public Builder bind(Signal<String> v) { signal = v; return this; }
-        public Builder size(Cons<NodeSizing> fn) { sizeFn = fn; return this; }
+        Style(NodeSizing sizing, arc.scene.ui.TextField.TextFieldStyle ls) { super(sizing); this.ls = ls; }
 
-        public InputField build() {
-            var f = new InputField(placeholder, signal);
-            if (sizeFn != null) sizeFn.get(f.sizing);
-            return f;
+        public Style text(String v) { element.setText(v); return this; }
+        public Style placeholder(String v) { element.setMessageText(v); return this; }
+        public Style textColor(Color v) { ls.fontColor = v; element.setStyle(ls); return this; }
+        public Style size(Cons<NodeSizing> fn) { fn.get(sizing); return this; }
+    }
+
+    public class ListenerBuilder {
+        public ListenerBuilder changed(Cons<String> fn) {
+            element.addListener(new ChangeListener() {
+                @Override public void changed(ChangeEvent event, Element actor) { fn.get(element.getText()); }
+            });
+            return this;
         }
     }
 
     private final arc.scene.ui.TextField element;
-    public final NodeSizing sizing = new NodeSizing();
-    private final Seq<Runnable> subscriptions = new Seq<>();
+    public final Style style;
 
-    private InputField(String placeholder, Signal<String> signal) {
+    private InputField() {
         var base = scene.getStyle(arc.scene.ui.TextField.TextFieldStyle.class);
         var st = new arc.scene.ui.TextField.TextFieldStyle(base);
-        element = new arc.scene.ui.TextField(placeholder != null ? placeholder : "", st);
+        this.element = new arc.scene.ui.TextField("", st);
         element.userObject = this;
-        if (signal != null) {
-            element.setText(signal.get());
-            element.addListener(new ChangeListener() {
-                @Override
-                public void changed(ChangeEvent event, Element actor) {
-                    signal.set(element.getText());
-                }
-            });
-            subscriptions.add(signal.onChange(element::setText));
-        }
+        this.style = new Style(sizing, st);
         sizing.onInvalidate(element::invalidateHierarchy);
     }
 
-    public static Builder build() { return new Builder(); }
+    public static InputField of() { return new InputField(); }
+
+    public InputField style(Cons<Style> fn) { fn.get(style); element.invalidateHierarchy(); return this; }
+    public InputField size(Cons<NodeSizing> fn) { fn.get(sizing); element.invalidateHierarchy(); return this; }
+    public InputField listener(Cons<ListenerBuilder> fn) { fn.get(new ListenerBuilder()); return this; }
 
     @Override public Element element() { return element; }
-    @Override public Sizing sizing() { return sizing; }
-
-    @Override
-    public void dispose() { subscriptions.each(Runnable::run); subscriptions.clear(); }
 }
