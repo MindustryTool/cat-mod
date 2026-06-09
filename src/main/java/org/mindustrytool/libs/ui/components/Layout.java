@@ -1,7 +1,6 @@
 package org.mindustrytool.libs.ui.components;
 
 import arc.scene.Element;
-import arc.scene.Scene;
 import arc.scene.ui.layout.WidgetGroup;
 import arc.struct.Seq;
 
@@ -178,21 +177,6 @@ public class Layout implements Component {
             group.invalidateHierarchy();
         });
         subscriptions.add(styleEffect);
-        return this;
-    }
-
-    /**
-     * Configures the sizing properties of this layout container itself reactively.
-     *
-     * @param configurator the node sizing configurator callback
-     * @return this layout instance for chaining
-     */
-    public Layout size(Cons<NodeSizing> configurator) {
-        Effect sizeEffect = new Effect(() -> {
-            configurator.get(spec);
-            group.invalidateHierarchy();
-        });
-        subscriptions.add(sizeEffect);
         return this;
     }
 
