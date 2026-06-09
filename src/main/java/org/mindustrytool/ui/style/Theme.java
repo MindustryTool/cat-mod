@@ -21,4 +21,13 @@ public final class Theme {
     public static final Color BACKGROUND      = Color.valueOf("141418");
     public static final Color SURFACE         = Color.valueOf("1c1c22");
     public static final Color BORDER          = Color.valueOf("303052");
+
+    // Dracula & macOS Editor theme colors
+    public static final Color DRACULA_BG      = Color.valueOf("282a36");
+    public static final Color MAC_RED         = Color.valueOf("ff5555");
+    public static final Color MAC_YELLOW      = Color.valueOf("ffb86c");
+    public static final Color MAC_GREEN       = Color.valueOf("50fa7b");
+    public static final Color DRACULA_PINK    = Color.valueOf("ff79c6");
+    public static final Color DRACULA_CYAN    = Color.valueOf("8be9fd");
+    public static final Color DRACULA_YELLOW  = Color.valueOf("f1fa8c");
 }
