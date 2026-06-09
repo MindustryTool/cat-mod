@@ -5,17 +5,21 @@ import java.util.Deque;
 
 final class ReactiveContext {
 
-    private static final Deque<Computed<?>> STACK = new ArrayDeque<>();
+    private static final Deque<Reaction> STACK = new ArrayDeque<>();
 
-    static void push(Computed<?> c) {
-        STACK.push(c);
+    static void push(Reaction r) {
+        STACK.push(r);
     }
 
     static void pop() {
         STACK.pop();
     }
 
-    static Computed<?> active() {
-        return STACK.peekFirst();
+    static void active(Signal<?> signal) {
+        Reaction active = STACK.peek();
+        if (active == null) return;
+
+        active.link(signal);
+        signal.subscribers.add(active);
     }
 }

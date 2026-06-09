@@ -1,27 +1,17 @@
 package org.mindustrytool.signal;
 
-import arc.func.Prov;
+public final class Effect {
 
-public final class Computed<T> {
-
-    private final Signal<T> signal;
     private final Reaction reaction;
 
-    public Computed(Prov<T> fn) {
-        signal = new Signal<>(null);
-
+    public Effect(Runnable fn) {
         reaction = new Reaction() {
 
             @Override
             protected void execute() {
-                signal.set(fn.get());
+                fn.run();
             }
         };
-    }
-
-
-    public T get() {
-        return signal.get();
     }
 
     public void dispose() {
