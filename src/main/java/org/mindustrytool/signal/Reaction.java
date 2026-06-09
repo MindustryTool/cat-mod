@@ -36,6 +36,7 @@ public abstract class Reaction {
             ReactiveContext.push(this);
 
             execute();
+
             dirty = false;
         } finally {
             ReactiveContext.pop();
