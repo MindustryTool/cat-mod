@@ -2,13 +2,11 @@ package org.mindustrytool.ui.components;
 
 import arc.scene.Element;
 
-import org.mindustrytool.ui.layout.SizingProvider;
+import org.mindustrytool.ui.layout.Sizing;
 
-public interface Component extends SizingProvider {
+public interface Component {
 
     Element element();
-
-    default void dispose() {
-
-    }
+    default Sizing sizing() { return null; }
+    default void dispose() { }
 }

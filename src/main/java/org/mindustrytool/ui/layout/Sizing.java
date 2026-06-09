@@ -4,6 +4,7 @@ public interface Sizing {
 
     enum SizeMode {WRAP, GROW, FIXED}
 
+
     SizeMode widthMode();
 
     SizeMode heightMode();
