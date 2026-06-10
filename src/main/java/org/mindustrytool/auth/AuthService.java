@@ -14,8 +14,6 @@ import javax.inject.Singleton;
 import lombok.NoArgsConstructor;
 
 import org.mindustrytool.auth.AuthState.AuthSnapshot;
-import org.mindustrytool.auth.dto.LoginEvent;
-import org.mindustrytool.auth.dto.LogoutEvent;
 import org.mindustrytool.auth.dto.UserSession;
 import org.mindustrytool.libs.signal.MultithreadSignal;
 
@@ -149,7 +147,6 @@ public class AuthService {
 
         saveTokens(json.getString("accessToken"), json.getString("refreshToken"));
         fetchSession();
-        Events.fire(new LoginEvent());
         return (String) ref[0].result;
     }
 
@@ -185,7 +182,6 @@ public class AuthService {
         Core.settings.remove(KEY_LOGIN_ID);
 
         stateSignal.update(AuthSnapshot.idle());
-        Events.fire(new LogoutEvent());
         Log.info("Logged out");
     }
 
