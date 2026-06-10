@@ -1,20 +1,22 @@
-package org.mindustrytool.libs.ui.style;
+package org.mindustrytool.mdtui;
 
 import arc.freetype.FreeTypeFontGenerator;
 import arc.freetype.FreeTypeFontGenerator.FreeTypeFontParameter;
 import arc.graphics.g2d.Font;
 
-import lombok.experimental.UtilityClass;
-
 import mindustry.Vars;
 
 import org.mindustrytool.util.Resources;
 
-@UtilityClass
-public class Fonts {
-    public static Font mono;
+import javax.inject.Inject;
+import javax.inject.Singleton;
 
-    public static void load() {
+@Singleton
+public class FontManager {
+    public final Font mono;
+
+    @Inject
+    public FontManager() {
         mono = new FreeTypeFontGenerator(Vars.tree.get(Resources.FONT_MONO))
             .generateFont(new FreeTypeFontParameter() {{
                 size = 32;
@@ -23,4 +25,5 @@ public class Fonts {
 
         mono.getData().markupEnabled = true;
     }
+
 }
