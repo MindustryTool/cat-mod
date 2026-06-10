@@ -4,12 +4,11 @@ import arc.scene.Element;
 import arc.scene.ui.layout.WidgetGroup;
 import arc.struct.Seq;
 
-
 import org.mindustrytool.libs.signal.Effect;
 import org.mindustrytool.libs.ui.component.Component;
 import org.mindustrytool.libs.ui.layout.LayoutEngine;
-import org.mindustrytool.libs.ui.layout.NodeSizing;
-import org.mindustrytool.libs.ui.layout.NodeSizing.SizeMode;
+import org.mindustrytool.libs.ui.layout.NodeSpec;
+import org.mindustrytool.libs.ui.layout.NodeSpec.SizeMode;
 import org.mindustrytool.libs.ui.layout.LayoutSpec;
 
 import arc.func.Cons;
@@ -44,33 +43,33 @@ public class Layout implements Component {
 
             @Override
             public float getPrefWidth() {
-                NodeSizing nodeSizing = spec;
-                if (nodeSizing.getWidthMode() == SizeMode.FIXED) {
-                    return nodeSizing.constrainWidth(nodeSizing.getFixedWidth());
+                NodeSpec nodeSpec = spec;
+                if (nodeSpec.getWidthMode() == SizeMode.FIXED) {
+                    return nodeSpec.constrainWidth(nodeSpec.getFixedWidth());
                 }
-                if (nodeSizing.getWidthMode() == SizeMode.GROW) {
+                if (nodeSpec.getWidthMode() == SizeMode.GROW) {
                     return 0.0f;
                 }
-                float preferredWidth = LayoutEngine.prefWidth(nodeSizing, spec.isColumn(), spec.gap(), foregroundChildren());
-                return nodeSizing.constrainWidth(preferredWidth);
+                float preferredWidth = LayoutEngine.prefWidth(nodeSpec, spec.isColumn(), spec.gap(), foregroundChildren());
+                return nodeSpec.constrainWidth(preferredWidth);
             }
 
             @Override
             public float getPrefHeight() {
-                NodeSizing nodeSizing = spec;
-                if (nodeSizing.getHeightMode() == SizeMode.FIXED) {
-                    return nodeSizing.constrainHeight(nodeSizing.getFixedHeight());
+                NodeSpec nodeSpec = spec;
+                if (nodeSpec.getHeightMode() == SizeMode.FIXED) {
+                    return nodeSpec.constrainHeight(nodeSpec.getFixedHeight());
                 }
-                if (nodeSizing.getHeightMode() == SizeMode.GROW) {
+                if (nodeSpec.getHeightMode() == SizeMode.GROW) {
                     return 0.0f;
                 }
-                float preferredHeight = LayoutEngine.prefHeight(nodeSizing, spec.isColumn(), spec.gap(), foregroundChildren());
-                return nodeSizing.constrainHeight(preferredHeight);
+                float preferredHeight = LayoutEngine.prefHeight(nodeSpec, spec.isColumn(), spec.gap(), foregroundChildren());
+                return nodeSpec.constrainHeight(preferredHeight);
             }
 
             @Override
             public void layout() {
-                NodeSizing nodeSizing = spec;
+                NodeSpec nodeSpec = spec;
                 float containerWidth = getWidth();
                 float containerHeight = getHeight();
 
@@ -80,10 +79,10 @@ public class Layout implements Component {
                     bgEl.setPosition(0, 0);
                 }
 
-                float layoutWidth = Math.max(0.0f, containerWidth - nodeSizing.getHorizontalPadding());
-                float layoutHeight = Math.max(0.0f, containerHeight - nodeSizing.getVerticalPadding());
+                float layoutWidth = Math.max(0.0f, containerWidth - nodeSpec.getHorizontalPadding());
+                float layoutHeight = Math.max(0.0f, containerHeight - nodeSpec.getVerticalPadding());
 
-                LayoutEngine.layout(spec, foregroundChildren(), nodeSizing.getPaddingLeft(), nodeSizing.getPaddingBottom(),
+                LayoutEngine.layout(spec, foregroundChildren(), nodeSpec.getPaddingLeft(), nodeSpec.getPaddingBottom(),
                     layoutWidth, layoutHeight);
             }
         };
@@ -172,7 +171,7 @@ public class Layout implements Component {
     }
 
     @Override
-    public NodeSizing sizing() {
+    public NodeSpec sizing() {
         return spec;
     }
 

@@ -7,8 +7,8 @@ import org.mindustrytool.libs.signal.Effect;
 import org.mindustrytool.libs.ui.component.AbstractComponent;
 import org.mindustrytool.libs.ui.component.Component;
 import org.mindustrytool.libs.ui.component.ComponentStyle;
-import org.mindustrytool.libs.ui.layout.NodeSizing;
-import org.mindustrytool.libs.ui.layout.NodeSizing.SizeMode;
+import org.mindustrytool.libs.ui.layout.NodeSpec;
+import org.mindustrytool.libs.ui.layout.NodeSpec.SizeMode;
 
 import arc.func.Cons;
 
@@ -40,7 +40,7 @@ public class ScrollPane extends AbstractComponent {
         }
 
         @Override
-        protected NodeSizing sizing() {
+        protected NodeSpec sizing() {
             return sizing;
         }
 
@@ -62,6 +62,7 @@ public class ScrollPane extends AbstractComponent {
             }
             if (value && scrollBarsOnTop) {
                 // Do nothing if scrollbars are on top and fading is enabled
+                return this;
             } else {
                 element.setFadeScrollBars(value);
             }
@@ -161,7 +162,7 @@ public class ScrollPane extends AbstractComponent {
          * @param configurator the node sizing configurator callback
          * @return this style builder instance
          */
-        public Style size(Cons<NodeSizing> configurator) {
+        public Style size(Cons<NodeSpec> configurator) {
             configurator.get(sizing);
             applySize();
             return this;
@@ -241,7 +242,7 @@ public class ScrollPane extends AbstractComponent {
      * @param configurator the sizing configurator callback
      * @return this scroll pane instance for chaining
      */
-    public ScrollPane size(Cons<NodeSizing> configurator) {
+    public ScrollPane size(Cons<NodeSpec> configurator) {
         if (sizeEffect != null) {
             sizeEffect.dispose();
             subscriptions.remove(sizeEffect);

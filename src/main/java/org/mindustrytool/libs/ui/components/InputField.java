@@ -7,7 +7,7 @@ import arc.scene.Scene;
 import org.mindustrytool.libs.signal.Effect;
 import org.mindustrytool.libs.ui.component.AbstractComponent;
 import org.mindustrytool.libs.ui.component.ComponentStyle;
-import org.mindustrytool.libs.ui.layout.NodeSizing;
+import org.mindustrytool.libs.ui.layout.NodeSpec;
 
 import arc.func.Cons;
 
@@ -30,7 +30,7 @@ public class InputField extends AbstractComponent {
         }
 
         @Override
-        protected NodeSizing sizing() {
+        protected NodeSpec sizing() {
             return sizing;
         }
 
@@ -107,23 +107,12 @@ public class InputField extends AbstractComponent {
         }
 
         /**
-         * Adds an action listener triggered when the text changes.
-         *
-         * @param listener the change callback action receiving the new text String
-         * @return this style builder instance
-         */
-        public Style changed(Cons<String> listener) {
-            element.changed(() -> listener.get(element.getText()));
-            return this;
-        }
-
-        /**
          * Configures layout sizing.
          *
          * @param configurator the node sizing configurator callback
          * @return this style builder instance
          */
-        public Style size(Cons<NodeSizing> configurator) {
+        public Style size(Cons<NodeSpec> configurator) {
             configurator.get(sizing);
             return this;
         }
@@ -186,7 +175,7 @@ public class InputField extends AbstractComponent {
      * @param configurator the sizing configurator callback
      * @return this input field instance for chaining
      */
-    public InputField size(Cons<NodeSizing> configurator) {
+    public InputField size(Cons<NodeSpec> configurator) {
         if (sizeEffect != null) {
             sizeEffect.dispose();
             subscriptions.remove(sizeEffect);
