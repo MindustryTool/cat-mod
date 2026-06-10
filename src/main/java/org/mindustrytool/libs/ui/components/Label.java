@@ -3,9 +3,10 @@ package org.mindustrytool.libs.ui.components;
 import arc.graphics.Color;
 import arc.scene.Element;
 import arc.scene.Scene;
+import arc.struct.Seq;
 
 import org.mindustrytool.libs.signal.Effect;
-import org.mindustrytool.libs.ui.component.AbstractComponent;
+import org.mindustrytool.libs.ui.component.Component;
 import org.mindustrytool.libs.ui.component.ComponentStyle;
 import org.mindustrytool.libs.ui.layout.NodeSpec;
 
@@ -13,15 +14,8 @@ import arc.func.Cons;
 
 import static arc.Core.scene;
 
-/**
- * Label is a basic UI component used to display read-only text labels.
- * It supports reactive dynamic style updates such as text changes, scaling, alignments, colors, and wrapping.
- */
-public class Label extends AbstractComponent {
+public class Label implements Component {
 
-    /**
-     * Style builder for Label, supporting text content, text alignment, scale, wrapping, color, and sizing.
-     */
     public class Style extends ComponentStyle<Style> {
         public final arc.scene.ui.Label.LabelStyle labelStyle;
         Color textColor;
@@ -43,23 +37,11 @@ public class Label extends AbstractComponent {
             return element;
         }
 
-        /**
-         * Sets the text displayed on the label.
-         *
-         * @param value the text content
-         * @return this style builder instance
-         */
         public Style text(String value) {
             element.setText(value);
             return this;
         }
 
-        /**
-         * Sets the text color.
-         *
-         * @param value the text color
-         * @return this style builder instance
-         */
         public Style textColor(Color value) {
             this.textColor = value;
             this.labelStyle.fontColor = value;
@@ -67,53 +49,32 @@ public class Label extends AbstractComponent {
             return this;
         }
 
-        /**
-         * Sets the text alignment using Align bitmask flags.
-         *
-         * @param value the align flags
-         * @return this style builder instance
-         */
         public Style textAlign(int value) {
             this.textAlign = value;
             element.setAlignment(value);
             return this;
         }
 
-        /**
-         * Sets the font scaling factor.
-         *
-         * @param value the font scale
-         * @return this style builder instance
-         */
         public Style fontScale(float value) {
             this.fontScale = value;
             element.setFontScale(value);
             return this;
         }
 
-        /**
-         * Enables/disables multiline text wrapping.
-         *
-         * @param value true to enable wrapping, false otherwise
-         * @return this style builder instance
-         */
         public Style wrap(boolean value) {
             this.wrap = value;
             element.setWrap(value);
             return this;
         }
 
-        /**
-         * Configures layout sizing.
-         *
-         * @param configurator the node sizing configurator callback
-         * @return this style builder instance
-         */
         public Style size(Cons<NodeSpec> configurator) {
             configurator.get(sizing);
             return this;
         }
     }
+
+    protected final NodeSpec sizing = new NodeSpec();
+    protected final Seq<Effect> subscriptions = new Seq<>();
 
     private final arc.scene.ui.Label element;
     public final Style style;
@@ -137,21 +98,10 @@ public class Label extends AbstractComponent {
         sizing.onInvalidate(element::invalidateHierarchy);
     }
 
-    /**
-     * Factory method to create a new Label instance.
-     *
-     * @return a new Label component instance
-     */
     public static Label of() {
         return new Label();
     }
 
-    /**
-     * Configures the label style properties reactively.
-     *
-     * @param configurator the style configurator callback
-     * @return this label instance for chaining
-     */
     public Label style(Cons<Style> configurator) {
         if (styleEffect != null) {
             styleEffect.dispose();
@@ -165,12 +115,6 @@ public class Label extends AbstractComponent {
         return this;
     }
 
-    /**
-     * Configures the label sizing constraints reactively.
-     *
-     * @param configurator the sizing configurator callback
-     * @return this label instance for chaining
-     */
     public Label size(Cons<NodeSpec> configurator) {
         if (sizeEffect != null) {
             sizeEffect.dispose();
@@ -187,5 +131,16 @@ public class Label extends AbstractComponent {
     @Override
     public Element element() {
         return element;
+    }
+
+    @Override
+    public NodeSpec sizing() {
+        return sizing;
+    }
+
+    @Override
+    public void dispose() {
+        subscriptions.each(Effect::dispose);
+        subscriptions.clear();
     }
 }

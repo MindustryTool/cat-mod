@@ -5,25 +5,19 @@ import arc.graphics.Texture;
 import arc.scene.Element;
 import arc.scene.Scene;
 import arc.scene.event.Touchable;
+import arc.struct.Seq;
 
+import org.mindustrytool.libs.signal.Effect;
 import org.mindustrytool.libs.signal.MultithreadSignal;
-import org.mindustrytool.libs.ui.component.AbstractComponent;
+import org.mindustrytool.libs.ui.component.Component;
 import org.mindustrytool.libs.ui.component.ComponentStyle;
 import org.mindustrytool.libs.ui.layout.NodeSpec;
 import org.mindustrytool.util.ImageLoader;
 
 import arc.func.Cons;
 
-/**
- * CustomUIComponent is a premium component that renders visual elements using a CustomElement drawing engine
- * with advanced SDF shapes, borders, shadows, textures, animations, and async image loading.
- */
-public class CustomUIComponent extends AbstractComponent {
+public class CustomUIComponent implements Component {
 
-    /**
-     * Style builder for CustomUIComponent, supporting advanced SDF shapes, borders,
-     * shadows, textures, and gradient configuration.
-     */
     public class Style extends ComponentStyle<Style> {
         float topLeftRadius = 8f;
         float topRightRadius = 8f;
@@ -128,15 +122,6 @@ public class CustomUIComponent extends AbstractComponent {
             return this;
         }
 
-        /**
-         * Loads a remote image from the given URL and applies it as a texture.
-         * The signal subscribes on the main thread with a LOADED/FAILED condition;
-         * already-cached images are applied immediately.
-         *
-         * @param url  the URL of the image
-         * @param tint the tint color
-         * @return this style builder instance
-         */
         public Style loadImage(String url, Color tint) {
             if (CustomUIComponent.this.ownedTexture != null) {
                 CustomUIComponent.this.ownedTexture.dispose();
@@ -188,12 +173,14 @@ public class CustomUIComponent extends AbstractComponent {
         }
     }
 
+    protected final NodeSpec sizing = new NodeSpec();
+    protected final Seq<Effect> subscriptions = new Seq<>();
+
     public final Style style;
     final CustomElement drawer = new CustomElement();
     private MultithreadSignal.Handle imageHandle;
     private Texture ownedTexture;
 
-    // ─── Animation State ───
     private boolean animating;
     private final StyleBuffer animFrom = new StyleBuffer();
     private final StyleBuffer animTo = new StyleBuffer();
@@ -277,7 +264,6 @@ public class CustomUIComponent extends AbstractComponent {
         }
     }
 
-    // ─── Element ───
     private final Element element = new Element() {
         @Override
         public float getPrefWidth() {
@@ -311,9 +297,7 @@ public class CustomUIComponent extends AbstractComponent {
             float yPos = this.y;
             float w = getWidth();
             float h = getHeight();
-            if (w <= 0f || h <= 0f) {
-                return;
-            }
+            if (w <= 0f || h <= 0f) return;
 
             Style s = style;
 
@@ -332,7 +316,6 @@ public class CustomUIComponent extends AbstractComponent {
         }
     };
 
-    // ─── Constructor ───
     private CustomUIComponent() {
         this.style = new Style();
         sizing.onInvalidate(element::invalidateHierarchy);
@@ -345,7 +328,6 @@ public class CustomUIComponent extends AbstractComponent {
         return new CustomUIComponent();
     }
 
-    // ─── Public API ───
     public CustomUIComponent style(Cons<Style> configurator) {
         configurator.get(style);
         element.invalidateHierarchy();
@@ -376,7 +358,6 @@ public class CustomUIComponent extends AbstractComponent {
         return this;
     }
 
-    // ─── Internal ───
     private void updateAnimation(float delta) {
         animElapsed += delta;
         float t = Math.min(animElapsed / animDuration, 1f);
@@ -399,6 +380,11 @@ public class CustomUIComponent extends AbstractComponent {
     }
 
     @Override
+    public NodeSpec sizing() {
+        return sizing;
+    }
+
+    @Override
     public void dispose() {
         if (imageHandle != null) {
             imageHandle.dispose();
@@ -408,7 +394,8 @@ public class CustomUIComponent extends AbstractComponent {
             ownedTexture.dispose();
             ownedTexture = null;
         }
-        super.dispose();
+        subscriptions.each(Effect::dispose);
+        subscriptions.clear();
         drawer.dispose();
     }
 }
