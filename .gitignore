@@ -4,5 +4,7 @@
 openspec
 build
 bin
-test
+/test
+!src/test/
+!src/test/**
 temp
