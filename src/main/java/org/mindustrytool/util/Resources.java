@@ -1,14 +1,16 @@
 package org.mindustrytool.util;
 
 import arc.files.Fi;
+
 import lombok.experimental.UtilityClass;
 
 import mindustry.Vars;
 
 @UtilityClass
 public class Resources {
-    public static final String FONT_MONO = "fonts/JetBrainsMono-Regular.ttf";
     public static final Fi IMAGE_CACHE_DIR = Vars.tmpDirectory.child("neko-image-caches");
+
+    public static final String FONT_MONO = "fonts/JetBrainsMono-Regular.ttf";
     public static final String BUNDLE = "bundles/bundle";
     public static final String ICON_MOD = "icons/mod.png";
 

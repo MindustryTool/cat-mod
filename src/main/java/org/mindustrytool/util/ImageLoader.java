@@ -13,6 +13,7 @@ import java.util.Map;
 import java.util.concurrent.locks.ReentrantLock;
 
 import lombok.experimental.UtilityClass;
+
 import org.mindustrytool.libs.signal.MultithreadSignal;
 
 /**
@@ -120,24 +121,29 @@ public class ImageLoader {
             ? url + (url.contains("?") ? "&format=jpeg" : "?format=jpeg")
             : url;
 
-        var httpRef = new Object() { byte[] bytes; Throwable error; };
+        var ref = new HttpResult[]{null};
         Http.request(HttpMethod.GET, downloadUrl)
             .timeout(15000)
-            .error(err -> httpRef.error = err)
-            .block(res -> httpRef.bytes = res.getResult());
+            .error(err -> ref[0] = new HttpResult(null, err))
+            .block(res -> ref[0] = new HttpResult(res.getResult(), null));
+        var httpRef = ref[0];
 
-        if (httpRef.error != null) {
-            Log.err("Failed to load image: " + url, httpRef.error);
+        if (httpRef.error() != null) {
+            Log.err("Failed to load image: " + url, httpRef.error());
             return null;
         }
 
-        if (httpRef.bytes == null || httpRef.bytes.length == 0) {
+        if (httpRef.bytes() == null || httpRef.bytes().length == 0) {
             Log.err("Empty response bytes for: " + url);
             return null;
         }
 
-        cachedFile.writeBytes(httpRef.bytes);
-        return new Pixmap(httpRef.bytes);
+        cachedFile.writeBytes(httpRef.bytes());
+        return new Pixmap(httpRef.bytes());
+    }
+
+    private record HttpResult(byte[] bytes, Throwable error) {
+
     }
 
     /**
@@ -183,7 +189,7 @@ public class ImageLoader {
      * @param texture the loaded texture (non-null only in {@link ImageLoadState#LOADED})
      * @param pixmap  the decoded pixmap (non-null only in {@link ImageLoadState#DECODED})
      */
-    public static record ImageResource(ImageLoadState state, Texture texture, Pixmap pixmap) {
+    public record ImageResource(ImageLoadState state, Texture texture, Pixmap pixmap) {
         public static ImageResource idle() {
             return new ImageResource(ImageLoadState.IDLE, null, null);
         }
