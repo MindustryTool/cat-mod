@@ -6,6 +6,7 @@ import arc.scene.Element;
 import arc.scene.Scene;
 import arc.scene.event.Touchable;
 import org.mindustrytool.libs.signal.Effect;
+import org.mindustrytool.libs.signal.Signal;
 import org.mindustrytool.libs.ui.animation.Ease;
 import org.mindustrytool.libs.ui.component.AbstractComponent;
 import org.mindustrytool.libs.ui.component.ComponentStyle;
@@ -50,9 +51,6 @@ public class CustomUIComponent extends AbstractComponent {
         float glowSpread;
         final Color glowColor = new Color(0, 0, 0, 0);
         float opacity = 1f;
-
-        String currentUrl;
-        Cons<Texture> activeCallback;
 
         Style() {
         }
@@ -141,38 +139,9 @@ public class CustomUIComponent extends AbstractComponent {
          * @return this style builder instance
          */
         public Style loadImage(String url, Color tint) {
-            if (currentUrl != null && activeCallback != null) {
-                ImageLoader.cancel(currentUrl, activeCallback);
-            }
-
-            this.currentUrl = url;
-
-            Texture cached = ImageLoader.get(url);
-            if (cached != null) {
-                this.fillTexture = cached;
-                this.textureTint.set(tint);
-                this.activeCallback = null;
-                this.currentUrl = null;
-                return this;
-            }
-
-            Cons<Texture> callback = new Cons<Texture>() {
-                @Override
-                public void get(Texture loadedTexture) {
-                    if (activeCallback == this) {
-                        if (loadedTexture != null) {
-                            fillTexture = loadedTexture;
-                            textureTint.set(tint);
-                            element.invalidateHierarchy();
-                        }
-                        activeCallback = null;
-                        currentUrl = null;
-                    }
-                }
-            };
-
-            this.activeCallback = callback;
-            ImageLoader.load(url, callback);
+            Signal<Texture> signal = ImageLoader.loadSignal(url);
+            this.fillTexture = signal.get();
+            this.textureTint.set(tint);
             return this;
         }
 
@@ -421,11 +390,6 @@ public class CustomUIComponent extends AbstractComponent {
     @Override
     public void dispose() {
         super.dispose();
-        if (style.currentUrl != null && style.activeCallback != null) {
-            ImageLoader.cancel(style.currentUrl, style.activeCallback);
-        }
-        style.activeCallback = null;
-        style.currentUrl = null;
         drawer.dispose();
     }
 }

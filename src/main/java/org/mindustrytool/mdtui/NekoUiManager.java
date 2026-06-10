@@ -43,7 +43,7 @@ public class NekoUiManager {
                 .text("Settings").textColor(Theme.TEXT_BRIGHT).fontScale(1.4f)))
 
             .child(CustomUIComponent.of().style(s -> s
-                .color(Theme.BORDER).size(sz -> sz.growX().height(1f))))
+                .fill(Theme.BORDER).size(sz -> sz.growX().height(1f))))
 
             .child(Label.of().style(s -> s
                 .text("Coming soon...").textColor(Theme.TEXT_GHOST).fontScale(0.9f)));

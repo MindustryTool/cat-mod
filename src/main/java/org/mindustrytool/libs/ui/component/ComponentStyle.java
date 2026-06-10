@@ -17,11 +17,12 @@ import org.mindustrytool.libs.ui.layout.NodeSizing.SizeMode;
  */
 @SuppressWarnings("unchecked")
 public abstract class ComponentStyle<S extends ComponentStyle<S>> {
-
     protected abstract NodeSizing sizing();
     protected abstract Element styledElement();
 
-    protected ComponentStyle() { }
+    protected ComponentStyle() {
+
+    }
 
     // --- Core Element Configuration Builders ---
 
@@ -48,100 +49,6 @@ public abstract class ComponentStyle<S extends ComponentStyle<S>> {
     }
 
     /**
-     * Sets the color overlay of the element.
-     *
-     * @param color the overlay color
-     * @return this style builder instance
-     */
-    public S color(Color color) {
-        styledElement().color.set(color);
-        return (S) this;
-    }
-
-    /**
-     * Sets the overlay color coordinates.
-     *
-     * @param red   the red color channel (0.0 to 1.0)
-     * @param green the green color channel (0.0 to 1.0)
-     * @param blue  the blue color channel (0.0 to 1.0)
-     * @param alpha the alpha transparency channel (0.0 to 1.0)
-     * @return this style builder instance
-     */
-    public S color(float red, float green, float blue, float alpha) {
-        styledElement().color.set(red, green, blue, alpha);
-        return (S) this;
-    }
-
-    /**
-     * Sets the rotation angle in degrees.
-     *
-     * @param rotation the rotation angle
-     * @return this style builder instance
-     */
-    public S rotation(float rotation) {
-        styledElement().setRotation(rotation);
-        return (S) this;
-    }
-
-    /**
-     * Sets a uniform scaling factor.
-     *
-     * @param scale the scale factor
-     * @return this style builder instance
-     */
-    public S scale(float scale) {
-        styledElement().setScale(scale);
-        return (S) this;
-    }
-
-    /**
-     * Sets separate horizontal and vertical scale factors.
-     *
-     * @param scaleX the horizontal scale factor
-     * @param scaleY the vertical scale factor
-     * @return this style builder instance
-     */
-    public S scale(float scaleX, float scaleY) {
-        styledElement().setScale(scaleX, scaleY);
-        return (S) this;
-    }
-
-    /**
-     * Sets the local translation coordinates relative to its layout position.
-     *
-     * @param x the horizontal offset coordinate
-     * @param y the vertical offset coordinate
-     * @return this style builder instance
-     */
-    public S translation(float x, float y) {
-        styledElement().setTranslation(x, y);
-        return (S) this;
-    }
-
-    /**
-     * Sets the origin point using alignment flags (e.g. Align.center).
-     *
-     * @param align the align bitmask flags
-     * @return this style builder instance
-     */
-    public S origin(int align) {
-        styledElement().setOrigin(align);
-        return (S) this;
-    }
-
-    /**
-     * Sets separate horizontal and vertical origin coordinates.
-     *
-     * @param originX the horizontal origin coordinate
-     * @param originY the vertical origin coordinate
-     * @return this style builder instance
-     */
-    public S origin(float originX, float originY) {
-        styledElement().setOrigin(originX, originY);
-        return (S) this;
-    }
-
-    /**
      * Sets the debug or lookup name.
      *
      * @param name the name of the element
@@ -149,17 +56,6 @@ public abstract class ComponentStyle<S extends ComponentStyle<S>> {
      */
     public S name(String name) {
         styledElement().name = name;
-        return (S) this;
-    }
-
-    /**
-     * Sets whether rendering culling is enabled.
-     *
-     * @param cullable true to enable culling
-     * @return this style builder instance
-     */
-    public S cullable(boolean cullable) {
-        styledElement().cullable = cullable;
         return (S) this;
     }
 

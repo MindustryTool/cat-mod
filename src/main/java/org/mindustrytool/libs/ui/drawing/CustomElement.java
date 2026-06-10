@@ -10,7 +10,6 @@ import arc.graphics.gl.FrameBuffer;
 import arc.graphics.gl.Shader;
 import arc.util.Disposable;
 
-import org.mindustrytool.util.ImageLoader;
 import org.mindustrytool.util.Resources;
 
 /**
@@ -183,26 +182,7 @@ public class CustomElement implements Disposable {
         render(xPosition, yPosition, width, height);
     }
 
-    public void loadImage(float xPosition, float yPosition, float width, float height, float radius, String url, Color tint,
-                          float scaleX, float scaleY, float offsetX, float offsetY) {
-        Texture texture = ImageLoader.get(url);
-        if (texture != null) {
-            fillTexture(xPosition, yPosition, width, height, radius, texture, tint, scaleX, scaleY, offsetX, offsetY);
-            return;
-        }
-        if (fallbackTexture != null) {
-            fillTexture(xPosition, yPosition, width, height, radius, fallbackTexture, tint, scaleX, scaleY, offsetX, offsetY);
-        }
-        ImageLoader.load(url, loadedTexture -> {
-            if (loadedTexture != null) {
-                fillTexture(xPosition, yPosition, width, height, radius, loadedTexture, tint, scaleX, scaleY, offsetX, offsetY);
-            }
-        });
-    }
 
-    public void loadImage(float xPosition, float yPosition, float width, float height, float radius, String url) {
-        loadImage(xPosition, yPosition, width, height, radius, url, Color.white, 1f, 1f, 0f, 0f);
-    }
 
     public void fallback(Texture texture) {
         this.fallbackTexture = texture;
@@ -369,6 +349,10 @@ public class CustomElement implements Disposable {
         Draw.shader(mainShader);
         mainShader.bind();
 
+        mainShader.setUniformi("u_gradientTex", 1);
+        mainShader.setUniformi("u_fillTexture", 2);
+        mainShader.setUniformi("u_blurTexture", 3);
+
         mainShader.setUniformf("u_cornerRadii", topLeftRadius, topRightRadius, bottomRightRadius, bottomLeftRadius);
         mainShader.setUniformf("u_size", width, height);
         mainShader.setUniformf("u_edgeSoftness", 1.0f);
@@ -409,6 +393,9 @@ public class CustomElement implements Disposable {
         if (blendMode > 0.001f && blurTexture != null) {
             blurTexture.bind(3);
         }
+
+        // Reset active texture to 0 so that Fill.quad binds to unit 0
+        Gl.activeTexture(Gl.texture0);
 
         Draw.color(Color.white);
         float packedColor = Draw.getColor().toFloatBits();

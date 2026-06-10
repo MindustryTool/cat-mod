@@ -78,15 +78,15 @@ void main() {
             baseColor = texture2D(u_gradientTex, vec2(t, 0.5));
         } else {
             vec2 uv = (v_texCoord0 - 0.5) * u_uvScale + 0.5 + u_uvOffset;
+            uv.y = 1.0 - uv.y;
             baseColor = texture2D(u_fillTexture, uv) * u_fillColor;
         }
     }
 
     // ─── Inner Shadow ───
     float shadowDist = dist + u_innerShadowSpread;
-    float shadowAlpha = (1.0 - smoothstep(0.0, max(u_innerShadowBlur, 0.001), shadowDist));
-    shadowAlpha *= 1.0 - step(0.0, shadowDist);
-    baseColor = mix(baseColor, u_innerShadowColor, shadowAlpha);
+    float shadowAlpha = smoothstep(-max(u_innerShadowBlur, 0.001), 0.0, shadowDist);
+    baseColor = mix(baseColor, vec4(u_innerShadowColor.rgb, 1.0), shadowAlpha * u_innerShadowColor.a);
 
     // ─── Border ───
     vec4 result = baseColor;
