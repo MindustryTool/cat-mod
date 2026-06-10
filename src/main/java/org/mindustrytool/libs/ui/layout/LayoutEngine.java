@@ -3,7 +3,7 @@ package org.mindustrytool.libs.ui.layout;
 import arc.scene.Element;
 
 import org.mindustrytool.libs.ui.component.Component;
-import org.mindustrytool.libs.ui.layout.NodeSizing.SizeMode;
+import org.mindustrytool.libs.ui.layout.NodeSpec.SizeMode;
 import org.mindustrytool.libs.ui.layout.LayoutSpec.AlignItems;
 import org.mindustrytool.libs.ui.layout.LayoutSpec.JustifyContent;
 
@@ -31,7 +31,7 @@ import org.mindustrytool.libs.ui.layout.LayoutSpec.JustifyContent;
  *
  * <p>Changelog:</p>
  * <ul>
- *   <li><b>2026-06-09:</b> Replaced the old Sizing interface with direct NodeSizing references.
+ *   <li><b>2026-06-09:</b> Replaced the old Sizing interface with direct NodeSpec references.
  *       Renamed all abbreviated variables and methods to full semantic terms (e.g. x -> xPosition, h -> height).</li>
  *   <li><b>2026-06-09:</b> Implemented wrapping layout logic (FlexWrap), individual cross alignment overrides (AlignSelf),
  *       reverse layout direction (Reverse), and Space Evenly alignment.</li>
@@ -67,7 +67,7 @@ public class LayoutEngine {
         }
 
         @Override
-        public NodeSizing getSizing(Element node) {
+        public NodeSpec getSizing(Element node) {
             return LayoutEngine.sizingOf(node);
         }
     };
@@ -78,15 +78,15 @@ public class LayoutEngine {
     private interface Axis {
         <T> float getPreferred(T node, LayoutAccessor<T> accessor);
 
-        float getFixed(NodeSizing sizing);
+        float getFixed(NodeSpec sizing);
 
-        SizeMode getMode(NodeSizing sizing);
+        SizeMode getMode(NodeSpec sizing);
 
-        float getGrowWeight(NodeSizing sizing);
+        float getGrowWeight(NodeSpec sizing);
 
-        float getPadding(NodeSizing sizing);
+        float getPadding(NodeSpec sizing);
 
-        float constrain(NodeSizing sizing, float value);
+        float constrain(NodeSpec sizing, float value);
     }
 
     private static final Axis AXIS_X = new Axis() {
@@ -96,27 +96,27 @@ public class LayoutEngine {
         }
 
         @Override
-        public float getFixed(NodeSizing s) {
+        public float getFixed(NodeSpec s) {
             return s.getFixedWidth();
         }
 
         @Override
-        public SizeMode getMode(NodeSizing s) {
+        public SizeMode getMode(NodeSpec s) {
             return s.getWidthMode();
         }
 
         @Override
-        public float getGrowWeight(NodeSizing s) {
+        public float getGrowWeight(NodeSpec s) {
             return s.getGrowWeightHorizontal();
         }
 
         @Override
-        public float getPadding(NodeSizing s) {
+        public float getPadding(NodeSpec s) {
             return s.getHorizontalPadding();
         }
 
         @Override
-        public float constrain(NodeSizing s, float value) {
+        public float constrain(NodeSpec s, float value) {
             return s.constrainWidth(value);
         }
     };
@@ -128,38 +128,38 @@ public class LayoutEngine {
         }
 
         @Override
-        public float getFixed(NodeSizing s) {
+        public float getFixed(NodeSpec s) {
             return s.getFixedHeight();
         }
 
         @Override
-        public SizeMode getMode(NodeSizing s) {
+        public SizeMode getMode(NodeSpec s) {
             return s.getHeightMode();
         }
 
         @Override
-        public float getGrowWeight(NodeSizing s) {
+        public float getGrowWeight(NodeSpec s) {
             return s.getGrowWeightVertical();
         }
 
         @Override
-        public float getPadding(NodeSizing s) {
+        public float getPadding(NodeSpec s) {
             return s.getVerticalPadding();
         }
 
         @Override
-        public float constrain(NodeSizing s, float value) {
+        public float constrain(NodeSpec s, float value) {
             return s.constrainHeight(value);
         }
     };
 
     // --- Backward Compatible Overloads for Element ---
 
-    public static float prefWidth(NodeSizing spec, boolean isColumn, float gap, Iterable<Element> children) {
+    public static float prefWidth(NodeSpec spec, boolean isColumn, float gap, Iterable<Element> children) {
         return prefWidth(spec, isColumn, gap, children, ELEMENT_ACCESSOR);
     }
 
-    public static float prefHeight(NodeSizing spec, boolean isColumn, float gap, Iterable<Element> children) {
+    public static float prefHeight(NodeSpec spec, boolean isColumn, float gap, Iterable<Element> children) {
         return prefHeight(spec, isColumn, gap, children, ELEMENT_ACCESSOR);
     }
 
@@ -169,15 +169,15 @@ public class LayoutEngine {
 
     // --- Core Generalized Layout Algorithms ---
 
-    public static <T> float prefWidth(NodeSizing spec, boolean isColumn, float gap, Iterable<T> children, LayoutAccessor<T> accessor) {
+    public static <T> float prefWidth(NodeSpec spec, boolean isColumn, float gap, Iterable<T> children, LayoutAccessor<T> accessor) {
         return preferredAxis(spec, isColumn, AXIS_X, gap, children, accessor);
     }
 
-    public static <T> float prefHeight(NodeSizing spec, boolean isColumn, float gap, Iterable<T> children, LayoutAccessor<T> accessor) {
+    public static <T> float prefHeight(NodeSpec spec, boolean isColumn, float gap, Iterable<T> children, LayoutAccessor<T> accessor) {
         return preferredAxis(spec, isColumn, AXIS_Y, gap, children, accessor);
     }
 
-    private static <T> float preferredAxis(NodeSizing spec,
+    private static <T> float preferredAxis(NodeSpec spec,
                                            boolean isColumn,
                                            Axis axis,
                                            float gapSpacing,
@@ -194,7 +194,7 @@ public class LayoutEngine {
 
         for (T childNode : children) {
             if (!accessor.isVisible(childNode)) continue;
-            NodeSizing childSizing = accessor.getSizing(childNode);
+            NodeSpec childSizing = accessor.getSizing(childNode);
 
             float childValue;
             if (childSizing == null) {
@@ -269,7 +269,7 @@ public class LayoutEngine {
 
         for (T childNode : children) {
             if (!accessor.isVisible(childNode)) continue;
-            NodeSizing childSizing = accessor.getSizing(childNode);
+            NodeSpec childSizing = accessor.getSizing(childNode);
 
             float mainSize, crossSize;
             if (childSizing == null) {
@@ -316,7 +316,7 @@ public class LayoutEngine {
             float extraMain = mainLimit - line.mainSize;
             if (line.growCount > 0 && extraMain > 0.0f) {
                 for (LayoutItem<T> item : line.items) {
-                    NodeSizing childSizing = accessor.getSizing(item.node);
+                    NodeSpec childSizing = accessor.getSizing(item.node);
                     if (childSizing != null && mainAxis.getMode(childSizing) == SizeMode.GROW) {
                         float weight = mainAxis.getGrowWeight(childSizing);
                         float allocatedShare =
@@ -374,7 +374,7 @@ public class LayoutEngine {
 
             int index = 0;
             for (LayoutItem<T> item : line.items) {
-                NodeSizing childSizing = accessor.getSizing(item.node);
+                NodeSpec childSizing = accessor.getSizing(item.node);
                 AlignItems childAlignment = getChildAlignment(childSizing, spec.alignItems());
 
                 if (childAlignment == AlignItems.STRETCH) {
@@ -406,12 +406,12 @@ public class LayoutEngine {
         }
     }
 
-    private static <T> float getChildSizeOnAxis(T node, NodeSizing sizing, Axis axis, LayoutAccessor<T> accessor) {
+    private static <T> float getChildSizeOnAxis(T node, NodeSpec sizing, Axis axis, LayoutAccessor<T> accessor) {
         float fixedValue = (axis.getMode(sizing) == SizeMode.FIXED) ? axis.getFixed(sizing) : axis.getPreferred(node, accessor);
         return axis.constrain(sizing, fixedValue);
     }
 
-    private static AlignItems getChildAlignment(NodeSizing sizing, AlignItems fallback) {
+    private static AlignItems getChildAlignment(NodeSpec sizing, AlignItems fallback) {
         if (sizing == null) return fallback;
         return switch (sizing.getAlignSelf()) {
             case START -> AlignItems.START;
@@ -465,7 +465,7 @@ public class LayoutEngine {
         };
     }
 
-    public static NodeSizing sizingOf(Element element) {
+    public static NodeSpec sizingOf(Element element) {
         Object object = element.userObject;
         if (object instanceof Component) return ((Component) object).sizing();
         return null;

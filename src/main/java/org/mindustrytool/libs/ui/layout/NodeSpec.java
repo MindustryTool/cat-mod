@@ -1,11 +1,11 @@
 package org.mindustrytool.libs.ui.layout;
 
 /**
- * NodeSizing defines the sizing policies, padding, and size constraints for a layout element (Node).
+ * NodeSpec defines the sizing policies, padding, and size constraints for a layout element (Node).
  * It provides a fluent builder-like API to configure layout options.
  * All properties are documented in detail, and abbreviations are strictly avoided.
  */
-public class NodeSizing {
+public class NodeSpec {
 
     /**
      * Sizing mode determines how the node's dimensions are calculated.
@@ -77,7 +77,7 @@ public class NodeSizing {
      * @param callback the invalidation callback runnable
      * @return this instance for chaining
      */
-    public NodeSizing onInvalidate(Runnable callback) {
+    public NodeSpec onInvalidate(Runnable callback) {
         this.onInvalidateCallback = callback;
         return this;
     }
@@ -155,86 +155,86 @@ public class NodeSizing {
 
     // --- Fluent Setters ---
 
-    public NodeSizing widthMode(SizeMode mode) {
+    public NodeSpec widthMode(SizeMode mode) {
         this.widthMode = mode;
         invalidate();
         return this;
     }
 
-    public NodeSizing heightMode(SizeMode mode) {
+    public NodeSpec heightMode(SizeMode mode) {
         this.heightMode = mode;
         invalidate();
         return this;
     }
 
-    public NodeSizing fixedWidth(float width) {
+    public NodeSpec fixedWidth(float width) {
         this.widthMode = SizeMode.FIXED;
         this.fixedWidth = width;
         invalidate();
         return this;
     }
 
-    public NodeSizing fixedHeight(float height) {
+    public NodeSpec fixedHeight(float height) {
         this.heightMode = SizeMode.FIXED;
         this.fixedHeight = height;
         invalidate();
         return this;
     }
 
-    public NodeSizing growWeightHorizontal(float weight) {
+    public NodeSpec growWeightHorizontal(float weight) {
         this.growWeightHorizontal = weight;
         invalidate();
         return this;
     }
 
-    public NodeSizing growWeightVertical(float weight) {
+    public NodeSpec growWeightVertical(float weight) {
         this.growWeightVertical = weight;
         invalidate();
         return this;
     }
 
-    public NodeSizing alignSelf(AlignSelf alignSelf) {
+    public NodeSpec alignSelf(AlignSelf alignSelf) {
         this.alignSelf = alignSelf;
         invalidate();
         return this;
     }
 
-    public NodeSizing grow() {
+    public NodeSpec grow() {
         this.widthMode = SizeMode.GROW;
         this.heightMode = SizeMode.GROW;
         invalidate();
         return this;
     }
 
-    public NodeSizing growX() {
+    public NodeSpec growX() {
         this.widthMode = SizeMode.GROW;
         invalidate();
         return this;
     }
 
-    public NodeSizing growY() {
+    public NodeSpec growY() {
         this.heightMode = SizeMode.GROW;
         invalidate();
         return this;
     }
 
-    public NodeSizing width(float width) {
+    public NodeSpec width(float width) {
         return fixedWidth(width);
     }
 
-    public NodeSizing height(float height) {
+    public NodeSpec height(float height) {
         return fixedHeight(height);
     }
 
-    public NodeSizing padding(float all) {
+    public NodeSpec padding(float all) {
         return padding(all, all, all, all);
     }
 
-    public NodeSizing padding(float vertical, float horizontal) {
+    public NodeSpec padding(float vertical, float horizontal) {
         return padding(vertical, horizontal, vertical, horizontal);
     }
 
-    public NodeSizing padding(float top, float right, float bottom, float left) {
+    public NodeSpec padding(float top, float right, float bottom, float left) {
         this.paddingTop = top;
         this.paddingRight = right;
         this.paddingBottom = bottom;
@@ -243,49 +243,49 @@ public class NodeSizing {
         return this;
     }
 
-    public NodeSizing paddingTop(float padding) {
+    public NodeSpec paddingTop(float padding) {
         this.paddingTop = padding;
         invalidate();
         return this;
     }
 
-    public NodeSizing paddingBottom(float padding) {
+    public NodeSpec paddingBottom(float padding) {
         this.paddingBottom = padding;
         invalidate();
         return this;
     }
 
-    public NodeSizing paddingLeft(float padding) {
+    public NodeSpec paddingLeft(float padding) {
         this.paddingLeft = padding;
         invalidate();
         return this;
     }
 
-    public NodeSizing paddingRight(float padding) {
+    public NodeSpec paddingRight(float padding) {
         this.paddingRight = padding;
         invalidate();
         return this;
     }
 
-    public NodeSizing minimumWidth(float width) {
+    public NodeSpec minimumWidth(float width) {
         this.minimumWidth = width;
         invalidate();
         return this;
     }
 
-    public NodeSizing maximumWidth(float width) {
+    public NodeSpec maximumWidth(float width) {
         this.maximumWidth = width;
         invalidate();
         return this;
     }
 
-    public NodeSizing minimumHeight(float height) {
+    public NodeSpec minimumHeight(float height) {
         this.minimumHeight = height;
         invalidate();
         return this;
     }
 
-    public NodeSizing maximumHeight(float height) {
+    public NodeSpec maximumHeight(float height) {
         this.maximumHeight = height;
         invalidate();
         return this;

@@ -36,11 +36,11 @@ public interface LayoutAccessor<T> {
     /**
      * Assigns the final position bounds and dimensions to the given layout node.
      *
-     * @param node the layout node
+     * @param node      the layout node
      * @param xPosition the horizontal position coordinate
      * @param yPosition the vertical position coordinate
-     * @param width the final width of the node
-     * @param height the final height of the node
+     * @param width     the final width of the node
+     * @param height    the final height of the node
      */
     void setBounds(T node, float xPosition, float yPosition, float width, float height);
 
@@ -50,5 +50,5 @@ public interface LayoutAccessor<T> {
      * @param node the layout node
      * @return the node sizing instance, or null if none is specified
      */
-    NodeSizing getSizing(T node);
+    NodeSpec getSizing(T node);
 }

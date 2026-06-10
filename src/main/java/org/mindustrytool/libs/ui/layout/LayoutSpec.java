@@ -5,10 +5,10 @@ import arc.func.Cons;
 /**
  * LayoutSpec specifies the layout configuration properties for a container element.
  * It configures alignment, direction, spacing, and wraps properties, matching CSS Flexbox specifications.
- * It extends {@link NodeSizing} directly to combine sizing, padding, and layout configurations.
+ * It extends {@link NodeSpec} directly to combine sizing, padding, and layout configurations.
  * All properties are fully detailed and written without abbreviations.
  */
-public class LayoutSpec extends NodeSizing {
+public class LayoutSpec extends NodeSpec {
 
     /**
      * JustifyContent defines how the layout items are distributed along the main axis (justify-content).
@@ -164,7 +164,7 @@ public class LayoutSpec extends NodeSizing {
         return this;
     }
 
-    // --- Covariant overrides of NodeSizing builder methods ---
+    // --- Covariant overrides of NodeSpec builder methods ---
 
     @Override
     public LayoutSpec widthMode(SizeMode mode) {
@@ -310,7 +310,7 @@ public class LayoutSpec extends NodeSizing {
         return this;
     }
 
-    public LayoutSpec size(Cons<NodeSizing> configurator) {
+    public LayoutSpec size(Cons<NodeSpec> configurator) {
         configurator.get(this);
         return this;
     }
