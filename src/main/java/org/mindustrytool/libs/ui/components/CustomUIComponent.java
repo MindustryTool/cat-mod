@@ -5,7 +5,6 @@ import arc.graphics.Texture;
 import arc.scene.Element;
 import arc.scene.Scene;
 import arc.scene.event.Touchable;
-
 import org.mindustrytool.libs.signal.Effect;
 import org.mindustrytool.libs.ui.animation.Ease;
 import org.mindustrytool.libs.ui.component.AbstractComponent;
@@ -17,82 +16,163 @@ import org.mindustrytool.libs.ui.layout.NodeSizing;
 
 import arc.func.Cons;
 
+/**
+ * CustomUIComponent is a premium component that renders visual elements using a CustomElement drawing engine
+ * with advanced SDF shapes, borders, shadows, textures, animations, and async image loading.
+ */
 public class CustomUIComponent extends AbstractComponent {
 
+    /**
+     * Style builder for CustomUIComponent, supporting advanced SDF shapes, borders,
+     * shadows, textures, and gradient configuration.
+     */
     public class Style extends ComponentStyle<Style> {
-        float tl = 8f, tr = 8f, br = 8f, bl = 8f;
+        float topLeftRadius = 8f;
+        float topRightRadius = 8f;
+        float bottomRightRadius = 8f;
+        float bottomLeftRadius = 8f;
         final Color fillColor = new Color(Color.darkGray);
         float borderWidth;
         final Color borderColor = new Color(Color.white);
         int borderStyle;
-        float dashLen = 10f, dashRatio = 0.5f;
+        float dashLength = 10f;
+        float dashRatio = 0.5f;
         Gradient gradient;
         Texture fillTexture;
         final Color textureTint = new Color(Color.white);
-        float uvSx = 1f, uvSy = 1f, uvOx, uvOy;
-        float innerShadowSpread, innerShadowBlur;
+        float uvScaleX = 1f;
+        float uvScaleY = 1f;
+        float uvOffsetX;
+        float uvOffsetY;
+        float innerShadowSpread;
+        float innerShadowBlur;
         final Color innerShadowColor = new Color(0, 0, 0, 0);
         float glowSpread;
         final Color glowColor = new Color(0, 0, 0, 0);
         float opacity = 1f;
 
+        String currentUrl;
+        Cons<Texture> activeCallback;
+
         Style() {
         }
 
         @Override
-        protected NodeSizing sizing() { return sizing; }
+        protected NodeSizing sizing() {
+            return sizing;
+        }
 
         @Override
-        protected Element styledElement() { return element; }
+        protected Element styledElement() {
+            return element;
+        }
 
-        public Style radius(float v) { tl = tr = br = bl = v; return this; }
-
-        public Style radius(float tl, float tr, float br, float bl) {
-            this.tl = tl; this.tr = tr; this.br = br; this.bl = bl;
+        public Style radius(float value) {
+            this.topLeftRadius = this.topRightRadius = this.bottomRightRadius = this.bottomLeftRadius = value;
             return this;
         }
 
-        public Style fill(Color value) { fillColor.set(value); return this; }
-
-        public Style fill(Gradient g) { gradient = g; return this; }
-
-        public Style border(float w, Color c) {
-            borderWidth = w; borderColor.set(c); return this;
+        public Style radius(float topLeft, float topRight, float bottomRight, float bottomLeft) {
+            this.topLeftRadius = topLeft;
+            this.topRightRadius = topRight;
+            this.bottomRightRadius = bottomRight;
+            this.bottomLeftRadius = bottomLeft;
+            return this;
         }
 
-        public Style border(float w, Color c, int style) {
-            borderWidth = w; borderColor.set(c); borderStyle = style; return this;
+        public Style fill(Color value) {
+            this.fillColor.set(value);
+            return this;
         }
 
-        public Style dash(float len, float ratio) {
-            dashLen = len; dashRatio = ratio; return this;
+        public Style fill(Gradient value) {
+            this.gradient = value;
+            return this;
+        }
+
+        public Style border(float width, Color color) {
+            this.borderWidth = width;
+            this.borderColor.set(color);
+            return this;
+        }
+
+        public Style border(float width, Color color, int style) {
+            this.borderWidth = width;
+            this.borderColor.set(color);
+            this.borderStyle = style;
+            return this;
+        }
+
+        public Style dash(float length, float ratio) {
+            this.dashLength = length;
+            this.dashRatio = ratio;
+            return this;
         }
 
         public Style innerShadow(float spread, float blur, Color color) {
-            innerShadowSpread = spread; innerShadowBlur = blur;
-            innerShadowColor.set(color); return this;
+            this.innerShadowSpread = spread;
+            this.innerShadowBlur = blur;
+            this.innerShadowColor.set(color);
+            return this;
         }
 
         public Style glow(float spread, Color color) {
-            glowSpread = spread; glowColor.set(color); return this;
+            this.glowSpread = spread;
+            this.glowColor.set(color);
+            return this;
         }
 
-        public Style opacity(float v) { opacity = v; return this; }
-
-        public Style texture(Texture tex, Color tint) {
-            fillTexture = tex; textureTint.set(tint); return this;
+        public Style opacity(float value) {
+            this.opacity = value;
+            return this;
         }
 
+        public Style texture(Texture texture, Color tint) {
+            this.fillTexture = texture;
+            this.textureTint.set(tint);
+            return this;
+        }
+
+        /**
+         * Loads a remote image from the given URL and applies it as a texture.
+         *
+         * @param url  the URL of the image
+         * @param tint the tint color
+         * @return this style builder instance
+         */
         public Style loadImage(String url, Color tint) {
-            Texture tex = ImageLoader.get(url);
-            if (tex != null) {
-                fillTexture = tex; textureTint.set(tint);
+            if (currentUrl != null && activeCallback != null) {
+                ImageLoader.cancel(currentUrl, activeCallback);
+            }
+
+            this.currentUrl = url;
+
+            Texture cached = ImageLoader.get(url);
+            if (cached != null) {
+                this.fillTexture = cached;
+                this.textureTint.set(tint);
+                this.activeCallback = null;
+                this.currentUrl = null;
                 return this;
             }
-            ImageLoader.load(url, t -> {
-                fillTexture = t; textureTint.set(tint);
-                element.invalidateHierarchy();
-            });
+
+            Cons<Texture> callback = new Cons<Texture>() {
+                @Override
+                public void get(Texture loadedTexture) {
+                    if (activeCallback == this) {
+                        if (loadedTexture != null) {
+                            fillTexture = loadedTexture;
+                            textureTint.set(tint);
+                            element.invalidateHierarchy();
+                        }
+                        activeCallback = null;
+                        currentUrl = null;
+                    }
+                }
+            };
+
+            this.activeCallback = callback;
+            ImageLoader.load(url, callback);
             return this;
         }
 
@@ -100,11 +180,18 @@ public class CustomUIComponent extends AbstractComponent {
             return loadImage(url, Color.white);
         }
 
-        public Style uv(float sx, float sy, float ox, float oy) {
-            uvSx = sx; uvSy = sy; uvOx = ox; uvOy = oy; return this;
+        public Style uv(float scaleX, float scaleY, float offsetX, float offsetY) {
+            this.uvScaleX = scaleX;
+            this.uvScaleY = scaleY;
+            this.uvOffsetX = offsetX;
+            this.uvOffsetY = offsetY;
+            return this;
         }
 
-        public Style size(Cons<NodeSizing> c) { c.get(sizing); return this; }
+        public Style size(Cons<NodeSizing> configurator) {
+            configurator.get(sizing);
+            return this;
+        }
     }
 
     public final Style style;
@@ -113,21 +200,26 @@ public class CustomUIComponent extends AbstractComponent {
     private Effect sizeEffect;
 
     // ─── Animation State ───
-
     private boolean animating;
     private final StyleBuffer animFrom = new StyleBuffer();
     private final StyleBuffer animTo = new StyleBuffer();
-    private float animElapsed, animDuration;
+    private float animElapsed;
+    private float animDuration;
     private Ease animEase;
 
     private static class StyleBuffer {
         final Color fillColor = new Color();
-        float tl, tr, br, bl;
+        float topLeftRadius;
+        float topRightRadius;
+        float bottomRightRadius;
+        float bottomLeftRadius;
         float borderWidth;
         final Color borderColor = new Color();
         int borderStyle;
-        float dashLen, dashRatio;
-        float innerShadowSpread, innerShadowBlur;
+        float dashLength;
+        float dashRatio;
+        float innerShadowSpread;
+        float innerShadowBlur;
         final Color innerShadowColor = new Color();
         float opacity;
         float glowSpread;
@@ -135,11 +227,15 @@ public class CustomUIComponent extends AbstractComponent {
 
         void capture(Style s) {
             fillColor.set(s.fillColor);
-            tl = s.tl; tr = s.tr; br = s.br; bl = s.bl;
+            topLeftRadius = s.topLeftRadius;
+            topRightRadius = s.topRightRadius;
+            bottomRightRadius = s.bottomRightRadius;
+            bottomLeftRadius = s.bottomLeftRadius;
             borderWidth = s.borderWidth;
             borderColor.set(s.borderColor);
             borderStyle = s.borderStyle;
-            dashLen = s.dashLen; dashRatio = s.dashRatio;
+            dashLength = s.dashLength;
+            dashRatio = s.dashRatio;
             innerShadowSpread = s.innerShadowSpread;
             innerShadowBlur = s.innerShadowBlur;
             innerShadowColor.set(s.innerShadowColor);
@@ -150,11 +246,15 @@ public class CustomUIComponent extends AbstractComponent {
 
         void apply(Style s) {
             s.fillColor.set(fillColor);
-            s.tl = tl; s.tr = tr; s.br = br; s.bl = bl;
+            s.topLeftRadius = topLeftRadius;
+            s.topRightRadius = topRightRadius;
+            s.bottomRightRadius = bottomRightRadius;
+            s.bottomLeftRadius = bottomLeftRadius;
             s.borderWidth = borderWidth;
             s.borderColor.set(borderColor);
             s.borderStyle = borderStyle;
-            s.dashLen = dashLen; s.dashRatio = dashRatio;
+            s.dashLength = dashLength;
+            s.dashRatio = dashRatio;
             s.innerShadowSpread = innerShadowSpread;
             s.innerShadowBlur = innerShadowBlur;
             s.innerShadowColor.set(innerShadowColor);
@@ -165,14 +265,14 @@ public class CustomUIComponent extends AbstractComponent {
 
         void lerp(StyleBuffer a, StyleBuffer b, float t) {
             fillColor.set(a.fillColor).lerp(b.fillColor, t);
-            tl = a.tl + (b.tl - a.tl) * t;
-            tr = a.tr + (b.tr - a.tr) * t;
-            br = a.br + (b.br - a.br) * t;
-            bl = a.bl + (b.bl - a.bl) * t;
+            topLeftRadius = a.topLeftRadius + (b.topLeftRadius - a.topLeftRadius) * t;
+            topRightRadius = a.topRightRadius + (b.topRightRadius - a.topRightRadius) * t;
+            bottomRightRadius = a.bottomRightRadius + (b.bottomRightRadius - a.bottomRightRadius) * t;
+            bottomLeftRadius = a.bottomLeftRadius + (b.bottomLeftRadius - a.bottomLeftRadius) * t;
             borderWidth = a.borderWidth + (b.borderWidth - a.borderWidth) * t;
             borderColor.set(a.borderColor).lerp(b.borderColor, t);
             borderStyle = t < 0.5f ? a.borderStyle : b.borderStyle;
-            dashLen = a.dashLen + (b.dashLen - a.dashLen) * t;
+            dashLength = a.dashLength + (b.dashLength - a.dashLength) * t;
             dashRatio = a.dashRatio + (b.dashRatio - a.dashRatio) * t;
             innerShadowSpread = a.innerShadowSpread + (b.innerShadowSpread - a.innerShadowSpread) * t;
             innerShadowBlur = a.innerShadowBlur + (b.innerShadowBlur - a.innerShadowBlur) * t;
@@ -184,50 +284,61 @@ public class CustomUIComponent extends AbstractComponent {
     }
 
     // ─── Element ───
-
     private final Element element = new Element() {
         @Override
-        public float getPrefWidth() { return sizing.getFixedWidth(); }
+        public float getPrefWidth() {
+            return sizing.getFixedWidth();
+        }
 
         @Override
-        public float getPrefHeight() { return sizing.getFixedHeight(); }
+        public float getPrefHeight() {
+            return sizing.getFixedHeight();
+        }
 
         @Override
         public void act(float delta) {
             super.act(delta);
-            if (animating) updateAnimation(delta);
+            if (animating) {
+                updateAnimation(delta);
+            }
         }
 
         @Override
         protected void setScene(Scene scene) {
             super.setScene(scene);
-            if (scene == null) CustomUIComponent.this.dispose();
+            if (scene == null) {
+                CustomUIComponent.this.dispose();
+            }
         }
 
         @Override
         public void draw() {
-            float x = this.x, y = this.y, w = getWidth(), h = getHeight();
-            if (w <= 0f || h <= 0f) return;
+            float xPos = this.x;
+            float yPos = this.y;
+            float w = getWidth();
+            float h = getHeight();
+            if (w <= 0f || h <= 0f) {
+                return;
+            }
 
             Style s = style;
 
             if (s.gradient != null) {
-                drawer.fillGradient(x, y, w, h, s.tl, s.tr, s.br, s.bl, s.gradient);
+                drawer.fillGradient(xPos, yPos, w, h, s.topLeftRadius, s.topRightRadius, s.bottomRightRadius, s.bottomLeftRadius, s.gradient);
             } else if (s.fillTexture != null) {
-                drawer.fillTexture(x, y, w, h, s.tl, s.tr, s.br, s.bl,
+                drawer.fillTexture(xPos, yPos, w, h, s.topLeftRadius, s.topRightRadius, s.bottomRightRadius, s.bottomLeftRadius,
                     s.fillTexture, s.textureTint,
-                    s.uvSx, s.uvSy, s.uvOx, s.uvOy);
+                    s.uvScaleX, s.uvScaleY, s.uvOffsetX, s.uvOffsetY);
             } else if (s.borderWidth > 0.001f) {
-                drawer.fillWithBorder(x, y, w, h, s.tl, s.tr, s.br, s.bl,
+                drawer.fillWithBorder(xPos, yPos, w, h, s.topLeftRadius, s.topRightRadius, s.bottomRightRadius, s.bottomLeftRadius,
                     s.fillColor, s.borderWidth, s.borderColor);
             } else {
-                drawer.fill(x, y, w, h, s.tl, s.tr, s.br, s.bl, s.fillColor);
+                drawer.fill(xPos, yPos, w, h, s.topLeftRadius, s.topRightRadius, s.bottomRightRadius, s.bottomLeftRadius, s.fillColor);
             }
         }
     };
 
     // ─── Constructor ───
-
     private CustomUIComponent() {
         this.style = new Style();
         sizing.onInvalidate(element::invalidateHierarchy);
@@ -241,7 +352,6 @@ public class CustomUIComponent extends AbstractComponent {
     }
 
     // ─── Public API ───
-
     public CustomUIComponent style(Cons<Style> configurator) {
         if (styleEffect != null) {
             styleEffect.dispose();
@@ -266,7 +376,9 @@ public class CustomUIComponent extends AbstractComponent {
         animEase = ease;
         animating = durationMs > 0;
 
-        if (!animating) animTo.apply(style);
+        if (!animating) {
+            animTo.apply(style);
+        }
         element.invalidateHierarchy();
         return this;
     }
@@ -285,7 +397,6 @@ public class CustomUIComponent extends AbstractComponent {
     }
 
     // ─── Internal ───
-
     private void updateAnimation(float delta) {
         animElapsed += delta;
         float t = Math.min(animElapsed / animDuration, 1f);
@@ -303,11 +414,18 @@ public class CustomUIComponent extends AbstractComponent {
     }
 
     @Override
-    public Element element() { return element; }
+    public Element element() {
+        return element;
+    }
 
     @Override
     public void dispose() {
         super.dispose();
+        if (style.currentUrl != null && style.activeCallback != null) {
+            ImageLoader.cancel(style.currentUrl, style.activeCallback);
+        }
+        style.activeCallback = null;
+        style.currentUrl = null;
         drawer.dispose();
     }
 }
