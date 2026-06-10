@@ -4,7 +4,6 @@ import arc.scene.Element;
 
 import org.mindustrytool.libs.ui.component.Component;
 import org.mindustrytool.libs.ui.layout.NodeSizing.SizeMode;
-import org.mindustrytool.libs.ui.layout.NodeSizing.AlignSelf;
 import org.mindustrytool.libs.ui.layout.LayoutSpec.AlignItems;
 import org.mindustrytool.libs.ui.layout.LayoutSpec.JustifyContent;
 
@@ -356,7 +355,7 @@ public class LayoutEngine {
         }
 
         // Step 4: Justify elements on the main axis and set final positions
-        boolean isForwardDirection = isColumn ? spec.isReverse() : !spec.isReverse();
+        boolean isForwardDirection = isColumn == spec.isReverse();
 
         for (LayoutLine<T> line : layoutLines) {
             float extraMainSpace = mainLimit - line.mainSize;

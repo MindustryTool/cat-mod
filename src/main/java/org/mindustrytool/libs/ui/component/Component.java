@@ -10,6 +10,5 @@ public interface Component {
 
     NodeSizing sizing();
 
-    default void dispose() {
-    }
+    void dispose();
 }

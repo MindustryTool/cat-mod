@@ -1,4 +1,4 @@
-package org.mindustrytool;
+package org.mindustrytool.mdtui;
 
 import arc.Core;
 import arc.Events;

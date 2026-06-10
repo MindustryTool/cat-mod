@@ -8,6 +8,8 @@ import mindustry.mod.Mod;
 
 import org.codejargon.feather.Feather;
 
+import org.mindustrytool.mdtui.NekoUiManager;
+
 public class NekoMod extends Mod {
     private static @Getter Feather feather;
 
