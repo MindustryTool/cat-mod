@@ -5,8 +5,8 @@ import arc.graphics.Texture;
 import arc.scene.Element;
 import arc.scene.Scene;
 import arc.scene.event.Touchable;
-import org.mindustrytool.libs.signal.Effect;
-import org.mindustrytool.libs.signal.Signal;
+
+import org.mindustrytool.libs.signal.MultithreadSignal;
 import org.mindustrytool.libs.ui.animation.Ease;
 import org.mindustrytool.libs.ui.component.AbstractComponent;
 import org.mindustrytool.libs.ui.component.ComponentStyle;
@@ -133,15 +133,43 @@ public class CustomUIComponent extends AbstractComponent {
 
         /**
          * Loads a remote image from the given URL and applies it as a texture.
+         * The signal subscribes on the main thread with a LOADED/FAILED condition;
+         * already-cached images are applied immediately.
          *
          * @param url  the URL of the image
          * @param tint the tint color
          * @return this style builder instance
          */
         public Style loadImage(String url, Color tint) {
-            Signal<Texture> signal = ImageLoader.loadSignal(url);
-            this.fillTexture = signal.get();
-            this.textureTint.set(tint);
+            if (CustomUIComponent.this.ownedTexture != null) {
+                CustomUIComponent.this.ownedTexture.dispose();
+                CustomUIComponent.this.ownedTexture = null;
+            }
+            if (CustomUIComponent.this.imageHandle != null) {
+                CustomUIComponent.this.imageHandle.dispose();
+                CustomUIComponent.this.imageHandle = null;
+            }
+
+            var signal = ImageLoader.get(url);
+            CustomUIComponent.this.imageHandle = signal.subscribeOnMain(
+                res -> res.state() == ImageLoader.ImageLoadState.LOADED || res.state() == ImageLoader.ImageLoadState.FAILED,
+                () -> {
+                    var res = signal.state();
+                    if (res.state() == ImageLoader.ImageLoadState.LOADED) {
+                        fillTexture = res.texture();
+                        CustomUIComponent.this.ownedTexture = res.texture();
+                        textureTint.set(tint);
+                        element.invalidateHierarchy();
+                    }
+                }
+            );
+            var current = signal.state();
+            if (current.state() == ImageLoader.ImageLoadState.LOADED) {
+                fillTexture = current.texture();
+                CustomUIComponent.this.ownedTexture = current.texture();
+                textureTint.set(tint);
+                element.invalidateHierarchy();
+            }
             return this;
         }
 
@@ -165,8 +193,8 @@ public class CustomUIComponent extends AbstractComponent {
 
     public final Style style;
     final CustomElement drawer = new CustomElement();
-    private Effect styleEffect;
-    private Effect sizeEffect;
+    private MultithreadSignal.Handle imageHandle;
+    private Texture ownedTexture;
 
     // ─── Animation State ───
     private boolean animating;
@@ -322,15 +350,8 @@ public class CustomUIComponent extends AbstractComponent {
 
     // ─── Public API ───
     public CustomUIComponent style(Cons<Style> configurator) {
-        if (styleEffect != null) {
-            styleEffect.dispose();
-            subscriptions.remove(styleEffect);
-        }
-        styleEffect = new Effect(() -> {
-            configurator.get(style);
-            element.invalidateHierarchy();
-        });
-        subscriptions.add(styleEffect);
+        configurator.get(style);
+        element.invalidateHierarchy();
         return this;
     }
 
@@ -353,15 +374,8 @@ public class CustomUIComponent extends AbstractComponent {
     }
 
     public CustomUIComponent size(Cons<NodeSizing> configurator) {
-        if (sizeEffect != null) {
-            sizeEffect.dispose();
-            subscriptions.remove(sizeEffect);
-        }
-        sizeEffect = new Effect(() -> {
-            configurator.get(sizing);
-            element.invalidateHierarchy();
-        });
-        subscriptions.add(sizeEffect);
+        configurator.get(sizing);
+        element.invalidateHierarchy();
         return this;
     }
 
@@ -389,6 +403,14 @@ public class CustomUIComponent extends AbstractComponent {
 
     @Override
     public void dispose() {
+        if (imageHandle != null) {
+            imageHandle.dispose();
+            imageHandle = null;
+        }
+        if (ownedTexture != null) {
+            ownedTexture.dispose();
+            ownedTexture = null;
+        }
         super.dispose();
         drawer.dispose();
     }

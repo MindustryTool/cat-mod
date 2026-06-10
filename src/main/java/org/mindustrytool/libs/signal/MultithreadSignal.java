@@ -110,6 +110,82 @@ public final class MultithreadSignal<T> {
     }
 
     /**
+     * Registers a persistent state mutator. Like {@link #subscribe}, but
+     * transforms state via {@code fn} instead of running an arbitrary action.
+     * After mutation, all other subscribers whose condition is met are
+     * dispatched, enabling state machine pipelines.
+     * <p>
+     * The mutation's own condition is NOT re-checked after the transformation
+     * to prevent trivial re-entrant cycles.
+     *
+     * @param condition activation predicate (thread-safe, called under internal lock)
+     * @param fn        state transformation to apply when condition is met
+     * @param target    target thread for applying the transformation
+     * @return a Handle to {@link Handle#dispose} when the mutator is no longer needed
+     */
+    public Handle mutate(Predicate<T> condition, java.util.function.UnaryOperator<T> fn, ThreadTarget target) {
+        Objects.requireNonNull(condition);
+        Objects.requireNonNull(fn);
+        Objects.requireNonNull(target);
+
+        var handle = new Handle();
+        Runnable mutation = () -> {
+            T current = state();
+            T next = fn.apply(current);
+            List<Entry<T>> copy;
+
+            try {
+                lock.lock();
+                state = next;
+                copy = List.copyOf(entries);
+            } finally {
+                lock.unlock();
+            }
+
+            for (var e : copy) {
+                if (e.handle != handle && !e.handle.disposed && e.condition.test(next)) {
+                    e.target.dispatch(e.action);
+                }
+            }
+        };
+        var entry = new Entry<>(condition, mutation, target, handle);
+
+        try {
+            lock.lock();
+            entries.add(entry);
+        } finally {
+            lock.unlock();
+        }
+
+        handle.disposeAction = () -> {
+            try {
+                lock.lock();
+                entries.removeIf(e -> e.handle == handle);
+            } finally {
+                lock.unlock();
+            }
+        };
+
+        return handle;
+    }
+
+    /**
+     * Registers a persistent state mutator that runs on the main thread.
+     * Convenience shorthand for {@code mutate(condition, fn, ThreadTarget.ofMain())}.
+     */
+    public Handle mutateOnMain(Predicate<T> condition, java.util.function.UnaryOperator<T> fn) {
+        return mutate(condition, fn, ThreadTarget.ofMain());
+    }
+
+    /**
+     * Registers a persistent state mutator that runs on the IO thread.
+     * Convenience shorthand for {@code mutate(condition, fn, ThreadTarget.ofIO())}.
+     */
+    public Handle mutateOnIO(Predicate<T> condition, java.util.function.UnaryOperator<T> fn) {
+        return mutate(condition, fn, ThreadTarget.ofIO());
+    }
+
+    /**
      * Returns the current state. Volatile read — safe without a lock.
      */
     public T state() {
@@ -134,6 +210,13 @@ public final class MultithreadSignal<T> {
             disposed = true;
 
             if (disposeAction != null) disposeAction.run();
+        }
+
+        /**
+         * Returns true if this handle has been disposed.
+         */
+        public boolean isDisposed() {
+            return disposed;
         }
     }
 

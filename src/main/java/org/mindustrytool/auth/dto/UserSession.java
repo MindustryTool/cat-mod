@@ -1,10 +1,5 @@
 package org.mindustrytool.auth.dto;
 
-import lombok.Data;
+public record UserSession(String id, String name, String imageUrl) {
 
-@Data
-public class UserSession {
-    private String id;
-    private String name;
-    private String imageUrl;
 }

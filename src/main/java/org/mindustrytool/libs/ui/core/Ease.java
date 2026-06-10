@@ -1,14 +1,24 @@
 package org.mindustrytool.libs.ui.animation;
 
+/**
+ * Easing functions for animation. Each constant implements {@link #apply(float)}
+ * to transform normalised time {@code t} (0→1) into an eased value.
+ */
 public enum Ease {
     linear {
-        public float apply(float t) { return t; }
+        public float apply(float t) {
+            return t;
+        }
     },
     quadIn {
-        public float apply(float t) { return t * t; }
+        public float apply(float t) {
+            return t * t;
+        }
     },
     quadOut {
-        public float apply(float t) { return t * (2f - t); }
+        public float apply(float t) {
+            return t * (2f - t);
+        }
     },
     quadInOut {
         public float apply(float t) {
@@ -16,7 +26,9 @@ public enum Ease {
         }
     },
     cubicIn {
-        public float apply(float t) { return t * t * t; }
+        public float apply(float t) {
+            return t * t * t;
+        }
     },
     cubicOut {
         public float apply(float t) {
@@ -31,7 +43,7 @@ public enum Ease {
     },
     expoOut {
         public float apply(float t) {
-            return t >= 1f ? 1f : 1f - (float)Math.pow(2f, -10f * t);
+            return t >= 1f ? 1f : 1f - (float) Math.pow(2f, -10f * t);
         }
     },
     bounceOut {
@@ -54,7 +66,7 @@ public enum Ease {
         public float apply(float t) {
             if (t >= 1f) return 1f;
             float f = t - 1f;
-            return (float)(Math.pow(2f, -10f * t) * Math.sin(f * 6f * Math.PI / 0.3f) + 1f);
+            return (float) (Math.pow(2f, -10f * t) * Math.sin(f * 6f * Math.PI / 0.3f) + 1f);
         }
     };
 
