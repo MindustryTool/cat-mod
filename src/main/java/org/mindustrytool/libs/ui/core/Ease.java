@@ -1,4 +1,4 @@
-package org.mindustrytool.libs.ui.animation;
+package org.mindustrytool.libs.ui.core;
 
 /**
  * Easing functions for animation. Each constant implements {@link #apply(float)}

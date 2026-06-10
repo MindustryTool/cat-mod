@@ -1,4 +1,4 @@
-package org.mindustrytool.libs.ui.components;
+package org.mindustrytool.libs.ui.core;
 
 import arc.graphics.Color;
 import arc.graphics.Texture;
@@ -7,13 +7,10 @@ import arc.scene.Scene;
 import arc.scene.event.Touchable;
 
 import org.mindustrytool.libs.signal.MultithreadSignal;
-import org.mindustrytool.libs.ui.animation.Ease;
 import org.mindustrytool.libs.ui.component.AbstractComponent;
 import org.mindustrytool.libs.ui.component.ComponentStyle;
-import org.mindustrytool.libs.ui.drawing.CustomElement;
-import org.mindustrytool.libs.ui.drawing.Gradient;
+import org.mindustrytool.libs.ui.layout.NodeSpec;
 import org.mindustrytool.util.ImageLoader;
-import org.mindustrytool.libs.ui.layout.NodeSizing;
 
 import arc.func.Cons;
 
@@ -56,7 +53,7 @@ public class CustomUIComponent extends AbstractComponent {
         }
 
         @Override
-        protected NodeSizing sizing() {
+        protected NodeSpec sizing() {
             return sizing;
         }
 
@@ -185,7 +182,7 @@ public class CustomUIComponent extends AbstractComponent {
             return this;
         }
 
-        public Style size(Cons<NodeSizing> configurator) {
+        public Style size(Cons<NodeSpec> configurator) {
             configurator.get(sizing);
             return this;
         }
@@ -373,7 +370,7 @@ public class CustomUIComponent extends AbstractComponent {
         return this;
     }
 
-    public CustomUIComponent size(Cons<NodeSizing> configurator) {
+    public CustomUIComponent size(Cons<NodeSpec> configurator) {
         configurator.get(sizing);
         element.invalidateHierarchy();
         return this;

@@ -1,4 +1,4 @@
-package org.mindustrytool.libs.ui.drawing;
+package org.mindustrytool.libs.ui.core;
 
 import arc.Core;
 import arc.graphics.Color;
