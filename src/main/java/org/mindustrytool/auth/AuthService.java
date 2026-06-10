@@ -27,7 +27,7 @@ import org.mindustrytool.auth.dto.LoginEvent;
 import org.mindustrytool.auth.dto.LogoutEvent;
 import org.mindustrytool.auth.dto.UserSession;
 import org.mindustrytool.auth.dto.SessionLoadEvent;
-import org.mindustrytool.libs.ui.components.NetworkImage;
+import org.mindustrytool.libs.ui.components.CustomUIComponent;
 
 @Singleton
 @NoArgsConstructor(onConstructor_ = @Inject)
@@ -107,7 +107,9 @@ public class AuthService {
             } else {
                 content.clear();
                 if (user.getImageUrl() != null) {
-                    content.add(new NetworkImage(user.getImageUrl()).element()).size(64);
+                    content.add(CustomUIComponent.of()
+                        .style(s -> s.loadImage(user.getImageUrl()).radius(6f))
+                        .element()).size(64);
                 }
                 if (!Vars.mobile) {
                     content.add(user.getName()).labelAlign(Align.left).padLeft(8);
