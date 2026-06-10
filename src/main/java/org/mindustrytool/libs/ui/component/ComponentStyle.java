@@ -1,23 +1,31 @@
 package org.mindustrytool.libs.ui.component;
 
-import arc.graphics.Color;
 import arc.scene.Element;
 import arc.scene.event.Touchable;
-import org.mindustrytool.libs.ui.layout.NodeSizing;
-import org.mindustrytool.libs.ui.layout.NodeSizing.AlignSelf;
-import org.mindustrytool.libs.ui.layout.NodeSizing.SizeMode;
+import org.mindustrytool.libs.ui.layout.NodeSpec;
+import org.mindustrytool.libs.ui.layout.NodeSpec.AlignSelf;
+import org.mindustrytool.libs.ui.layout.NodeSpec.SizeMode;
 
 /**
  * ComponentStyle serves as the base class for component-specific styling builders.
  * It uses the Curiously Recurring Template Pattern (CRTP) to allow fluent method chaining
- * across inheritance hierarchies, exposing all of {@link NodeSizing}'s sizing and padding properties,
+ * across inheritance hierarchies, exposing all of {@link NodeSpec}'s sizing and padding properties,
  * as well as all common {@link Element} visual and interactive configuration properties.
  *
  * @param <S> the concrete style subclass type
  */
 @SuppressWarnings("unchecked")
 public abstract class ComponentStyle<S extends ComponentStyle<S>> {
-    protected abstract NodeSizing sizing();
+    /**
+     * Returns the {@link NodeSpec} to which configuration methods delegate.
+     * Implementations return the owning component's sizing instance.
+     */
+    protected abstract NodeSpec sizing();
+
+    /**
+     * Returns the arc {@link Element} whose visual properties (visibility,
+     * touchable, name) are mutated by the inherited builder methods.
+     */
     protected abstract Element styledElement();
 
     protected ComponentStyle() {
@@ -59,7 +67,7 @@ public abstract class ComponentStyle<S extends ComponentStyle<S>> {
         return (S) this;
     }
 
-    // --- NodeSizing Sizing & Padding Builders ---
+    // --- NodeSpec Sizing & Padding Builders ---
 
     /**
      * Sets the width sizing mode.
