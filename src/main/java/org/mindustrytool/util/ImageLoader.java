@@ -3,244 +3,205 @@ package org.mindustrytool.util;
 import arc.graphics.Pixmap;
 import arc.graphics.Texture;
 import arc.graphics.Texture.TextureFilter;
-import arc.util.Http.HttpStatusException;
+import arc.util.Http;
+import arc.util.Http.HttpMethod;
 import arc.util.Log;
-import mindustry.Vars;
-import arc.files.Fi;
 
 import java.lang.ref.WeakReference;
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
 import java.util.Map;
+import java.util.concurrent.locks.ReentrantLock;
 
-import arc.func.Cons;
-import org.mindustrytool.libs.signal.Signal;
+import lombok.experimental.UtilityClass;
+import org.mindustrytool.libs.signal.MultithreadSignal;
 
 /**
- * Handles caching and reactive loading of textures.
- * Fully single-threaded on the main thread. All background network callbacks
- * are encapsulated in AsyncHttp and return execution to the main thread.
- * Layout is completely flattened to avoid deeply nested callback/caching logic.
+ * Reactive image loader backed by a state-machine signal pipeline.
+ * <p>
+ * Each URL gets a {@link MultithreadSignal} that drives the image through
+ * {@link ImageLoadState IDLE → LOADING → DECODED → LOADED} on the correct
+ * threads (IO for download + Pixmap, Main for VRAM upload) and caches the
+ * signal weakly so the same inflight URL is never loaded twice.
+ * <p>
+ * External consumers subscribe to the signal and react to whichever state
+ * they care about — typically {@link ImageLoadState#LOADED} or
+ * {@link ImageLoadState#FAILED}.
  */
+@UtilityClass
 public class ImageLoader {
-    private static final Fi cacheDirectory = Vars.tmpDirectory.child("neko-content-caches");
-
-    private static final Map<String, WeakReference<Texture>> memoryCache = new HashMap<>();
-    private static final Map<String, List<Cons<Texture>>> pendingRequests = new HashMap<>();
-    private static final Map<String, WeakReference<Signal<Texture>>> signalCache = new HashMap<>();
+    private static final Map<String, WeakReference<MultithreadSignal<ImageResource>>> cache = new HashMap<>();
+    private static final ReentrantLock lock = new ReentrantLock();
 
     /**
-     * Loads a texture asynchronously and returns a reactive Signal.
-     * The signal is initially set to the cached texture (or null) and automatically updates when loaded.
+     * Returns a reactive signal for the given image URL.
+     * <p>
+     * The signal drives the image through {@link ImageLoadState}:
+     * <ol>
+     *   <li>{@link ImageLoadState#IDLE} — initial state (kicked by this method)</li>
+     *   <li>{@link ImageLoadState#LOADING} — download started (IO thread)</li>
+     *   <li>{@link ImageLoadState#DECODED} — Pixmap ready (IO thread)</li>
+     *   <li>{@link ImageLoadState#LOADED} — Texture uploaded to VRAM (Main thread)</li>
+     *   <li>{@link ImageLoadState#FAILED} — any stage failed</li>
+     * </ol>
+     * The same inflight URL is cached weakly and reused.
+     *
+     * @param url the image URL to load
+     * @return a signal whose state progresses through the image lifecycle
      */
-    public static Signal<Texture> loadSignal(String url) {
+    public static MultithreadSignal<ImageResource> get(String url) {
         if (url == null || url.isEmpty()) {
-            Log.info("[ImageLoader] loadSignal: empty/null URL");
-            return Signal.of(null);
+            var empty = new MultithreadSignal<ImageResource>();
+            empty.update(ImageResource.failed());
+            return empty;
         }
 
-        Signal<Texture> signal = getCachedSignal(url);
-        if (signal != null) {
-            Log.info("[ImageLoader] loadSignal: found cached signal for " + url);
-            return signal;
-        }
-
-        Texture cachedTexture = get(url);
-        Log.info("[ImageLoader] loadSignal: cachedTexture in memory is " + (cachedTexture != null ? "found" : "null") + " for " + url);
-        Signal<Texture> newSignal = Signal.of(cachedTexture);
-        signalCache.put(url, new WeakReference<>(newSignal));
-
-        if (cachedTexture == null) {
-            Log.info("[ImageLoader] loadSignal: triggering load for " + url);
-            load(url, loadedTexture -> {
-                Log.info("[ImageLoader] loadCallback: loadedTexture is " + (loadedTexture != null ? "found" : "null") + " for " + url);
-                if (loadedTexture != null) {
-                    newSignal.set(loadedTexture);
-                }
-            });
-        }
-
-        return newSignal;
-    }
-
-    /**
-     * Loads a texture from the specified URL asynchronously.
-     */
-    public static void load(String url, Cons<Texture> callback) {
-        if (url == null || url.isEmpty() || callback == null) {
-            return;
-        }
-
-        // 1. Check in-memory cache
-        Texture cached = get(url);
-        if (cached != null) {
-            callback.get(cached);
-            return;
-        }
-
-        // 2. Queue request. If a download is already in progress, stop here.
-        if (enqueueRequest(url, callback)) {
-            return;
-        }
-
-        // 3. Load from disk cache or fetch from web
-        Fi cachedFile = getCacheFile(url);
-        if (cachedFile.exists()) {
-            loadFromDisk(url, cachedFile);
-        } else {
-            downloadAndCache(url, cachedFile);
-        }
-    }
-
-    private static Signal<Texture> getCachedSignal(String url) {
-        WeakReference<Signal<Texture>> ref = signalCache.get(url);
-        return ref != null ? ref.get() : null;
-    }
-
-    private static boolean enqueueRequest(String url, Cons<Texture> callback) {
-        boolean isAlreadyPending = pendingRequests.containsKey(url);
-        pendingRequests.computeIfAbsent(url, k -> new ArrayList<>()).add(callback);
-        return isAlreadyPending;
-    }
-
-    private static Fi getCacheFile(String url) {
-        cacheDirectory.mkdirs();
-        return cacheDirectory.child(sanitize(url));
-    }
-
-    private static void loadFromDisk(String url, Fi cachedFile) {
-        Log.info("[ImageLoader] loadFromDisk: loading " + url + " from cached file " + cachedFile.name());
+        lock.lock();
         try {
-            byte[] bytes = cachedFile.readBytes();
-            deliverPixmapBytes(url, bytes);
-        } catch (Exception e) {
-            Log.err("[ImageLoader] loadFromDisk error", e);
-            fail(url, e);
-        }
-    }
+            var ref = cache.get(url);
+            if (ref != null) {
+                var signal = ref.get();
+                if (signal != null) return signal;
+            }
 
-    private static void downloadAndCache(String url, Fi cachedFile) {
-        String downloadUrl = url;
-        if (url.contains("api.mindustry-tool.com") && !url.contains("format=")) {
-            downloadUrl = url.contains("?") ? url + "&format=jpeg" : url + "?format=jpeg";
-        }
+            var signal = new MultithreadSignal<ImageResource>();
+            cache.put(url, new WeakReference<>(signal));
 
-        Log.info("[ImageLoader] downloadAndCache: downloading from " + downloadUrl);
-        AsyncHttp.get(downloadUrl)
-            .timeout(15000)
-            .submitBytes(
-                bytes -> {
-                    Log.info("[ImageLoader] downloadAndCache: download success, bytes length = " + (bytes != null ? bytes.length : 0));
-                    handleDownloadSuccess(url, cachedFile, bytes);
-                },
-                error -> {
-                    Log.err("[ImageLoader] downloadAndCache: download error", error);
-                    fail(url, error);
+            // State machine: IDLE -> LOADING (IO thread)
+            signal.mutateOnIO(
+                r -> r.state() == ImageLoadState.IDLE,
+                s -> ImageResource.loading()
+            );
+
+            // LOADING -> DECODED | FAILED (IO thread: HTTP + Pixmap)
+            signal.mutateOnIO(
+                r -> r.state() == ImageLoadState.LOADING,
+                s -> {
+                    Pixmap pixmap = resolvePixmap(url);
+                    if (pixmap == null) return ImageResource.failed();
+                    return ImageResource.decoded(pixmap);
                 }
             );
+
+            // DECODED -> LOADED | FAILED (Main thread: upload Pixmap to VRAM)
+            signal.mutateOnMain(
+                r -> r.state() == ImageLoadState.DECODED,
+                s -> {
+                    Pixmap pixmap = s.pixmap();
+                    try {
+                        Texture t = new Texture(pixmap);
+                        t.setFilter(TextureFilter.linear);
+                        return ImageResource.loaded(t);
+                    } catch (Exception e) {
+                        Log.err("Failed to create texture from Pixmap", e);
+                        return ImageResource.failed();
+                    } finally {
+                        if (pixmap != null && !pixmap.isDisposed()) pixmap.dispose();
+                    }
+                }
+            );
+
+            // Kick
+            signal.update(ImageResource.idle());
+            return signal;
+        } finally {
+            lock.unlock();
+        }
     }
 
-    private static void handleDownloadSuccess(String url, Fi cachedFile, byte[] bytes) {
-        if (bytes == null || bytes.length == 0) {
-            fail(url, new RuntimeException("Empty response received from image source"));
-            return;
-        }
-        try {
-            cachedFile.writeBytes(bytes);
-            deliverPixmapBytes(url, bytes);
-        } catch (Exception e) {
-            fail(url, e);
-        }
-    }
+    private static Pixmap resolvePixmap(String url) {
+        Resources.IMAGE_CACHE_DIR.mkdirs();
+        var cachedFile = Resources.IMAGE_CACHE_DIR.child(url.replaceAll("[:/?&]", "-"));
 
-    private static void deliverPixmapBytes(String url, byte[] bytes) {
-        Pixmap pixmap = new Pixmap(bytes);
-        Texture texture = new Texture(pixmap);
-        texture.setFilter(TextureFilter.linear);
-        pixmap.dispose();
-        deliver(url, texture);
+        if (cachedFile.exists()) {
+            return new Pixmap(cachedFile.readBytes());
+        }
+
+        String downloadUrl = url.contains("api.mindustry-tool.com") && !url.contains("format=")
+            ? url + (url.contains("?") ? "&format=jpeg" : "?format=jpeg")
+            : url;
+
+        var httpRef = new Object() { byte[] bytes; Throwable error; };
+        Http.request(HttpMethod.GET, downloadUrl)
+            .timeout(15000)
+            .error(err -> httpRef.error = err)
+            .block(res -> httpRef.bytes = res.getResult());
+
+        if (httpRef.error != null) {
+            Log.err("Failed to load image: " + url, httpRef.error);
+            return null;
+        }
+
+        if (httpRef.bytes == null || httpRef.bytes.length == 0) {
+            Log.err("Empty response bytes for: " + url);
+            return null;
+        }
+
+        cachedFile.writeBytes(httpRef.bytes);
+        return new Pixmap(httpRef.bytes);
     }
 
     /**
-     * Synchronously retrieves a cached texture from memory if present and active.
+     * Clears the in-memory signal cache. Active signals already returned via
+     * {@link #get} continue to work; new calls will start fresh.
      */
-    public static Texture get(String url) {
-        if (url == null || url.isEmpty()) {
-            return null;
+    public static void clearCache() {
+        lock.lock();
+        try {
+            cache.clear();
+        } finally {
+            lock.unlock();
         }
-        WeakReference<Texture> ref = memoryCache.get(url);
-        if (ref != null) {
-            Texture cached = ref.get();
-            if (cached != null && !cached.isDisposed()) {
-                return cached;
-            }
-            memoryCache.remove(url);
-        }
-        return null;
     }
 
+    /**
+     * Quick validation for common image URL patterns.
+     *
+     * @param url the URL to check
+     * @return true if the URL looks like a PNG/JPEG image link
+     */
     public static boolean isValidImageLink(String url) {
         return url != null && url.matches("^https?://[^?\\s]+\\.(png|jpg|jpeg)(\\?.*)?$");
     }
 
-    public static void cancel(String url, Cons<Texture> callback) {
-        if (url == null || url.isEmpty() || callback == null) {
-            return;
-        }
-        List<Cons<Texture>> list = pendingRequests.get(url);
-        if (list != null) {
-            list.remove(callback);
-            if (list.isEmpty()) {
-                pendingRequests.remove(url);
-            }
-        }
+    /**
+     * Lifecycle states of an image resource as it moves through the
+     * loading pipeline.
+     */
+    public enum ImageLoadState {
+        IDLE,
+        LOADING,
+        DECODED,
+        LOADED,
+        FAILED
     }
 
-    public static void clearCache() {
-        Iterator<Map.Entry<String, WeakReference<Texture>>> it = memoryCache.entrySet().iterator();
-        while (it.hasNext()) {
-            Texture texture = it.next().getValue().get();
-            if (texture != null && !texture.isDisposed()) {
-                texture.dispose();
-            }
-            it.remove();
+    /**
+     * Immutable snapshot of an image at one point in its lifecycle.
+     * Only the fields relevant to the current state are populated.
+     *
+     * @param state   the current lifecycle state
+     * @param texture the loaded texture (non-null only in {@link ImageLoadState#LOADED})
+     * @param pixmap  the decoded pixmap (non-null only in {@link ImageLoadState#DECODED})
+     */
+    public static record ImageResource(ImageLoadState state, Texture texture, Pixmap pixmap) {
+        public static ImageResource idle() {
+            return new ImageResource(ImageLoadState.IDLE, null, null);
         }
-        signalCache.clear();
-    }
 
-    private static void deliver(String url, Texture texture) {
-        memoryCache.put(url, new WeakReference<>(texture));
-        List<Cons<Texture>> callbacks = pendingRequests.remove(url);
-        if (callbacks != null) {
-            for (Cons<Texture> callback : callbacks) {
-                try {
-                    callback.get(texture);
-                } catch (Exception e) {
-                    Log.err("Error executing callback for url: " + url, e);
-                }
-            }
+        public static ImageResource loading() {
+            return new ImageResource(ImageLoadState.LOADING, null, null);
         }
-    }
 
-    private static void fail(String url, Throwable error) {
-        List<Cons<Texture>> callbacks = pendingRequests.remove(url);
-        if (!(error instanceof HttpStatusException httpStatusException && httpStatusException.status.code == 404)) {
-            Log.err("Failed to load image from: " + url, error);
+        public static ImageResource decoded(Pixmap p) {
+            return new ImageResource(ImageLoadState.DECODED, null, p);
         }
-        if (callbacks != null) {
-            for (Cons<Texture> callback : callbacks) {
-                try {
-                    callback.get(null);
-                } catch (Exception e) {
-                    Log.err("Error executing failure callback for url: " + url, e);
-                }
-            }
-        }
-    }
 
-    private static String sanitize(String url) {
-        return url.replace(":", "-").replace("/", "-").replace("?", "-").replace("&", "-");
+        public static ImageResource loaded(Texture t) {
+            return new ImageResource(ImageLoadState.LOADED, t, null);
+        }
+
+        public static ImageResource failed() {
+            return new ImageResource(ImageLoadState.FAILED, null, null);
+        }
     }
 }
