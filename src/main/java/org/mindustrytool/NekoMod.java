@@ -1,12 +1,20 @@
 package org.mindustrytool;
 
+import arc.Core;
+
 import lombok.Getter;
 
-import lombok.extern.slf4j.Slf4j;
-
+import mindustry.Vars;
+import arc.Events;
+import mindustry.game.EventType.ClientLoadEvent;
+import mindustry.gen.Icon;
 import mindustry.mod.Mod;
 
 import org.codejargon.feather.Feather;
+
+import org.mindustrytool.mdtui.screen.DemoUI;
+
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * Entry point for the Neko Content Mod.
@@ -24,6 +32,17 @@ public class NekoMod extends Mod {
 
         feather = Feather.with(new NekoModule());
         feather.instance(ModManager.class).init();
+
+        var demoUI = feather.instance(DemoUI.class);
+        Events.on(ClientLoadEvent.class, e -> {
+            Core.app.post(() -> {
+                Vars.ui.menufrag.addButton(
+                    "Neko Demo",
+                    Icon.book,
+                    demoUI::show
+                );
+            });
+        });
     }
 
     /**
