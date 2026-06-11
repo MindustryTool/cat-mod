@@ -56,7 +56,8 @@ public class DemoUI {
         });
 
         var colorLabel = label("Color: " + PALETTE[0]);
-        var colorSwatch = swatch(PALETTE[0]).onClick(() -> {
+        CustomComponent colorSwatch = swatch(PALETTE[0]);
+        colorSwatch.onClick(() -> {
             var next = (colorIndex.get() + 1) % PALETTE.length;
             colorIndex.set(next);
             colorLabel.style.text("Color: " + PALETTE[next]);

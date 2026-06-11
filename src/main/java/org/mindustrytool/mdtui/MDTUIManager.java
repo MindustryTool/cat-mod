@@ -16,7 +16,7 @@ import org.mindustrytool.mdtui.screen.DemoUI;
 public final class MDTUIManager {
     private final DemoUI demoUI;
 
-    /** Initialises the MDT UI overlay. Called once during mod bootstrap. */
+    /** Initializes the MDT UI overlay. Called once during mod bootstrap. */
     public void init() {
         // DemoUI is eagerly created by Feather injection — its constructor
         // builds the full reactive scene graph. The root element can be
