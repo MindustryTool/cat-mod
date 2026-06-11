@@ -19,10 +19,6 @@ import org.mindustrytool.util.Resources;
  * visual effects: rounded corners, gradients, borders, inner shadows, glow, and
  * frosted-glass blur.
  *
- * <p><b>State model:</b> every public draw method calls {@link #resetState()} before
- * setting its own parameters, so callers never need to worry about state leaking
- * between draw calls.
- *
  * <p><b>Lifecycle:</b> shaders and the screen-capture framebuffer are shared across all
  * instances ({@code static}). Per-instance framebuffers are used for the glass blur effect
  * and are released via {@link #dispose()}.
@@ -139,8 +135,6 @@ public class CustomDraw implements Disposable {
 
     /**
      * Resets all render-state fields to safe defaults.
-     * Called at the top of every public draw method to prevent state leaking
-     * between calls.
      */
     private void resetState() {
         fillMode = 0;
@@ -170,212 +164,54 @@ public class CustomDraw implements Disposable {
 
     // ─── Public draw API ───
 
-    public void fill(float x, float y, float width, float height, float radius, Color color) {
+    public void draw(float x, float y, float width, float height, CustomComponent.Style s) {
+        if (width <= 0f || height <= 0f) return;
+        ensureShaders();
         resetState();
-        fillMode = 0;
-        fillColor.set(color);
-        topLeftRadius = topRightRadius = bottomRightRadius = bottomLeftRadius = radius;
-        render(x, y, width, height);
-    }
 
+        // Glass: setup blur pass if background is GLASS
+        if (s.backgroundMode == CustomComponent.Style.BackgroundMode.GLASS && s.glassIterations > 0) {
+            setupGlass(x, y, width, height, s.glassIterations, s.glassBlend);
+        } else {
+            blurTexture = null;
+            blendMode = 0f;
+        }
 
-    public void fill(float x, float y, float width, float height,
-                     float topLeft, float topRight, float bottomRight, float bottomLeft,
-                     Color color) {
-        resetState();
-        fillMode = 0;
-        fillColor.set(color);
-        topLeftRadius = topLeft;
-        topRightRadius = topRight;
-        bottomRightRadius = bottomRight;
-        bottomLeftRadius = bottomLeft;
-        render(x, y, width, height);
-    }
+        // Map Style -> shader uniforms
+        fillMode = switch (s.backgroundMode) {
+            case GRADIENT -> 1;
+            case TEXTURE  -> 2;
+            default       -> 0;
+        };
+        fillColor.set(s.fillColor);
+        currentGradient = s.gradient;
+        fillTexture = s.fillTexture;
+        uvScaleX = s.uvScaleX;
+        uvScaleY = s.uvScaleY;
+        uvOffsetX = s.uvOffsetX;
+        uvOffsetY = s.uvOffsetY;
 
+        topLeftRadius = s.topLeftRadius;
+        topRightRadius = s.topRightRadius;
+        bottomRightRadius = s.bottomRightRadius;
+        bottomLeftRadius = s.bottomLeftRadius;
 
-    public void fillGradient(float x, float y, float width, float height,
-                             float radius, Gradient gradient) {
-        resetState();
-        fillMode = 1;
-        fillColor.set(Color.white);
-        currentGradient = gradient;
-        topLeftRadius = topRightRadius = bottomRightRadius = bottomLeftRadius = radius;
-        render(x, y, width, height);
-    }
+        borderWidth = s.borderWidth;
+        borderColor.set(s.borderColor);
+        borderStyle = s.borderStyle;
+        dashLength = s.dashLength;
+        dashRatio = s.dashRatio;
 
+        innerShadowSpread = s.innerShadowSpread;
+        innerShadowBlur = s.innerShadowBlur;
+        innerShadowColor.set(s.innerShadowColor);
 
-    public void fillGradient(float x, float y, float width, float height,
-                             float topLeft, float topRight, float bottomRight, float bottomLeft,
-                             Gradient gradient) {
-        resetState();
-        fillMode = 1;
-        fillColor.set(Color.white);
-        currentGradient = gradient;
-        topLeftRadius = topLeft;
-        topRightRadius = topRight;
-        bottomRightRadius = bottomRight;
-        bottomLeftRadius = bottomLeft;
-        render(x, y, width, height);
-    }
+        outerGlowSpread = s.glowSpread;
+        outerGlowColor.set(s.glowColor);
 
-
-    public void fillTexture(float x, float y, float width, float height,
-                            float radius, Texture texture, Color tint,
-                            float scaleX, float scaleY, float offsetX, float offsetY) {
-        resetState();
-        fillMode = 2;
-        fillColor.set(tint);
-        fillTexture = texture;
-        uvScaleX = scaleX;
-        uvScaleY = scaleY;
-        uvOffsetX = offsetX;
-        uvOffsetY = offsetY;
-        topLeftRadius = topRightRadius = bottomRightRadius = bottomLeftRadius = radius;
-        render(x, y, width, height);
-    }
-
-
-    public void fillTexture(float x, float y, float width, float height,
-                            float topLeft, float topRight, float bottomRight, float bottomLeft,
-                            Texture texture, Color tint,
-                            float scaleX, float scaleY, float offsetX, float offsetY) {
-        resetState();
-        fillMode = 2;
-        fillColor.set(tint);
-        fillTexture = texture;
-        uvScaleX = scaleX;
-        uvScaleY = scaleY;
-        uvOffsetX = offsetX;
-        uvOffsetY = offsetY;
-        topLeftRadius = topLeft;
-        topRightRadius = topRight;
-        bottomRightRadius = bottomRight;
-        bottomLeftRadius = bottomLeft;
-        render(x, y, width, height);
-    }
-
-
-    public void fillWithBorder(float x, float y, float width, float height,
-                               float radius, Color fill, float bWidth, Color bColor) {
-        resetState();
-        fillMode = 0;
-        fillColor.set(fill);
-        borderWidth = bWidth;
-        borderColor.set(bColor);
-        topLeftRadius = topRightRadius = bottomRightRadius = bottomLeftRadius = radius;
-        render(x, y, width, height);
-    }
-
-
-    public void fillWithBorder(float x, float y, float width, float height,
-                               float topLeft, float topRight, float bottomRight, float bottomLeft,
-                               Color fill, float bWidth, Color bColor) {
-        resetState();
-        fillMode = 0;
-        fillColor.set(fill);
-        borderWidth = bWidth;
-        borderColor.set(bColor);
-        topLeftRadius = topLeft;
-        topRightRadius = topRight;
-        bottomRightRadius = bottomRight;
-        bottomLeftRadius = bottomLeft;
-        render(x, y, width, height);
-    }
-
-
-    public void fillGradientWithBorder(float x, float y, float width, float height,
-                                       float radius, Gradient gradient,
-                                       float bWidth, Color bColor) {
-        resetState();
-        fillMode = 1;
-        fillColor.set(Color.white);
-        currentGradient = gradient;
-        borderWidth = bWidth;
-        borderColor.set(bColor);
-        topLeftRadius = topRightRadius = bottomRightRadius = bottomLeftRadius = radius;
-        render(x, y, width, height);
-    }
-
-
-    public void fillDashedBorder(float x, float y, float width, float height,
-                                 float radius, Color fill, float bWidth, Color bColor,
-                                 float dLength, float dRatio) {
-        resetState();
-        fillMode = 0;
-        fillColor.set(fill);
-        borderWidth = bWidth;
-        borderColor.set(bColor);
-        borderStyle = 1;
-        dashLength = dLength;
-        dashRatio = dRatio;
-        topLeftRadius = topRightRadius = bottomRightRadius = bottomLeftRadius = radius;
-        render(x, y, width, height);
-    }
-
-
-    public void fillWithShadow(float x, float y, float width, float height,
-                               float radius, Color fill,
-                               float shadowSpread, float shadowBlur, Color shadowColor) {
-        resetState();
-        fillMode = 0;
-        fillColor.set(fill);
-        innerShadowSpread = shadowSpread;
-        innerShadowBlur = shadowBlur;
-        innerShadowColor.set(shadowColor);
-        topLeftRadius = topRightRadius = bottomRightRadius = bottomLeftRadius = radius;
-        render(x, y, width, height);
-    }
-
-
-    public void glass(float x, float y, float width, float height,
-                      float radius, Color tint, int blurIterations,
-                      float bWidth, Color bColor) {
-        resetState();
-        fillMode = 0;
-        fillColor.set(tint);
-        borderWidth = bWidth;
-        borderColor.set(bColor);
-        blendMode = 0.8f;
-        topLeftRadius = topRightRadius = bottomRightRadius = bottomLeftRadius = radius;
-
-        Texture captureTexture = captureScreen();
-        int fboWidth = Math.max((int) (width * 0.5f), 2);
-        int fboHeight = Math.max((int) (height * 0.5f), 2);
-        ensureBlurFrameBuffers(fboWidth, fboHeight);
-
-        float screenWidth = Core.graphics.getWidth();
-        float screenHeight = Core.graphics.getHeight();
-        float u1 = x / screenWidth;
-        float v1 = y / screenHeight;
-        float u2 = (x + width) / screenWidth;
-        float v2 = (y + height) / screenHeight;
-
-        blurFrameBufferA.begin();
-        Draw.color(Color.white);
-        float packedColor = Draw.getColor().toFloatBits();
-        Fill.quad(captureTexture,
-            0, 0, packedColor, u1, v1,
-            fboWidth, 0, packedColor, u2, v1,
-            fboWidth, fboHeight, packedColor, u2, v2,
-            0, fboHeight, packedColor, u1, v2);
-        Draw.flush();
-        blurFrameBufferA.end();
-
-        doBlur(fboWidth, fboHeight, blurIterations);
-
-        elementBoundsX = u1;
-        elementBoundsY = v1;
-        elementBoundsWidth = u2 - u1;
-        elementBoundsHeight = v2 - v1;
-        blurTexture = blurFrameBufferA.getTexture();
+        opacity = s.opacity;
 
         render(x, y, width, height);
-    }
-
-
-    public void glass(float x, float y, float width, float height,
-                      float radius, Color tint, int blurIterations) {
-        glass(x, y, width, height, radius, tint, blurIterations, 0f, Color.white);
     }
 
 
@@ -408,6 +244,41 @@ public class CustomDraw implements Disposable {
 
 
     // ─── Internal rendering ───
+
+    private void setupGlass(float x, float y, float width, float height, int iterations, float blend) {
+        Texture captureTexture = captureScreen();
+        int fboWidth = Math.max((int) (width * 0.5f), 2);
+        int fboHeight = Math.max((int) (height * 0.5f), 2);
+        ensureBlurFrameBuffers(fboWidth, fboHeight);
+
+        float screenWidth = Core.graphics.getWidth();
+        float screenHeight = Core.graphics.getHeight();
+        float u1 = x / screenWidth;
+        float v1 = y / screenHeight;
+        float u2 = (x + width) / screenWidth;
+        float v2 = (y + height) / screenHeight;
+
+        blurFrameBufferA.begin();
+        Draw.color(Color.white);
+        float packedColor = Draw.getColor().toFloatBits();
+        Fill.quad(captureTexture,
+            0, 0, packedColor, u1, v1,
+            fboWidth, 0, packedColor, u2, v1,
+            fboWidth, fboHeight, packedColor, u2, v2,
+            0, fboHeight, packedColor, u1, v2);
+        Draw.flush();
+        blurFrameBufferA.end();
+
+        doBlur(fboWidth, fboHeight, iterations);
+
+        elementBoundsX = u1;
+        elementBoundsY = v1;
+        elementBoundsWidth = u2 - u1;
+        elementBoundsHeight = v2 - v1;
+        blurTexture = blurFrameBufferA.getTexture();
+        blendMode = blend;
+    }
+
 
     private void render(float x, float y, float width, float height) {
         if (width <= 0f || height <= 0f) return;

@@ -4,8 +4,6 @@ import arc.graphics.Color;
 import arc.graphics.Texture;
 import arc.scene.Element;
 import arc.scene.Scene;
-import arc.scene.event.InputEvent;
-import arc.scene.event.InputListener;
 import arc.scene.event.Touchable;
 
 import org.mindustrytool.libs.signal.MultithreadSignal;
@@ -19,13 +17,12 @@ import arc.func.Cons;
  * A custom-rendered visual element — the primary rendering primitive of the UI system.
  *
  * <p>Uses {@link CustomDraw} (SDF shader) to paint rounded rectangles with fills, gradients,
- * borders, shadows, glow, and frosted-glass effects. Animates between two {@link StyleSnapshot}
- * states using any {@link Ease} function.
+ * borders, shadows, glow, and frosted-glass effects.
  *
  * <p><b>Usage:</b>
  * <pre>{@code
  * CustomComponent.of()
- *     .style(s -> s.fill(Color.blue).radius(12f).opacity(0.9f))
+ *     .style(s -> s.background(Color.blue).radius(12f).opacity(0.9f))
  *     .size(sz -> sz.fixedWidth(200f).fixedHeight(80f))
  *     .onClick(() -> System.out.println("clicked"));
  * }</pre>
@@ -39,11 +36,13 @@ public class CustomComponent implements Component {
     // ─── Style ───────────────────────────────────────────────────────────────
 
     /**
-     * Visual style properties. All fields that appear in {@link StyleSnapshot} are animatable;
-     * fields not in the snapshot ({@code gradient}, {@code fillTexture}, UV params) change
-     * discretely.
+     * Visual style properties.
      */
     public class Style extends ComponentStyle<Style> {
+
+        public enum BackgroundMode { SOLID, GRADIENT, TEXTURE, GLASS }
+
+        public BackgroundMode backgroundMode = BackgroundMode.SOLID;
 
         public float topLeftRadius = 8f;
         public float topRightRadius = 8f;
@@ -59,7 +58,6 @@ public class CustomComponent implements Component {
 
         public Gradient gradient;
         public Texture fillTexture;
-        public final Color textureTint = new Color(Color.white);
         public float uvScaleX = 1f;
         public float uvScaleY = 1f;
         public float uvOffsetX;
@@ -73,6 +71,9 @@ public class CustomComponent implements Component {
         public final Color glowColor = new Color(0, 0, 0, 0);
 
         public float opacity = 1f;
+
+        public int glassIterations;
+        public float glassBlend = 0.8f;
 
 
         Style() {}
@@ -107,21 +108,42 @@ public class CustomComponent implements Component {
         }
 
 
-        public Style fill(Color value) {
+        public Style background(Color value) {
+            backgroundMode = BackgroundMode.SOLID;
             fillColor.set(value);
             return this;
         }
 
 
-        public Style fill(Gradient value) {
+        public Style background(Gradient value) {
+            backgroundMode = BackgroundMode.GRADIENT;
             gradient = value;
             return this;
         }
 
 
-        public Style texture(Texture texture, Color tint) {
+        public Style background(Texture texture) {
+            return background(texture, Color.white);
+        }
+
+
+        public Style background(Texture texture, Color tint) {
+            backgroundMode = BackgroundMode.TEXTURE;
             fillTexture = texture;
-            textureTint.set(tint);
+            fillColor.set(tint);
+            return this;
+        }
+
+
+        public Style background(int iterations) {
+            return background(iterations, 0.8f);
+        }
+
+
+        public Style background(int iterations, float blend) {
+            backgroundMode = BackgroundMode.GLASS;
+            glassIterations = iterations;
+            glassBlend = blend;
             return this;
         }
 
@@ -197,16 +219,6 @@ public class CustomComponent implements Component {
     private Texture ownedTexture;
 
 
-    // ─── Animation state ─────────────────────────────────────────────────────
-
-    private boolean animating;
-    private StyleSnapshot animFrom;
-    private StyleSnapshot animTo;
-    private float animElapsed;
-    private float animDuration;
-    private Ease animEase;
-
-
     // ─── Arc Element ─────────────────────────────────────────────────────────
 
     private final Element element = new Element() {
@@ -224,14 +236,6 @@ public class CustomComponent implements Component {
 
 
         @Override
-        public void act(float delta) {
-            super.act(delta);
-            if (!animating) return;
-            updateAnimation(delta);
-        }
-
-
-        @Override
         protected void setScene(Scene scene) {
             super.setScene(scene);
             if (scene == null) CustomComponent.this.dispose();
@@ -243,7 +247,7 @@ public class CustomComponent implements Component {
             float width = getWidth();
             float height = getHeight();
             if (width <= 0f || height <= 0f) return;
-            drawWith(style, x, y, width, height);
+            drawer.draw(x, y, width, height, style);
         }
     };
 
@@ -283,27 +287,6 @@ public class CustomComponent implements Component {
 
 
     /**
-     * Animates from the current style to the state produced by {@code configurator}.
-     * If {@code durationMs} is 0, the target state is applied immediately.
-     */
-    public CustomComponent anim(long durationMs, Ease ease, Cons<Style> configurator) {
-        animFrom = StyleSnapshot.from(style);
-        configurator.get(style);
-        animTo = StyleSnapshot.from(style);
-        animFrom.applyTo(style);
-
-        animElapsed = 0f;
-        animDuration = Math.max(durationMs, 0L) / 1000f;
-        animEase = ease;
-        animating = durationMs > 0;
-
-        if (!animating) animTo.applyTo(style);
-        element.invalidateHierarchy();
-        return this;
-    }
-
-
-    /**
      * Loads an image from {@code url} asynchronously and applies it as a fill texture.
      * Disposes any previously loaded owned texture.
      */
@@ -316,17 +299,19 @@ public class CustomComponent implements Component {
             () -> {
                 var result = signal.state();
                 if (result.state() != ImageLoader.ImageLoadState.LOADED) return;
+                style.backgroundMode = Style.BackgroundMode.TEXTURE;
                 style.fillTexture = result.texture();
                 ownedTexture = result.texture();
-                style.textureTint.set(tint);
+                style.fillColor.set(tint);
                 element.invalidateHierarchy();
             }
         );
         var current = signal.state();
         if (current.state() == ImageLoader.ImageLoadState.LOADED) {
+            style.backgroundMode = Style.BackgroundMode.TEXTURE;
             style.fillTexture = current.texture();
             ownedTexture = current.texture();
-            style.textureTint.set(tint);
+            style.fillColor.set(tint);
             element.invalidateHierarchy();
         }
         return this;
@@ -345,37 +330,6 @@ public class CustomComponent implements Component {
         element.touchable = mode;
         return this;
     }
-
-
-    /** Makes the element touchable and registers a click handler. */
-    public CustomComponent onClick(Runnable handler) {
-        element.touchable = Touchable.enabled;
-        element.clicked(handler);
-        return this;
-    }
-
-
-    /** Makes the element touchable and registers hover enter/exit handlers. */
-    public CustomComponent onHover(Runnable onEnter, Runnable onExit) {
-        element.touchable = Touchable.enabled;
-        element.addListener(new InputListener() {
-
-            @Override
-            public void enter(InputEvent event, float x, float y, int pointer, Element fromActor) {
-                if (pointer != -1) return;
-                onEnter.run();
-            }
-
-
-            @Override
-            public void exit(InputEvent event, float x, float y, int pointer, Element toActor) {
-                if (pointer != -1) return;
-                onExit.run();
-            }
-        });
-        return this;
-    }
-
 
     // ─── Component interface ─────────────────────────────────────────────────
 
@@ -409,43 +363,5 @@ public class CustomComponent implements Component {
             imageHandle.dispose();
             imageHandle = null;
         }
-    }
-
-
-    private void updateAnimation(float delta) {
-        animElapsed += delta;
-        float t = Math.min(animElapsed / animDuration, 1f);
-        StyleSnapshot.lerp(animFrom, animTo, animEase.apply(t)).applyTo(style);
-        element.invalidateHierarchy();
-
-        if (t < 1f) return;
-        animTo.applyTo(style);
-        animating = false;
-    }
-
-
-    private void drawWith(Style s, float x, float y, float width, float height) {
-        if (s.gradient != null) {
-            drawer.fillGradient(x, y, width, height,
-                s.topLeftRadius, s.topRightRadius, s.bottomRightRadius, s.bottomLeftRadius,
-                s.gradient);
-            return;
-        }
-        if (s.fillTexture != null) {
-            drawer.fillTexture(x, y, width, height,
-                s.topLeftRadius, s.topRightRadius, s.bottomRightRadius, s.bottomLeftRadius,
-                s.fillTexture, s.textureTint,
-                s.uvScaleX, s.uvScaleY, s.uvOffsetX, s.uvOffsetY);
-            return;
-        }
-        if (s.borderWidth > 0.001f) {
-            drawer.fillWithBorder(x, y, width, height,
-                s.topLeftRadius, s.topRightRadius, s.bottomRightRadius, s.bottomLeftRadius,
-                s.fillColor, s.borderWidth, s.borderColor);
-            return;
-        }
-        drawer.fill(x, y, width, height,
-            s.topLeftRadius, s.topRightRadius, s.bottomRightRadius, s.bottomLeftRadius,
-            s.fillColor);
     }
 }
