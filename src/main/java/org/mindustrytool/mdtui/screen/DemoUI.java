@@ -13,6 +13,10 @@ import org.mindustrytool.libs.ui.components.Text;
 
 import lombok.extern.slf4j.Slf4j;
 
+import javax.inject.Inject;
+import javax.inject.Singleton;
+
+@Singleton
 @Slf4j
 public class DemoUI {
     private final Layout root;
@@ -29,6 +33,7 @@ public class DemoUI {
         Color.valueOf("ff79c6"),
     };
 
+    @Inject
     public DemoUI() {
         var preview = CustomComponent.of().style(s -> s.radius(12f).background(Color.valueOf("1c1c22")));
 
