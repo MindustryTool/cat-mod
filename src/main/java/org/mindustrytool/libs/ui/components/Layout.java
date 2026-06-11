@@ -17,23 +17,19 @@ import arc.func.Cons;
 import arc.func.Prov;
 
 /**
- * Flexbox-based container that can host child {@link Component}s, an optional background,
- * and optional scroll behaviour.
+ * Flexbox-based container that can host child {@link Component}s and an optional background.
+ * It uses a {@link ScrollElement} root group to support scrolling.
  *
  * <p><b>Style effects accumulate</b> — each call to {@link #style(Cons)} registers a new
  * reactive configurator. This allows composing orthogonal concerns:
  * <pre>{@code
  * Layout.of()
  *     .style(s -> { s.reset(false); s.column().gap(8f); })
- *     .style(s -> s.padding(16f))
- *     .scrollY();
+ *     .style(s -> s.padding(16f));
  * }</pre>
  *
  * <p>Call {@link LayoutSpec#reset(boolean)} at the start of a configurator when you want to
  * start from default values rather than building on top of previous configurator state.
- *
- * <p><b>Scroll:</b> enabled via {@link #scrollY()} / {@link #scrollX()} / {@link #scroll()}.
- * Supports fling physics and an auto-hiding scroll-bar rendered using {@link CustomComponent}.
  */
 public class Layout implements Component {
 
@@ -47,10 +43,6 @@ public class Layout implements Component {
     private Component background;
     private final Seq<Component> currentChildren = new Seq<>();
     private Prov<Seq<Component>> childrenProvider = Seq::new;
-
-
-
-
 
     // ─── Constructor ─────────────────────────────────────────────────────────
 
@@ -182,10 +174,6 @@ public class Layout implements Component {
         if (background != null) background.dispose();
         for (int i = 0; i < currentChildren.size; i++) currentChildren.get(i).dispose();
     }
-
-
-
-
 
     // ─── Private helpers ─────────────────────────────────────────────────────
 
