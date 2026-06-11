@@ -1,11 +1,9 @@
 package org.mindustrytool.libs.ui.components;
 
-import arc.graphics.Color;
 import arc.scene.Element;
 import arc.scene.ui.layout.WidgetGroup;
 import arc.struct.Seq;
 
-import org.mindustrytool.libs.signal.Effect;
 import org.mindustrytool.libs.ui.component.Component;
 import org.mindustrytool.libs.ui.component.EffectHost;
 import org.mindustrytool.libs.ui.element.ScrollElement;
@@ -41,8 +39,6 @@ public class Layout implements Component {
 
     private Component background;
     private final Seq<Component> currentChildren = new Seq<>();
-    private Prov<Seq<Component>> childrenProvider = Seq::new;
-    private Effect childrenEffect;
 
     private Layout() {
         spec = new LayoutSpec();
@@ -105,28 +101,21 @@ public class Layout implements Component {
 
         group.userObject = this;
         spec.onInvalidate(contentGroup::invalidateHierarchy);
-
-        childrenEffect = effects.replace(childrenEffect, () -> rebuild(childrenProvider.get()));
     }
-
-
-    // ─── Factory ─────────────────────────────────────────────────────────────
 
     public static Layout of() {
         return new Layout();
     }
 
-    public Layout background(Component bg) {
-        if (background != null && background != bg) background.dispose();
-        background = bg;
-        triggerRebuild();
+    public Layout background(Component newBackground) {
+        if (background != null && background != newBackground) background.dispose();
+        background = newBackground;
+        rebuild(currentChildren);
         return this;
     }
 
-
     public Layout children(Prov<Seq<Component>> provider) {
-        childrenProvider = provider;
-        childrenEffect = effects.replace(childrenEffect, () -> rebuild(childrenProvider.get()));
+        effects.add(() -> rebuild(provider.get()));
         return this;
     }
 
@@ -167,11 +156,6 @@ public class Layout implements Component {
         Seq<Element> elements = new Seq<>(currentChildren.size);
         for (int i = 0; i < currentChildren.size; i++) elements.add(currentChildren.get(i).element());
         return elements;
-    }
-
-    private void triggerRebuild() {
-        // Force the rebuildEffect to re-run immediately (the effect itself reads childrenProvider)
-        rebuild(childrenProvider.get());
     }
 
     private void rebuild(Seq<Component> newChildren) {
