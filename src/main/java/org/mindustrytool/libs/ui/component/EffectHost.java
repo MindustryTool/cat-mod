@@ -12,9 +12,6 @@ import org.mindustrytool.libs.signal.Effect;
  * <p>Two usage patterns:
  * <ul>
  *   <li>{@link #add(Runnable)} — permanent subscription, lives until {@link #disposeAll()}.</li>
- *   <li>{@link #replace(Effect, Runnable)} — slotted subscription, disposes the previous
- *       effect before creating a new one. Suitable for style/size effects that can be
- *       overwritten by the caller.</li>
  * </ul>
  */
 public final class EffectHost {
@@ -27,20 +24,6 @@ public final class EffectHost {
         var effect = new Effect(body);
         tracked.add(effect);
         return effect;
-    }
-
-    /**
-     * Disposes the previous {@code effect} (if not null), removes it from tracking,
-     * creates a new {@link Effect} from {@code body}, tracks it, and returns the new effect.
-     */
-    public Effect replace(Effect effect, Runnable body) {
-        if (effect != null) {
-            effect.dispose();
-            tracked.remove(effect, true);
-        }
-        var newEffect = new Effect(body);
-        tracked.add(newEffect);
-        return newEffect;
     }
 
     /**

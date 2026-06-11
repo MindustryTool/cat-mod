@@ -15,6 +15,9 @@ import org.mindustrytool.libs.ui.layout.NodeSpec.SizeMode;
 import arc.func.Cons;
 import arc.func.Prov;
 
+import java.util.HashSet;
+import java.util.Set;
+
 /**
  * Flexbox-based container that can host child {@link Component}s and an optional background.
  * It uses a {@link ScrollElement} root group to support scrolling.
@@ -35,6 +38,7 @@ public class Layout implements Component {
     private final LayoutSpec spec;
     private final ScrollElement group;
     private final WidgetGroup contentGroup;
+
     private final EffectHost effects = new EffectHost();
 
     private Component background;
@@ -44,7 +48,9 @@ public class Layout implements Component {
         spec = new LayoutSpec();
 
         contentGroup = new WidgetGroup() {
-            { setTransform(true); }
+            {
+                setTransform(true);
+            }
 
             @Override
             public float getPrefWidth() {
@@ -153,26 +159,22 @@ public class Layout implements Component {
     }
 
     private Seq<Element> foregroundElements() {
-        Seq<Element> elements = new Seq<>(currentChildren.size);
-        for (int i = 0; i < currentChildren.size; i++) elements.add(currentChildren.get(i).element());
-        return elements;
+        return currentChildren.map(Component::element);
     }
 
     private void rebuild(Seq<Component> newChildren) {
-        java.util.Set<Component> newSet = new java.util.HashSet<>();
-        for (int i = 0; i < newChildren.size; i++) newSet.add(newChildren.get(i));
+        Set<Component> newSet = new HashSet<>();
+        for (var newComponent : newChildren) newSet.add(newComponent);
 
-        for (int i = 0; i < currentChildren.size; i++) {
-            Component oldChild = currentChildren.get(i);
-            if (!newSet.contains(oldChild)) oldChild.dispose();
-        }
+        for (var currentComponent : currentChildren)
+            if (!newSet.contains(currentComponent)) currentComponent.dispose();
 
         currentChildren.clear();
         currentChildren.addAll(newChildren);
 
         contentGroup.clearChildren();
         if (background != null) contentGroup.addChild(background.element());
-        for (int i = 0; i < newChildren.size; i++) contentGroup.addChild(newChildren.get(i).element());
+        for (var component : newChildren) contentGroup.addChild(component.element());
 
         contentGroup.invalidateHierarchy();
         group.invalidateHierarchy();

@@ -1,4 +1,4 @@
-package org.mindustrytool.mdtui;
+package org.mindustrytool.mdtui.util;
 
 import arc.graphics.Color;
 

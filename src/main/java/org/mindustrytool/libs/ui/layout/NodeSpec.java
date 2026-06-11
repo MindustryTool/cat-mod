@@ -86,9 +86,7 @@ public class NodeSpec {
      * Triggers the invalidation callback to notify the parent container of changes.
      */
     protected void invalidate() {
-        if (onInvalidateCallback != null) {
-            onInvalidateCallback.run();
-        }
+        if (onInvalidateCallback != null) onInvalidateCallback.run();
     }
 
     // --- Fluent Setters ---

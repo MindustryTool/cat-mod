@@ -79,8 +79,9 @@ public class ImageLoader {
                 r -> r.state() == ImageLoadState.LOADING,
                 s -> {
                     Pixmap pixmap = resolvePixmap(url);
+
                     if (pixmap == null) return ImageResource.failed();
-                    return ImageResource.decoded(pixmap);
+                    else return ImageResource.decoded(pixmap);
                 }
             );
 

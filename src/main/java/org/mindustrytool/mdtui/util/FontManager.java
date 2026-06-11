@@ -1,4 +1,4 @@
-package org.mindustrytool.mdtui;
+package org.mindustrytool.mdtui.util;
 
 import arc.freetype.FreeTypeFontGenerator;
 import arc.freetype.FreeTypeFontGenerator.FreeTypeFontParameter;
@@ -15,16 +15,16 @@ import javax.inject.Singleton;
 
 @Singleton
 public final class FontManager {
-    private final @Getter Font mono;
+    private final @Getter Font jetbrainsMono;
 
     @Inject
     public FontManager() {
-        mono = new FreeTypeFontGenerator(Vars.tree.get(Resources.FONT_MONO))
+        jetbrainsMono = new FreeTypeFontGenerator(Vars.tree.get(Resources.FONT_JETBRAINS_MONO))
             .generateFont(new FreeTypeFontParameter() {{
                 size = 32;
                 incremental = true;
             }});
 
-        mono.getData().markupEnabled = true;
+        jetbrainsMono.getData().markupEnabled = true;
     }
 }

@@ -3,6 +3,8 @@ package org.mindustrytool.libs.signal;
 import arc.Core;
 import arc.util.Timer;
 
+import lombok.Getter;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -196,10 +198,12 @@ public final class MultithreadSignal<T> {
      * Controls a subscription. Call {@link #dispose} to unsubscribe.
      */
     public static final class Handle {
-        private volatile boolean disposed = false;
+
+        private volatile @Getter boolean disposed = false;
         private Runnable disposeAction;
 
         private Handle() {
+
         }
 
         /**
@@ -210,13 +214,6 @@ public final class MultithreadSignal<T> {
             disposed = true;
 
             if (disposeAction != null) disposeAction.run();
-        }
-
-        /**
-         * Returns true if this handle has been disposed.
-         */
-        public boolean isDisposed() {
-            return disposed;
         }
     }
 

@@ -17,45 +17,52 @@ import org.mindustrytool.util.Resources;
  *
  * <p>Uses custom OpenGL shaders and SDF (Signed Distance Fields) to draw premium
  * visual effects: rounded corners, gradients, borders, inner shadows, glow, and
- * frosted-glass blur.
+ * backdrop-filter blur.
  *
- * <p><b>Lifecycle:</b> shaders and the screen-capture framebuffer are shared across all
- * instances ({@code static}). Per-instance framebuffers are used for the glass blur effect
- * and are released via {@link #dispose()}.
+ * <p><b>Lifecycle:</b> Shaders and the screen-capture framebuffer are shared across all
+ * instances ({@code static}) and should be released via {@link #disposeShared()} and {@link #disposeCapture()}.
+ * Per-instance framebuffers are used for the backdrop blur effect and are released via {@link #dispose()}.
  */
 public class CustomDraw implements Disposable {
-
-    // ─── Shared (static) resources ───
 
     private static Shader mainShader;
     private static Shader blurShader;
     private static boolean shadersLoaded;
+    private static FrameBuffer captureFrameBuffer;
 
-
+    /**
+     * Ensures that the shared custom element shader and blur shader are loaded.
+     */
     private static void ensureShaders() {
         if (shadersLoaded) return;
+
         mainShader = new Shader(
             Resources.readString(Resources.SHADER_CUSTOM_ELEMENT_VERT),
             Resources.readString(Resources.SHADER_CUSTOM_ELEMENT_FRAG)
         );
+
         mainShader.bind();
-        mainShader.setUniformi("u_gradientTex", 1);
+        mainShader.setUniformi("u_gradientTex0", 1);
         mainShader.setUniformi("u_fillTexture", 2);
-        mainShader.setUniformi("u_blurTexture", 3);
+        mainShader.setUniformi("u_backdropTex", 3);
+        mainShader.setUniformi("u_gradientTex1", 4);
+        mainShader.setUniformi("u_gradientTex2", 5);
+        mainShader.setUniformi("u_gradientTex3", 6);
 
         blurShader = new Shader(
             Resources.readString(Resources.SHADER_BLUR_VERT),
             Resources.readString(Resources.SHADER_BLUR_FRAG)
         );
+
         shadersLoaded = true;
     }
 
-
-    // ─── Screen capture (shared) ───
-
-    private static FrameBuffer captureFrameBuffer;
-
-
+    /**
+     * Captures the current screen contents to a downscaled FrameBuffer.
+     * Used as a backdrop source for the glass/blur effect.
+     *
+     * @return the captured screen background texture
+     */
     public static Texture captureScreen() {
         int width = Math.max(Core.graphics.getWidth() / 2, 2);
         int height = Math.max(Core.graphics.getHeight() / 2, 2);
@@ -74,162 +81,18 @@ public class CustomDraw implements Disposable {
         return captureFrameBuffer.getTexture();
     }
 
-
+    /**
+     * Disposes the shared screen-capture framebuffer.
+     */
     public static void disposeCapture() {
         if (captureFrameBuffer == null) return;
         captureFrameBuffer.dispose();
         captureFrameBuffer = null;
     }
 
-
-    // ─── Per-instance framebuffers (glass blur) ───
-
-    private FrameBuffer blurFrameBufferA;
-    private FrameBuffer blurFrameBufferB;
-
-
-    // ─── Render state ───
-
-    private int fillMode;
-    private final Color fillColor = new Color(Color.darkGray);
-    private float topLeftRadius;
-    private float topRightRadius;
-    private float bottomRightRadius;
-    private float bottomLeftRadius;
-
-    private Gradient currentGradient;
-
-    private Texture fillTexture;
-    private float uvScaleX = 1f;
-    private float uvScaleY = 1f;
-    private float uvOffsetX;
-    private float uvOffsetY;
-
-    private float borderWidth;
-    private final Color borderColor = new Color(Color.white);
-    private int borderStyle;
-    private float dashLength = 10f;
-    private float dashRatio = 0.5f;
-
-    private final Color innerShadowColor = new Color(0, 0, 0, 0);
-    private float innerShadowSpread;
-    private float innerShadowBlur;
-
-    private final Color outerGlowColor = new Color(0, 0, 0, 0);
-    private float outerGlowSpread;
-
-    private float opacity = 1f;
-    private int filterMode;
-    private float filterAmount;
-    private float noiseAmount;
-
-    private Texture blurTexture;
-    private float elementBoundsX;
-    private float elementBoundsY;
-    private float elementBoundsWidth;
-    private float elementBoundsHeight;
-    private float blendMode;
-
-
-    // ─── State reset ───
-
     /**
-     * Resets all render-state fields to safe defaults.
+     * Disposes all shared static shader resources.
      */
-    private void resetState() {
-        fillMode = 0;
-        fillColor.set(Color.darkGray);
-        topLeftRadius = topRightRadius = bottomRightRadius = bottomLeftRadius = 0f;
-        currentGradient = null;
-        fillTexture = null;
-        uvScaleX = uvScaleY = 1f;
-        uvOffsetX = uvOffsetY = 0f;
-        borderWidth = 0f;
-        borderColor.set(Color.white);
-        borderStyle = 0;
-        dashLength = 10f;
-        dashRatio = 0.5f;
-        innerShadowColor.set(0, 0, 0, 0);
-        innerShadowSpread = innerShadowBlur = 0f;
-        outerGlowColor.set(0, 0, 0, 0);
-        outerGlowSpread = 0f;
-        opacity = 1f;
-        filterMode = 0;
-        filterAmount = noiseAmount = 0f;
-        blurTexture = null;
-        elementBoundsX = elementBoundsY = elementBoundsWidth = elementBoundsHeight = 0f;
-        blendMode = 0f;
-    }
-
-
-    // ─── Public draw API ───
-
-    public void draw(float x, float y, float width, float height, CustomComponent.Style s) {
-        if (width <= 0f || height <= 0f) return;
-        ensureShaders();
-        resetState();
-
-        // Glass: setup blur pass if background is GLASS
-        if (s.backgroundMode == CustomComponent.Style.BackgroundMode.GLASS && s.glassIterations > 0) {
-            setupGlass(x, y, width, height, s.glassIterations, s.glassBlend);
-        } else {
-            blurTexture = null;
-            blendMode = 0f;
-        }
-
-        // Map Style -> shader uniforms
-        fillMode = switch (s.backgroundMode) {
-            case GRADIENT -> 1;
-            case TEXTURE  -> 2;
-            default       -> 0;
-        };
-        fillColor.set(s.fillColor);
-        currentGradient = s.gradient;
-        fillTexture = s.fillTexture;
-        uvScaleX = s.uvScaleX;
-        uvScaleY = s.uvScaleY;
-        uvOffsetX = s.uvOffsetX;
-        uvOffsetY = s.uvOffsetY;
-
-        topLeftRadius = s.topLeftRadius;
-        topRightRadius = s.topRightRadius;
-        bottomRightRadius = s.bottomRightRadius;
-        bottomLeftRadius = s.bottomLeftRadius;
-
-        borderWidth = s.borderWidth;
-        borderColor.set(s.borderColor);
-        borderStyle = s.borderStyle;
-        dashLength = s.dashLength;
-        dashRatio = s.dashRatio;
-
-        innerShadowSpread = s.innerShadowSpread;
-        innerShadowBlur = s.innerShadowBlur;
-        innerShadowColor.set(s.innerShadowColor);
-
-        outerGlowSpread = s.glowSpread;
-        outerGlowColor.set(s.glowColor);
-
-        opacity = s.opacity;
-
-        render(x, y, width, height);
-    }
-
-
-    // ─── Lifecycle ───
-
-    @Override
-    public void dispose() {
-        if (blurFrameBufferA != null) {
-            blurFrameBufferA.dispose();
-            blurFrameBufferA = null;
-        }
-        if (blurFrameBufferB != null) {
-            blurFrameBufferB.dispose();
-            blurFrameBufferB = null;
-        }
-    }
-
-
     public static void disposeShared() {
         if (mainShader != null) {
             mainShader.dispose();
@@ -243,44 +106,80 @@ public class CustomDraw implements Disposable {
     }
 
 
-    // ─── Internal rendering ───
+    private FrameBuffer blurFrameBufferA;
+    private FrameBuffer blurFrameBufferB;
 
-    private void setupGlass(float x, float y, float width, float height, int iterations, float blend) {
-        Texture captureTexture = captureScreen();
-        int fboWidth = Math.max((int) (width * 0.5f), 2);
-        int fboHeight = Math.max((int) (height * 0.5f), 2);
-        ensureBlurFrameBuffers(fboWidth, fboHeight);
+    /**
+     * Draws the specified custom element shape and styling.
+     * Sets up backdrop blur framebuffers if needed, and triggers the shader rendering.
+     *
+     * @param x      the X coordinate of the element
+     * @param y      the Y coordinate of the element
+     * @param width  the width of the element
+     * @param height the height of the element
+     * @param s      the visual style configuration
+     */
+    public void draw(float x, float y, float width, float height, CustomComponent.Style s) {
+        if (width <= 0f || height <= 0f) return;
+        ensureShaders();
 
-        float screenWidth = Core.graphics.getWidth();
-        float screenHeight = Core.graphics.getHeight();
-        float u1 = x / screenWidth;
-        float v1 = y / screenHeight;
-        float u2 = (x + width) / screenWidth;
-        float v2 = (y + height) / screenHeight;
+        Texture backdropTexture = null;
+        float bdX = 0f, bdY = 0f, bdW = 0f, bdH = 0f;
 
-        blurFrameBufferA.begin();
-        Draw.color(Color.white);
-        float packedColor = Draw.getColor().toFloatBits();
-        Fill.quad(captureTexture,
-            0, 0, packedColor, u1, v1,
-            fboWidth, 0, packedColor, u2, v1,
-            fboWidth, fboHeight, packedColor, u2, v2,
-            0, fboHeight, packedColor, u1, v2);
-        Draw.flush();
-        blurFrameBufferA.end();
+        if (s.backgroundMode == CustomComponent.Style.BackgroundMode.BACKDROP && s.backdropIterations > 0) {
+            Texture captureTexture = captureScreen();
+            int fboWidth = Math.max((int) (width * 0.5f), 2);
+            int fboHeight = Math.max((int) (height * 0.5f), 2);
+            ensureBlurFrameBuffers(fboWidth, fboHeight);
 
-        doBlur(fboWidth, fboHeight, iterations);
+            float screenWidth = Core.graphics.getWidth();
+            float screenHeight = Core.graphics.getHeight();
+            bdX = x / screenWidth;
+            bdY = y / screenHeight;
+            float u2 = (x + width) / screenWidth;
+            float v2 = (y + height) / screenHeight;
+            bdW = u2 - bdX;
+            bdH = v2 - bdY;
 
-        elementBoundsX = u1;
-        elementBoundsY = v1;
-        elementBoundsWidth = u2 - u1;
-        elementBoundsHeight = v2 - v1;
-        blurTexture = blurFrameBufferA.getTexture();
-        blendMode = blend;
+            blurFrameBufferA.begin();
+            Draw.color(Color.white);
+            float packedColor = Draw.getColor().toFloatBits();
+            Fill.quad(captureTexture,
+                0, 0, packedColor, bdX, bdY,
+                fboWidth, 0, packedColor, u2, bdY,
+                fboWidth, fboHeight, packedColor, u2, v2,
+                0, fboHeight, packedColor, bdX, v2);
+            Draw.flush();
+            blurFrameBufferA.end();
+
+            doBlur(fboWidth, fboHeight, s.backdropIterations);
+            backdropTexture = blurFrameBufferA.getTexture();
+        }
+
+        render(x, y, width, height, s, backdropTexture, bdX, bdY, bdW, bdH);
     }
 
+    /**
+     * Disposes the per-instance temporary framebuffers.
+     */
+    @Override
+    public void dispose() {
+        if (blurFrameBufferA != null) {
+            blurFrameBufferA.dispose();
+            blurFrameBufferA = null;
+        }
+        if (blurFrameBufferB != null) {
+            blurFrameBufferB.dispose();
+            blurFrameBufferB = null;
+        }
+    }
 
-    private void render(float x, float y, float width, float height) {
+    /**
+     * Binds uniforms to the custom element shader and renders a textured quad.
+     * Uses lazy/conditional uniform binding to minimize OpenGL state changes.
+     */
+    private void render(float x, float y, float width, float height, CustomComponent.Style s,
+                        Texture backdropTexture, float bdX, float bdY, float bdW, float bdH) {
         if (width <= 0f || height <= 0f) return;
         ensureShaders();
 
@@ -289,54 +188,85 @@ public class CustomDraw implements Disposable {
         Draw.shader(mainShader);
         mainShader.bind();
 
-        mainShader.setUniformi("u_gradientTex", 1);
-        mainShader.setUniformi("u_fillTexture", 2);
-        mainShader.setUniformi("u_blurTexture", 3);
-
-        mainShader.setUniformf("u_cornerRadii", topLeftRadius, topRightRadius, bottomRightRadius, bottomLeftRadius);
         mainShader.setUniformf("u_size", width, height);
+        mainShader.setUniformf("u_cornerRadii", s.topLeftRadius, s.topRightRadius, s.bottomRightRadius, s.bottomLeftRadius);
         mainShader.setUniformf("u_edgeSoftness", 1.0f);
+        mainShader.setUniformf("u_opacity", s.opacity);
 
-        mainShader.setUniformf("u_fillColor", fillColor.r, fillColor.g, fillColor.b, fillColor.a);
+        int fillMode = switch (s.backgroundMode) {
+            case GRADIENT -> 1;
+            case TEXTURE  -> 2;
+            default       -> 0;
+        };
         mainShader.setUniformf("u_fillMode", fillMode);
+        mainShader.setUniformf("u_fillColor", s.fillColor.r, s.fillColor.g, s.fillColor.b, s.fillColor.a);
 
-        if (fillMode == 1 && currentGradient != null) {
-            float[] gradientParams = currentGradient.getParams();
-            mainShader.setUniformf("u_gradientParams",
-                gradientParams[0], gradientParams[1], gradientParams[2], gradientParams[3]);
-        } else {
-            mainShader.setUniformf("u_gradientParams", 0f, 0f, 0f, 1f);
+        if (fillMode == 1) {
+            int count = 0;
+            if (s.gradient0 != null) {
+                bindGradient(count, s.gradient0);
+                count++;
+            }
+            if (s.gradient0 != null && s.gradient1 != null) {
+                bindGradient(count, s.gradient1);
+                count++;
+            }
+            if (s.gradient0 != null && s.gradient1 != null && s.gradient2 != null) {
+                bindGradient(count, s.gradient2);
+                count++;
+            }
+            if (s.gradient0 != null && s.gradient1 != null && s.gradient2 != null && s.gradient3 != null) {
+                bindGradient(count, s.gradient3);
+                count++;
+            }
+            mainShader.setUniformf("u_gradientCount", count);
+        } else if (fillMode == 2 && s.fillTexture != null) {
+            mainShader.setUniformf("u_uvScale", s.uvScaleX, s.uvScaleY);
+            mainShader.setUniformf("u_uvOffset", s.uvOffsetX, s.uvOffsetY);
+            s.fillTexture.bind(2);
         }
 
-        mainShader.setUniformf("u_uvScale", uvScaleX, uvScaleY);
-        mainShader.setUniformf("u_uvOffset", uvOffsetX, uvOffsetY);
+        mainShader.setUniformf("u_borderWidth", Math.min(s.borderWidth, Math.min(width, height) * 0.5f));
+        if (s.borderWidth > 0.001f) {
+            mainShader.setUniformf("u_borderColor", s.borderColor.r, s.borderColor.g, s.borderColor.b, s.borderColor.a);
+            mainShader.setUniformf("u_borderStyle", s.borderStyle);
+            if (s.borderStyle > 0) {
+                mainShader.setUniformf("u_dashLength", s.dashLength);
+                mainShader.setUniformf("u_dashRatio", s.dashRatio);
+            }
+        }
 
-        mainShader.setUniformf("u_borderWidth", Math.min(borderWidth, Math.min(width, height) * 0.5f));
-        mainShader.setUniformf("u_borderColor", borderColor.r, borderColor.g, borderColor.b, borderColor.a);
-        mainShader.setUniformf("u_borderStyle", borderStyle);
-        mainShader.setUniformf("u_dashLength", dashLength);
-        mainShader.setUniformf("u_dashRatio", dashRatio);
+        if (s.innerShadowColor.a > 0.001f && (s.innerShadowSpread > 0f || s.innerShadowBlur > 0f)) {
+            mainShader.setUniformf("u_innerShadowColor", s.innerShadowColor.r, s.innerShadowColor.g, s.innerShadowColor.b, s.innerShadowColor.a);
+            mainShader.setUniformf("u_innerShadowSpread", s.innerShadowSpread);
+            mainShader.setUniformf("u_innerShadowBlur", s.innerShadowBlur);
+        } else {
+            mainShader.setUniformf("u_innerShadowColor", 0f, 0f, 0f, 0f);
+        }
 
-        mainShader.setUniformf("u_innerShadowColor",
-            innerShadowColor.r, innerShadowColor.g, innerShadowColor.b, innerShadowColor.a);
-        mainShader.setUniformf("u_innerShadowSpread", innerShadowSpread);
-        mainShader.setUniformf("u_innerShadowBlur", innerShadowBlur);
+        if (s.glowColor.a > 0.001f && s.glowSpread > 0f) {
+            mainShader.setUniformf("u_outerGlowColor", s.glowColor.r, s.glowColor.g, s.glowColor.b, s.glowColor.a);
+            mainShader.setUniformf("u_outerGlowSpread", s.glowSpread);
+        } else {
+            mainShader.setUniformf("u_outerGlowSpread", 0f);
+        }
 
-        mainShader.setUniformf("u_outerGlowColor",
-            outerGlowColor.r, outerGlowColor.g, outerGlowColor.b, outerGlowColor.a);
-        mainShader.setUniformf("u_outerGlowSpread", outerGlowSpread);
+        boolean hasBackdrop = s.backgroundMode == CustomComponent.Style.BackgroundMode.BACKDROP
+                           && s.backdropIterations > 0 && backdropTexture != null;
+        mainShader.setUniformf("u_backdropWeight", hasBackdrop ? s.backdropWeight : 0f);
+        if (hasBackdrop) {
+            mainShader.setUniformf("u_backdropCoords", bdX, bdY, bdW, bdH);
+            mainShader.setUniformf("u_backdropBlend", s.backdropBlend);
+            mainShader.setUniformf("u_backdropMinAlpha", s.backdropMinAlpha);
+            backdropTexture.bind(3);
+        }
 
-        mainShader.setUniformf("u_opacity", opacity);
-        mainShader.setUniformf("u_colorFilter", filterMode, filterAmount, 0f, 0f);
-        mainShader.setUniformf("u_noiseAmount", noiseAmount);
-
-        mainShader.setUniformf("u_elementBounds",
-            elementBoundsX, elementBoundsY, elementBoundsWidth, elementBoundsHeight);
-        mainShader.setUniformf("u_blendMode", blendMode);
-
-        if (fillMode == 1 && currentGradient != null) currentGradient.getTexture().bind(1);
-        if (fillMode == 2 && fillTexture != null) fillTexture.bind(2);
-        if (blendMode > 0.001f && blurTexture != null) blurTexture.bind(3);
+        if (s.filterMode > 0 && s.filterAmount > 0.001f) {
+            mainShader.setUniformf("u_colorFilter", s.filterMode, s.filterAmount, 0f, 0f);
+        } else {
+            mainShader.setUniformf("u_colorFilter", 0f, 0f, 0f, 0f);
+        }
+        mainShader.setUniformf("u_noiseAmount", s.noiseAmount);
 
         Gl.activeTexture(Gl.texture0);
 
@@ -352,7 +282,9 @@ public class CustomDraw implements Disposable {
         Draw.shader(previousShader);
     }
 
-
+    /**
+     * Ensures that the per-instance blur framebuffers are matching the requested size.
+     */
     private void ensureBlurFrameBuffers(int width, int height) {
         if (blurFrameBufferA != null
             && blurFrameBufferA.getWidth() == width
@@ -363,7 +295,10 @@ public class CustomDraw implements Disposable {
         blurFrameBufferB = new FrameBuffer(width, height);
     }
 
-
+    /**
+     * Performs a multi-iteration ping-pong Gaussian blur horizontally and vertically
+     * using the two temporary framebuffers.
+     */
     private void doBlur(int fboWidth, int fboHeight, int iterations) {
         float texelSizeU = 1f / fboWidth;
         float texelSizeV = 1f / fboHeight;
@@ -384,5 +319,14 @@ public class CustomDraw implements Disposable {
             blurFrameBufferA = blurFrameBufferB;
             blurFrameBufferB = tmp;
         }
+    }
+
+    /**
+     * Binds a single gradient texture and its parameters to the active shader unit.
+     */
+    private void bindGradient(int index, Gradient g) {
+        float[] params = g.params();
+        mainShader.setUniformf("u_gradientParams" + index, params[0], params[1], params[2], params[3]);
+        g.texture().bind(1 + (index == 0 ? 0 : 2 + index));
     }
 }

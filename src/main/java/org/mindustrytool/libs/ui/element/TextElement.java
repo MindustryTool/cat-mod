@@ -11,7 +11,7 @@ import arc.util.Align;
 import lombok.Getter;
 
 import org.mindustrytool.NekoMod;
-import org.mindustrytool.mdtui.FontManager;
+import org.mindustrytool.mdtui.util.FontManager;
 
 /**
  * A state-free, pure-property UI element that displays text.
@@ -39,7 +39,7 @@ public class TextElement extends Element {
     protected final Vec2 prefSize = new Vec2();
 
     protected @Getter String text = "";
-    protected @Getter Font font = NekoMod.getFeather().instance(FontManager.class).getMono();
+    protected @Getter Font font = NekoMod.getFeather().instance(FontManager.class).getJetbrainsMono();
     protected @Getter boolean wrap;
     protected @Getter float fontScaleX = 1;
     protected @Getter float fontScaleY = 1;

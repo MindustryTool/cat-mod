@@ -1,11 +1,11 @@
 package org.mindustrytool.libs.signal;
 
 /**
- * A reactive side-effect. The given {@code action} runs immediately on creation,
+ * A reactive side effect. The given {@code action} runs immediately on creation,
  * automatically tracking any {@link Signal} reads inside it. When those signals
  * change, the effect re-runs.
  * <p>
- * Effects are commonly used for UI updates, logging, or any side-effect that
+ * Effects are commonly used for UI updates, logging, or any side effect that
  * should react to signal changes.
  */
 public final class Effect {

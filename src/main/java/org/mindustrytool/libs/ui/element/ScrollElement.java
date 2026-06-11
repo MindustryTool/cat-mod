@@ -521,10 +521,6 @@ public class ScrollElement extends WidgetGroup {
         return super.hit(tx, ty, touchable);
     }
 
-    // ==========================================
-    // Functionality / Interaction Methods
-    // ==========================================
-
     public void cancelTouchFocus() {
         Scene stage = getScene();
         if (stage != null) stage.cancelTouchFocusExcept(flickScrollListener, this);
@@ -536,10 +532,6 @@ public class ScrollElement extends WidgetGroup {
         y.touchScroll = false;
         flickScrollListener.getGestureDetector().cancel();
     }
-
-    // ==========================================
-    // Protected / Private Helpers
-    // ==========================================
 
     private void clampAxis(boolean hasOverscroll, float amount, float max, java.util.function.Consumer<Float> setter) {
         float lo = hasOverscroll ? -overscrollDistance : 0;
