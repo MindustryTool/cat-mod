@@ -1,17 +1,13 @@
 package org.mindustrytool.libs.ui.components;
 
 import arc.graphics.Color;
-import arc.graphics.g2d.Draw;
-import arc.input.KeyCode;
 import arc.scene.Element;
-import arc.scene.event.InputEvent;
-import arc.scene.event.InputListener;
 import arc.scene.ui.layout.WidgetGroup;
 import arc.struct.Seq;
 
 import org.mindustrytool.libs.ui.component.Component;
 import org.mindustrytool.libs.ui.component.EffectHost;
-import org.mindustrytool.libs.ui.core.CustomComponent;
+import org.mindustrytool.libs.ui.element.ScrollElement;
 import org.mindustrytool.libs.ui.layout.LayoutEngine;
 import org.mindustrytool.libs.ui.layout.LayoutSpec;
 import org.mindustrytool.libs.ui.layout.NodeSpec;
@@ -41,20 +37,11 @@ import arc.func.Prov;
  */
 public class Layout implements Component {
 
-    private static final float SCROLL_BAR_WIDTH = 4f;
-    private static final float SCROLL_BAR_PADDING = 2f;
-    private static final float SCROLL_FRICTION = 6f;       // exponential decay coefficient
-    private static final float OVERSCROLL_SPRING = 12f;    // spring-back stiffness
-
-
-    private static float clamp(float value, float min, float max) {
-        return Math.max(min, Math.min(value, max));
-    }
-
     // ─── Fields ──────────────────────────────────────────────────────────────
 
     private final LayoutSpec spec;
-    private final WidgetGroup group;
+    private final ScrollElement group;
+    private final WidgetGroup contentGroup;
     private final EffectHost effects = new EffectHost();
 
     private Component background;
@@ -93,14 +80,8 @@ public class Layout implements Component {
     private Layout() {
         spec = new LayoutSpec();
 
-        group = new WidgetGroup() {
+        contentGroup = new WidgetGroup() {
             { setTransform(true); }
-
-            @Override
-            protected void setScene(arc.scene.Scene scene) {
-                super.setScene(scene);
-                if (scene == null) Layout.this.dispose();
-            }
 
             @Override
             public float getPrefWidth() {
@@ -125,27 +106,6 @@ public class Layout implements Component {
             }
 
             @Override
-            public void act(float delta) {
-                super.act(delta);
-                if (scrollableX || scrollableY) updateScrollPhysics(delta);
-            }
-
-            @Override
-            public void draw() {
-                if (scrollableX || scrollableY) {
-                    Draw.flush();
-                    if (clipBegin(0, 0, getWidth(), getHeight())) {
-                        validate();
-                        drawChildren();
-                        Draw.flush();
-                        clipEnd();
-                    }
-                } else {
-                    super.draw();
-                }
-            }
-
-            @Override
             public void layout() {
                 float containerWidth = getWidth();
                 float containerHeight = getHeight();
@@ -161,15 +121,23 @@ public class Layout implements Component {
                 LayoutEngine.layout(spec, foregroundElements(),
                     spec.getPaddingLeft(), spec.getPaddingBottom(),
                     layoutWidth, layoutHeight);
-
-                if (scrollableX || scrollableY) {
-                    applyScrollOffset(containerWidth, containerHeight);
-                }
             }
         };
 
+        group = new ScrollElement(contentGroup) {
+            @Override
+            protected void setScene(arc.scene.Scene scene) {
+                super.setScene(scene);
+                if (scene == null) Layout.this.dispose();
+            }
+        };
+
+        // Scroll defaults: disabled on both axes by default
+        group.getX().setDisabled(true);
+        group.getY().setDisabled(true);
+
         group.userObject = this;
-        spec.onInvalidate(group::invalidateHierarchy);
+        spec.onInvalidate(contentGroup::invalidateHierarchy);
 
         effects.add(() -> rebuild(childrenProvider.get()));
     }
@@ -228,25 +196,23 @@ public class Layout implements Component {
 
     /** Enables vertical scrolling. Content outside the group bounds is scissor-clipped. */
     public Layout scrollY() {
-        if (scrollableY) return this;
-        scrollableY = true;
-        addScrollTouchListener();
+        group.getY().setDisabled(false);
         return this;
     }
 
 
     /** Enables horizontal scrolling. Content outside the group bounds is scissor-clipped. */
     public Layout scrollX() {
-        if (scrollableX) return this;
-        scrollableX = true;
-        addScrollTouchListener();
+        group.getX().setDisabled(false);
         return this;
     }
 
 
     /** Enables both axes of scrolling. */
     public Layout scroll() {
-        return scrollY().scrollX();
+        group.getX().setDisabled(false);
+        group.getY().setDisabled(false);
+        return this;
     }
 
 
@@ -272,120 +238,7 @@ public class Layout implements Component {
     }
 
 
-    private boolean touchListenerAdded = false;
 
-    private void addScrollTouchListener() {
-        if (touchListenerAdded) return;
-        touchListenerAdded = true;
-
-        group.addListener(new InputListener() {
-
-            @Override
-            public boolean touchDown(InputEvent event, float x, float y, int pointer, KeyCode button) {
-                if (pointer != 0) return false;
-                touchStartX = prevTouchX = x;
-                touchStartY = prevTouchY = y;
-                prevTouchTime = arc.Core.graphics.getDeltaTime();
-                instantVelocityX = instantVelocityY = 0f;
-                velocityX = velocityY = 0f;
-                return true;
-            }
-
-
-            @Override
-            public void touchDragged(InputEvent event, float x, float y, int pointer) {
-                if (pointer != 0) return;
-                float currentTime = arc.Core.graphics.getDeltaTime();
-                float dt = currentTime - prevTouchTime;
-
-                if (dt > 0f) {
-                    instantVelocityX = -(x - prevTouchX) / dt;
-                    instantVelocityY = -(y - prevTouchY) / dt;
-                }
-
-                if (scrollableX) scrollX = clamp(scrollX - (x - prevTouchX), -50f, maxScrollX + 50f);
-                if (scrollableY) scrollY = clamp(scrollY - (y - prevTouchY), -50f, maxScrollY + 50f);
-
-                prevTouchX = x;
-                prevTouchY = y;
-                prevTouchTime = currentTime;
-                group.invalidate();
-            }
-
-
-            @Override
-            public void touchUp(InputEvent event, float x, float y, int pointer, KeyCode button) {
-                if (pointer != 0) return;
-                velocityX = instantVelocityX;
-                velocityY = instantVelocityY;
-            }
-        });
-    }
-
-
-    private void updateScrollPhysics(float delta) {
-        // Apply fling velocity
-        if (scrollableX) scrollX += velocityX * delta;
-        if (scrollableY) scrollY += velocityY * delta;
-
-        // Exponential friction
-        float friction = (float) Math.pow(0.01, delta * SCROLL_FRICTION);
-        velocityX *= friction;
-        velocityY *= friction;
-
-        // Spring-back when past edges
-        if (scrollableX) {
-            if (scrollX < 0f)         scrollX += (-scrollX)         * delta * OVERSCROLL_SPRING;
-            if (scrollX > maxScrollX) scrollX -= (scrollX - maxScrollX) * delta * OVERSCROLL_SPRING;
-        }
-        if (scrollableY) {
-            if (scrollY < 0f)         scrollY += (-scrollY)         * delta * OVERSCROLL_SPRING;
-            if (scrollY > maxScrollY) scrollY -= (scrollY - maxScrollY) * delta * OVERSCROLL_SPRING;
-        }
-
-        // Snap to zero velocity when negligible
-        if (Math.abs(velocityX) < 1f) velocityX = 0f;
-        if (Math.abs(velocityY) < 1f) velocityY = 0f;
-
-        group.invalidate();
-    }
-
-
-    private void applyScrollOffset(float containerWidth, float containerHeight) {
-        Seq<Element> children = foregroundElements();
-
-        // Measure natural content extent before applying scroll offset
-        float minY = Float.MAX_VALUE, maxY = -Float.MAX_VALUE;
-        float minX = Float.MAX_VALUE, maxX = -Float.MAX_VALUE;
-        for (int i = 0; i < children.size; i++) {
-            Element child = children.get(i);
-            minY = Math.min(minY, child.y);
-            maxY = Math.max(maxY, child.y + child.getHeight());
-            minX = Math.min(minX, child.x);
-            maxX = Math.max(maxX, child.x + child.getWidth());
-        }
-
-        float contentHeight = (maxY == -Float.MAX_VALUE) ? 0f : maxY - minY;
-        float contentWidth  = (maxX == -Float.MAX_VALUE) ? 0f : maxX - minX;
-
-        float availableHeight = containerHeight - spec.getVerticalPadding();
-        float availableWidth  = containerWidth  - spec.getHorizontalPadding();
-
-        maxScrollY = Math.max(0f, contentHeight - availableHeight);
-        maxScrollX = Math.max(0f, contentWidth  - availableWidth);
-
-        scrollY = arc.math.Mathf.clamp(scrollY, 0f, maxScrollY);
-        scrollX = arc.math.Mathf.clamp(scrollX, 0f, maxScrollX);
-
-        // Shift children by scroll offset
-        // In arc's Y-up system: scroll down (see content below) → children shift up (+y)
-        for (int i = 0; i < children.size; i++) {
-            Element child = children.get(i);
-            if (scrollableY) child.y += scrollY;
-            if (scrollableX) child.x -= scrollX;
-        }
-
-    }
 
 
     // ─── Private helpers ─────────────────────────────────────────────────────
@@ -415,12 +268,11 @@ public class Layout implements Component {
         currentChildren.clear();
         currentChildren.addAll(newChildren);
 
-        group.clearChildren();
-        if (background != null) group.addChild(background.element());
-        for (int i = 0; i < newChildren.size; i++) group.addChild(newChildren.get(i).element());
+        contentGroup.clearChildren();
+        if (background != null) contentGroup.addChild(background.element());
+        for (int i = 0; i < newChildren.size; i++) contentGroup.addChild(newChildren.get(i).element());
 
-
-
+        contentGroup.invalidateHierarchy();
         group.invalidateHierarchy();
     }
 }
