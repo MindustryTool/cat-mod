@@ -52,12 +52,14 @@ public class TextElement extends Element {
     protected boolean prefSizeInvalid = true;
     protected boolean fontScaleChanged = false;
 
+    /** Sets the display text. Triggers hierarchy invalidation. */
     public void setText(String text) {
         if (this.text.equals(text) || text == null) return;
         this.text = text;
         invalidateHierarchy();
     }
 
+    /** Sets the font. Creates a new {@link FontCache} for the given font. */
     public void setFont(Font font) {
         if (this.font == font || font == null) return;
         this.font = font;
@@ -65,12 +67,14 @@ public class TextElement extends Element {
         invalidateHierarchy();
     }
 
+    /** Enables or disables text wrapping at the element width boundary. */
     public void setWrap(boolean wrap) {
         if (this.wrap == wrap) return;
         this.wrap = wrap;
         invalidateHierarchy();
     }
 
+    /** Sets the horizontal font scale factor. */
     public void setFontScaleX(float fontScaleX) {
         if (this.fontScaleX == fontScaleX) return;
         this.fontScaleX = fontScaleX;
@@ -78,6 +82,7 @@ public class TextElement extends Element {
         invalidateHierarchy();
     }
 
+    /** Sets the vertical font scale factor. */
     public void setFontScaleY(float fontScaleY) {
         if (this.fontScaleY == fontScaleY) return;
         this.fontScaleY = fontScaleY;
@@ -85,10 +90,12 @@ public class TextElement extends Element {
         invalidateHierarchy();
     }
 
+    /** Sets uniform font scale on both axes. */
     public void setFontScale(float fontScale) {
         setFontScale(fontScale, fontScale);
     }
 
+    /** Sets independent font scale on X and Y axes. */
     public void setFontScale(float fontScaleX, float fontScaleY) {
         if (this.fontScaleX == fontScaleX && this.fontScaleY == fontScaleY) return;
         this.fontScaleX = fontScaleX;
@@ -97,22 +104,26 @@ public class TextElement extends Element {
         invalidateHierarchy();
     }
 
+    /** Sets the alignment of the text block within the element's bounds. */
     public void setLabelAlign(int labelAlign) {
         if (this.labelAlign == labelAlign) return;
         this.labelAlign = labelAlign;
         invalidateHierarchy();
     }
 
+    /** Sets the alignment of individual lines of text. */
     public void setLineAlign(int lineAlign) {
         if (this.lineAlign == lineAlign) return;
         this.lineAlign = lineAlign;
         invalidateHierarchy();
     }
 
+    /** Sets both label and line alignment to the same value. */
     public void setAlignment(int alignment) {
         setAlignment(alignment, alignment);
     }
 
+    /** Sets independent label and line alignment. */
     public void setAlignment(int labelAlign, int lineAlign) {
         if (this.labelAlign == labelAlign && this.lineAlign == lineAlign) return;
         this.labelAlign = labelAlign;
@@ -120,6 +131,7 @@ public class TextElement extends Element {
         invalidateHierarchy();
     }
 
+    /** Sets the ellipsis string for truncation when wrapping is disabled. */
     public void setEllipsis(String ellipsis) {
         if (this.ellipsis == null && ellipsis == null) return;
         if (this.ellipsis != null && this.ellipsis.equals(ellipsis)) return;
@@ -127,6 +139,7 @@ public class TextElement extends Element {
         invalidateHierarchy();
     }
 
+    /** Enables or disables standard "..." ellipsis truncation. */
     public void setEllipsis(boolean ellipsis) {
         setEllipsis(ellipsis ? "..." : null);
     }

@@ -216,6 +216,10 @@ public class Text implements Component {
         return new Text();
     }
 
+    /**
+     * Registers a reactive style configurator. The configurator runs
+     * immediately and re-runs whenever its tracked signal dependencies change.
+     */
     public Text style(Cons<Style> configurator) {
         effects.add(() -> configurator.get(style));
         return this;

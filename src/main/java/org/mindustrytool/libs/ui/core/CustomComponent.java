@@ -30,7 +30,17 @@ public class CustomComponent implements Component {
      */
     public class Style extends ComponentStyle<Style> {
 
-        public enum BackgroundMode {SOLID, GRADIENT, TEXTURE, BACKDROP}
+        /** Background rendering mode. */
+        public enum BackgroundMode {
+            /** Solid fill colour. */
+            SOLID,
+            /** Gradient fill (linear, radial, or conic). */
+            GRADIENT,
+            /** Texture fill. */
+            TEXTURE,
+            /** Backdrop blur effect. */
+            BACKDROP
+        }
 
         public BackgroundMode backgroundMode = BackgroundMode.SOLID;
         public float topLeftRadius = 8f;
@@ -93,11 +103,13 @@ public class CustomComponent implements Component {
             return element;
         }
 
+        /** Sets all four corner radii to the same value. */
         public Style radius(float value) {
             topLeftRadius = topRightRadius = bottomRightRadius = bottomLeftRadius = value;
             return this;
         }
 
+        /** Sets each corner radius individually (TL, TR, BR, BL). */
         public Style radius(float topLeft, float topRight, float bottomRight, float bottomLeft) {
             topLeftRadius = topLeft;
             topRightRadius = topRight;
@@ -106,6 +118,7 @@ public class CustomComponent implements Component {
             return this;
         }
 
+        /** Sets a solid fill colour. */
         public Style background(Color value) {
             backgroundMode = BackgroundMode.SOLID;
             fillColor.set(value);
@@ -173,10 +186,12 @@ public class CustomComponent implements Component {
             return this;
         }
 
+        /** Fills with the given texture (white tint). */
         public Style background(Texture texture) {
             return background(texture, Color.white);
         }
 
+        /** Fills with the given texture and tint colour. */
         public Style background(Texture texture, Color tint) {
             backgroundMode = BackgroundMode.TEXTURE;
             fillTexture = texture;
@@ -198,10 +213,12 @@ public class CustomComponent implements Component {
             return backdrop(iterations, blend, 0.8f, 0.8f);
         }
 
+        /** Enables backdrop blur with default blend/weight/alpha. */
         public Style backdrop(int iterations) {
             return backdrop(iterations, 0.8f, 0.8f, 0.8f);
         }
 
+        /** Enables backdrop blur with custom parameters. */
         public Style backdrop(int iterations, float blend, float weight, float minAlpha) {
             backgroundMode = BackgroundMode.BACKDROP;
             backdropIterations = iterations;
@@ -211,6 +228,7 @@ public class CustomComponent implements Component {
             return this;
         }
 
+        /** Sets texture UV transformation (scale and offset). */
         public Style uv(float scaleX, float scaleY, float offsetX, float offsetY) {
             uvScaleX = scaleX;
             uvScaleY = scaleY;
@@ -219,12 +237,14 @@ public class CustomComponent implements Component {
             return this;
         }
 
+        /** Sets a solid border with the given width and colour. */
         public Style border(float width, Color color) {
             borderWidth = width;
             borderColor.set(color);
             return this;
         }
 
+        /** Sets a border with the given width, colour, and line style. */
         public Style border(float width, Color color, int style) {
             borderWidth = width;
             borderColor.set(color);
@@ -232,12 +252,14 @@ public class CustomComponent implements Component {
             return this;
         }
 
+        /** Configures dashed border pattern. */
         public Style dash(float length, float ratio) {
             dashLength = length;
             dashRatio = ratio;
             return this;
         }
 
+        /** Adds an inner shadow effect. */
         public Style innerShadow(float spread, float blur, Color color) {
             innerShadowSpread = spread;
             innerShadowBlur = blur;
@@ -245,41 +267,48 @@ public class CustomComponent implements Component {
             return this;
         }
 
+        /** Applies a grayscale filter (0 = none, 1 = full). */
         public Style grayscale(float amount) {
             filterMode = 1;
             filterAmount = amount;
             return this;
         }
 
+        /** Applies a sepia filter (0 = none, 1 = full). */
         public Style sepia(float amount) {
             filterMode = 2;
             filterAmount = amount;
             return this;
         }
 
+        /** Adjusts brightness (0 = black, 1 = normal, >1 = brighter). */
         public Style brightness(float amount) {
             filterMode = 3;
             filterAmount = amount;
             return this;
         }
 
+        /** Inverts colours (0 = none, 1 = full). */
         public Style invert(float amount) {
             filterMode = 4;
             filterAmount = amount;
             return this;
         }
 
+        /** Adds noise grain (0 = none, 1 = full). */
         public Style noise(float amount) {
             noiseAmount = amount;
             return this;
         }
 
+        /** Adds an outer glow effect. */
         public Style glow(float spread, Color color) {
             glowSpread = spread;
             glowColor.set(color);
             return this;
         }
 
+        /** Sets the overall opacity (0 = transparent, 1 = opaque). */
         public Style opacity(float value) {
             opacity = value;
             return this;
@@ -328,6 +357,7 @@ public class CustomComponent implements Component {
         element.userObject = this;
     }
 
+    /** Creates a new CustomComponent. */
     public static CustomComponent of() {
         return new CustomComponent();
     }

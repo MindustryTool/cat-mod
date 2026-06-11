@@ -13,8 +13,15 @@ import org.mindustrytool.util.Resources;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
+/**
+ * Provides pre-configured fonts used across the mod UI.
+ * <p>
+ * Fonts are generated once at construction time and cached for the lifetime
+ * of the mod. Injected by Feather as a singleton.
+ */
 @Singleton
 public final class FontManager {
+    /** JetBrains Mono regular 32px, with color markup enabled. */
     private final @Getter Font jetbrainsMono;
 
     @Inject

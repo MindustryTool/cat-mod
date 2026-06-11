@@ -109,10 +109,15 @@ public class Layout implements Component {
         spec.onInvalidate(contentGroup::invalidateHierarchy);
     }
 
+    /** Creates a new empty Layout. */
     public static Layout of() {
         return new Layout();
     }
 
+    /**
+     * Sets the background component. Disposes the previous background if
+     * different from the new one.
+     */
     public Layout background(Component newBackground) {
         if (background != null && background != newBackground) background.dispose();
         background = newBackground;
@@ -120,6 +125,11 @@ public class Layout implements Component {
         return this;
     }
 
+    /**
+     * Registers a reactive children provider. The provider is re-evaluated
+     * whenever its tracked signal dependencies change, causing the layout
+     * to rebuild its child list.
+     */
     public Layout children(Prov<Seq<Component>> provider) {
         effects.add(() -> rebuild(provider.get()));
         return this;
@@ -144,7 +154,6 @@ public class Layout implements Component {
     public Element element() {
         return group;
     }
-
 
     @Override
     public NodeSpec sizing() {

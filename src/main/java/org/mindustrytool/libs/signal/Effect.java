@@ -16,6 +16,13 @@ package org.mindustrytool.libs.signal;
 public final class Effect {
     private final Reaction reaction;
 
+    /**
+     * Creates a side-effect that runs {@code action} immediately and
+     * re-runs whenever tracked signals change, dispatching to {@code target}.
+     *
+     * @param action the side-effect logic
+     * @param target the thread to re-run on
+     */
     public Effect(Runnable action, ThreadTarget target) {
         this.reaction = new Reaction(target) {
 
@@ -28,14 +35,17 @@ public final class Effect {
         this.reaction.run();
     }
 
+    /** Factory for an effect with a custom {@link ThreadTarget}. */
     public static Effect of(Runnable action, ThreadTarget target) {
         return new Effect(action, target);
     }
 
+    /** Factory for an effect that runs on the main thread. */
     public static Effect ofMain(Runnable action) {
         return new Effect(action, ThreadTarget.MAIN);
     }
 
+    /** Factory for an effect that runs on the IO thread. */
     public static Effect ofIO(Runnable action) {
         return new Effect(action, ThreadTarget.IO);
     }

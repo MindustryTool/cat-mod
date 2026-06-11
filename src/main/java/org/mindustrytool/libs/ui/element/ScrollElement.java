@@ -17,8 +17,9 @@ import lombok.Setter;
 import static arc.Core.*;
 
 /**
- * A direct port of Arc's ScrollPane source code, refactored to collapse redundancy.
- * Extends WidgetGroup directly, behaves as a pure-property element.
+ * A direct port of Arc's ScrollPane source code with per-axis scroll configuration.
+ * Extends WidgetGroup directly, behaves as a pure-property element. Each axis (X and Y)
+ * can be independently configured for scrolling, overscroll, force scroll, and scrollbar visibility.
  */
 public class ScrollElement extends WidgetGroup {
 
@@ -71,6 +72,10 @@ public class ScrollElement extends WidgetGroup {
     @Getter boolean scrollbarsOnTop;
     @Setter boolean clip = true;
 
+    /**
+     * Creates a scroll element wrapping the given widget.
+     * @param widget the child element to make scrollable, or null
+     */
     public ScrollElement(Element widget) {
         setWidget(widget);
         setSize(150, 150);
@@ -238,6 +243,11 @@ public class ScrollElement extends WidgetGroup {
     // Public Setters & Getters (Properties)
     // ==========================================
 
+    /**
+     * Sets the widget to be made scrollable. Replaces any existing widget.
+     * @param widget the child element to wrap, or null to clear
+     * @throws IllegalArgumentException if widget is this ScrollElement
+     */
     public void setWidget(Element widget) {
         if (widget == this) throw new IllegalArgumentException("widget cannot be the ScrollElement.");
         if (this.widget != null) super.removeChild(this.widget);
@@ -245,6 +255,11 @@ public class ScrollElement extends WidgetGroup {
         if (widget != null) super.addChild(widget);
     }
 
+    /**
+     * Sets whether scroll bars fade out when not in use.
+     * When enabled, fade delay and speed default to 0.5s and 2.0s respectively.
+     * @param fadeScrollBars true to enable fade effect
+     */
     public void setFadeScrollBars(boolean fadeScrollBars) {
         if (this.fadeScrollBars == fadeScrollBars) return;
         this.fadeScrollBars = fadeScrollBars;
@@ -254,11 +269,21 @@ public class ScrollElement extends WidgetGroup {
         invalidateHierarchy();
     }
 
+    /**
+     * Configures the delay and duration for scroll bar fading.
+     * @param delay  seconds before fade starts after last interaction
+     * @param seconds duration of the fade transition
+     */
     public void setupFadeScrollBars(float delay, float seconds) {
         fade.delaySeconds = delay;
         fade.alphaSeconds = seconds;
     }
 
+    /**
+     * Sets whether scroll bars are drawn on top of the content rather than beside it.
+     * Enabling this disables fade scroll bars if active.
+     * @param scrollbarsOnTop true to draw scroll bars over content
+     */
     public void setScrollbarsOnTop(boolean scrollbarsOnTop) {
         if (this.scrollbarsOnTop == scrollbarsOnTop) return;
         this.scrollbarsOnTop = scrollbarsOnTop;
@@ -268,6 +293,11 @@ public class ScrollElement extends WidgetGroup {
         invalidateHierarchy();
     }
 
+    /**
+     * Sets whether flick/gesture scrolling is enabled.
+     * When enabled, the user can drag to scroll and fling to continue momentum.
+     * @param flickScroll true to enable gesture-based scrolling
+     */
     public void setFlickScroll(boolean flickScroll) {
         if (this.flickScroll == flickScroll) return;
         this.flickScroll = flickScroll;
@@ -278,55 +308,101 @@ public class ScrollElement extends WidgetGroup {
         }
     }
 
+    /**
+     * Forces scroll bars to always be shown for the specified axes,
+     * even when content does not exceed the viewport.
+     * @param xForce true to force X scroll bar
+     * @param yForce true to force Y scroll bar
+     */
     public void setForceScroll(boolean xForce, boolean yForce) {
         x.forceScroll = xForce;
         y.forceScroll = yForce;
         invalidateHierarchy();
     }
 
+    /**
+     * Enables or disables overscroll (bounce-back effect) for both axes.
+     * @param overscroll true to allow overscrolling past content bounds
+     */
     public void setOverscroll(boolean overscroll) {
         x.overscroll = overscroll;
         y.overscroll = overscroll;
     }
 
+    /**
+     * Sets the X scroll position in pixels, clamped to valid range.
+     * @param pixels the scroll offset along the X axis
+     */
     public void setScrollX(float pixels) {
         x.amount = Mathf.clamp(pixels, 0, x.max);
     }
 
+    /**
+     * Sets the Y scroll position in pixels, clamped to valid range.
+     * @param pixels the scroll offset along the Y axis
+     */
     public void setScrollY(float pixels) {
         y.amount = Mathf.clamp(pixels, 0, y.max);
     }
 
+    /**
+     * Sets the X scroll position immediately, bypassing smooth scrolling interpolation.
+     * @param pixels the absolute scroll offset along the X axis
+     */
     public void setScrollXForce(float pixels) {
         x.visualAmount = pixels;
         x.amount = pixels;
     }
 
+    /**
+     * Sets the Y scroll position immediately, bypassing smooth scrolling interpolation.
+     * @param pixels the absolute scroll offset along the Y axis
+     */
     public void setScrollYForce(float pixels) {
         y.visualAmount = pixels;
         y.amount = pixels;
     }
 
+    /**
+     * Sets the X scroll position as a percentage of the total scroll range.
+     * @param percentX scroll percentage from 0 to 1
+     */
     public void setScrollPercentX(float percentX) {
         setScrollX(x.max * Mathf.clamp(percentX, 0, 1));
     }
 
+    /**
+     * Sets the Y scroll position as a percentage of the total scroll range.
+     * @param percentY scroll percentage from 0 to 1
+     */
     public void setScrollPercentY(float percentY) {
         setScrollY(y.max * Mathf.clamp(percentY, 0, 1));
     }
 
+    /**
+     * @return the current X scroll position as a percentage (0 to 1)
+     */
     public float getScrollPercentX() {
         return safePercent(x.amount, x.max);
     }
 
+    /**
+     * @return the current Y scroll position as a percentage (0 to 1)
+     */
     public float getScrollPercentY() {
         return safePercent(y.amount, y.max);
     }
 
+    /**
+     * @return the visual (animated) X scroll percentage (0 to 1)
+     */
     public float getVisualScrollPercentX() {
         return safePercent(x.visualAmount, x.max);
     }
 
+    /**
+     * @return the visual (animated) Y scroll percentage (0 to 1)
+     */
     public float getVisualScrollPercentY() {
         return safePercent(y.visualAmount, y.max);
     }
@@ -335,6 +411,11 @@ public class ScrollElement extends WidgetGroup {
     // Arc Element Lifecycle Overrides
     // ==========================================
 
+    /**
+     * Advances the scroll element by one frame. Handles fade animation of scroll bars,
+     * fling momentum, smooth scrolling interpolation, and overscroll bounce-back.
+     * @param delta time in seconds since the last frame
+     */
     @Override
     public void act(float delta) {
         super.act(delta);
@@ -382,6 +463,10 @@ public class ScrollElement extends WidgetGroup {
         }
     }
 
+    /**
+     * Computes layout for the widget and scroll bars. Determines scroll ranges,
+     * calculates bar and knob bounds, and sizes the widget to its preferred dimensions.
+     */
     @Override
     public void layout() {
         float width = getWidth();
@@ -418,6 +503,10 @@ public class ScrollElement extends WidgetGroup {
         widget.validate();
     }
 
+    /**
+     * Draws the scroll element: applies transform, positions the widget,
+     * clips to the viewport area, and draws scroll bars with current fade alpha.
+     */
     @Override
     public void draw() {
         if (widget == null) return;
@@ -473,6 +562,9 @@ public class ScrollElement extends WidgetGroup {
         resetTransform();
     }
 
+    /**
+     * @return the preferred width of the wrapped widget, or 0 if none
+     */
     @Override
     public float getPrefWidth() {
         if (widget != null) {
@@ -482,6 +574,9 @@ public class ScrollElement extends WidgetGroup {
         return 0;
     }
 
+    /**
+     * @return the preferred height of the wrapped widget, or 0 if none
+     */
     @Override
     public float getPrefHeight() {
         if (widget != null) {
@@ -491,21 +586,38 @@ public class ScrollElement extends WidgetGroup {
         return 0;
     }
 
+    /**
+     * @return minimum width, always 0 (scroll element can shrink to nothing)
+     */
     @Override
     public float getMinWidth() {
         return 0;
     }
 
+    /**
+     * @return minimum height, always 0 (scroll element can shrink to nothing)
+     */
     @Override
     public float getMinHeight() {
         return 0;
     }
 
+    /**
+     * Removes a child element. Delegates to the two-argument overload with unfocus=true.
+     * @param actor the child to remove
+     * @return true if the actor was removed
+     */
     @Override
     public boolean removeChild(Element actor) {
         return removeChild(actor, true);
     }
 
+    /**
+     * Removes a child element. Only succeeds if the actor is the current widget.
+     * @param actor  the child to remove
+     * @param unfocus whether to unfocus the actor
+     * @return true if the actor was removed
+     */
     @Override
     public boolean removeChild(Element actor, boolean unfocus) {
         if (actor == null) throw new IllegalArgumentException("actor cannot be null.");
@@ -514,6 +626,14 @@ public class ScrollElement extends WidgetGroup {
         return super.removeChild(actor, unfocus);
     }
 
+    /**
+     * Returns the topmost element at the given coordinates.
+     * Scroll bar regions return this ScrollElement rather than the widget.
+     * @param tx the X coordinate in the element's local space
+     * @param ty the Y coordinate in the element's local space
+     * @param touchable whether to only consider touchable elements
+     * @return the hit element, or null if outside bounds
+     */
     @Override
     public Element hit(float tx, float ty, boolean touchable) {
         if (tx < 0 || tx >= getWidth() || ty < 0 || ty >= getHeight()) return null;
@@ -521,11 +641,19 @@ public class ScrollElement extends WidgetGroup {
         return super.hit(tx, ty, touchable);
     }
 
+    /**
+     * Cancels touch focus for all listeners except the flick scroll gesture listener.
+     * Prevents other inputs from interfering with scrolling.
+     */
     public void cancelTouchFocus() {
         Scene stage = getScene();
         if (stage != null) stage.cancelTouchFocusExcept(flickScrollListener, this);
     }
 
+    /**
+     * Cancels any active scroll drag or fling on all axes.
+     * Resets dragging pointer and touch scroll state.
+     */
     public void cancel() {
         draggingPointer = -1;
         x.touchScroll = false;

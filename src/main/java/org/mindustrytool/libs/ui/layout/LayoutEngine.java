@@ -155,24 +155,29 @@ public class LayoutEngine {
 
     // --- Backward Compatible Overloads for Element ---
 
+    /** Computes preferred width using the default {@link #ELEMENT_ACCESSOR}. */
     public static float prefWidth(NodeSpec spec, boolean isColumn, float gap, Iterable<Element> children) {
         return prefWidth(spec, isColumn, gap, children, ELEMENT_ACCESSOR);
     }
 
+    /** Computes preferred height using the default {@link #ELEMENT_ACCESSOR}. */
     public static float prefHeight(NodeSpec spec, boolean isColumn, float gap, Iterable<Element> children) {
         return prefHeight(spec, isColumn, gap, children, ELEMENT_ACCESSOR);
     }
 
+    /** Lays out children using the default {@link #ELEMENT_ACCESSOR}. */
     public static void layout(LayoutSpec spec, Iterable<Element> children, float xPosition, float yPosition, float width, float height) {
         layout(spec, children, xPosition, yPosition, width, height, ELEMENT_ACCESSOR);
     }
 
     // --- Core Generalized Layout Algorithms ---
 
+    /** Computes the preferred width for the given children with a custom accessor. */
     public static <T> float prefWidth(NodeSpec spec, boolean isColumn, float gap, Iterable<T> children, LayoutAccessor<T> accessor) {
         return preferredAxis(spec, isColumn, AXIS_X, gap, children, accessor);
     }
 
+    /** Computes the preferred height for the given children with a custom accessor. */
     public static <T> float prefHeight(NodeSpec spec, boolean isColumn, float gap, Iterable<T> children, LayoutAccessor<T> accessor) {
         return preferredAxis(spec, isColumn, AXIS_Y, gap, children, accessor);
     }
@@ -235,6 +240,18 @@ public class LayoutEngine {
         float totalGrowWeight = 0.0f;
     }
 
+    /**
+     * Main layout entry point. Distributes children within the given bounds
+     * according to flexbox rules (direction, wrapping, justification, alignment).
+     *
+     * @param spec      the layout specification
+     * @param children  the child nodes to lay out
+     * @param xPosition the container's left edge
+     * @param yPosition the container's bottom edge (Arc coordinate system)
+     * @param width     the available width
+     * @param height    the available height
+     * @param accessor  abstraction for accessing layout properties of each child
+     */
     public static <T> void layout(LayoutSpec spec,
                                   Iterable<T> children,
                                   float xPosition,
@@ -417,6 +434,12 @@ public class LayoutEngine {
         };
     }
 
+    /**
+     * Extracts the {@link NodeSpec} from an element's user object if it implements {@link Component}.
+     *
+     * @param element the element to inspect
+     * @return the associated NodeSpec, or null if the element has no component
+     */
     public static NodeSpec sizingOf(Element element) {
         Object object = element.userObject;
         return object instanceof Component ? ((Component) object).sizing() : null;

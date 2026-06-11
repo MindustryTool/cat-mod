@@ -22,20 +22,40 @@ public final class Signal<T> {
     final Object subscriberLock = new Object();
     final Set<Reaction> subscribers = Collections.newSetFromMap(new WeakHashMap<>());
 
+    /**
+     * Creates a signal with the given initial value.
+     *
+     * @param initial the starting value (may be null)
+     */
     public Signal(T initial) {
         this.value = initial;
     }
 
+    /** Convenience factory equivalent to {@code new Signal<>(value)}. */
     public static <T> Signal<T> of(T value) {
         return new Signal<>(value);
     }
 
+    /**
+     * Returns the current value. When called inside a reactive context
+     * ({@link Effect} or {@link Computed}) the calling reaction automatically
+     * subscribes to future changes.
+     */
     public T get() {
         ReactiveContext.collectSubscriber(this);
 
         return value;
     }
 
+    /**
+     * Updates the value and notifies all subscribers. No-op if the new value
+     * is {@link Objects#equals equal} to the current one.
+     * <p>
+     * Each subscriber is dispatched to its designated {@link ThreadTarget};
+     * subscribers without a target run synchronously on the calling thread.
+     *
+     * @param newValue the new value (may be null)
+     */
     public void set(T newValue) {
         if (Objects.equals(value, newValue)) return;
 
@@ -43,12 +63,14 @@ public final class Signal<T> {
         notifySubscribers();
     }
 
+    /** Registers a reaction to be notified on value changes. */
     void addSubscriber(Reaction reaction) {
         synchronized (subscriberLock) {
             subscribers.add(reaction);
         }
     }
 
+    /** Unregisters a reaction. Safe to call multiple times. */
     void removeSubscriber(Reaction reaction) {
         synchronized (subscriberLock) {
             subscribers.remove(reaction);

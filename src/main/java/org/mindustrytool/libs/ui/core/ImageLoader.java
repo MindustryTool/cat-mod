@@ -1,8 +1,6 @@
 package org.mindustrytool.libs.ui.core;
 
 
-
-
 import arc.graphics.Pixmap;
 import arc.graphics.Texture;
 import arc.graphics.Texture.TextureFilter;
@@ -16,10 +14,35 @@ import org.mindustrytool.libs.signal.Effect;
 import org.mindustrytool.libs.signal.Signal;
 import org.mindustrytool.util.Resources;
 
+/**
+ * Asynchronous image pipeline: URL → Pixmap → Texture, driven by reactive
+ * {@link Signal} / {@link Effect} with per-step {@link ThreadTarget} dispatch.
+ * <p>
+ * The returned signal transitions through {@link ImageLoadState}
+ * {@code IDLE → DECODED → LOADED} (or straight to {@code FAILED}).
+ * <p>
+ * Downloaded images are cached on disk via a sanitised URL-derived filename;
+ * duplicate loads for the same URL result in fresh pipeline instances (no
+ * in-memory cache).
+ */
 @Slf4j
 @UtilityClass
 public class ImageLoader {
 
+    /**
+     * Initiates an async image load for the given URL.
+     * <p>
+     * Pipeline steps:
+     * <ol>
+     *   <li><b>IO thread</b> — download or disk-cache read → {@code DECODED}</li>
+     *   <li><b>Main thread</b> — upload decoded {@link Pixmap} to GPU as {@link Texture}
+     *       → {@code LOADED}</li>
+     * </ol>
+     *
+     * @param url the image URL
+     * @return a signal that progresses through {@link ImageLoadState} as the
+     *         pipeline advances
+     */
     public static Signal<ImageResource> get(String url) {
         if (url == null || url.isEmpty()) return new Signal<>(ImageResource.failed());
 
@@ -53,6 +76,7 @@ public class ImageLoader {
         return signal;
     }
 
+    /** Downloads (or reads from disk cache) and decodes a Pixmap for the given URL. */
     private static Pixmap resolvePixmap(String url) {
         Resources.IMAGE_CACHE_DIR.mkdirs();
         var cachedFile = Resources.IMAGE_CACHE_DIR.child(url.replaceAll("[^a-zA-Z0-9._-]", "-"));
@@ -88,26 +112,36 @@ public class ImageLoader {
 
     }
 
+    /** Pipeline state machine for a single image load. */
     public enum ImageLoadState {
+        /** Initial state before any work starts. */
         IDLE,
+        /** Pixmap has been decoded (on IO thread). */
         DECODED,
+        /** Texture has been uploaded to GPU (on main thread). */
         LOADED,
+        /** Loading failed at any step. */
         FAILED
     }
 
+    /** Snapshot of the image pipeline at a given state. */
     public record ImageResource(ImageLoadState state, Texture texture, Pixmap pixmap) {
+        /** Creates an idle resource (no work started). */
         public static ImageResource idle() {
             return new ImageResource(ImageLoadState.IDLE, null, null);
         }
 
+        /** Creates a decoded resource holding a CPU-side {@link Pixmap}. */
         public static ImageResource decoded(Pixmap p) {
             return new ImageResource(ImageLoadState.DECODED, null, p);
         }
 
+        /** Creates a loaded resource holding a GPU {@link Texture}. */
         public static ImageResource loaded(Texture t) {
             return new ImageResource(ImageLoadState.LOADED, t, null);
         }
 
+        /** Creates a failed resource (no data). */
         public static ImageResource failed() {
             return new ImageResource(ImageLoadState.FAILED, null, null);
         }

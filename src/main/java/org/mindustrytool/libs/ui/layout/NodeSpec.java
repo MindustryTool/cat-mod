@@ -91,18 +91,21 @@ public class NodeSpec {
 
     // --- Fluent Setters ---
 
+    /** Sets the width sizing mode. */
     public NodeSpec widthMode(SizeMode mode) {
         this.widthMode = mode;
         invalidate();
         return this;
     }
 
+    /** Sets the height sizing mode. */
     public NodeSpec heightMode(SizeMode mode) {
         this.heightMode = mode;
         invalidate();
         return this;
     }
 
+    /** Sets a fixed width and switches width mode to {@link SizeMode#FIXED}. */
     public NodeSpec fixedWidth(float width) {
         this.widthMode = SizeMode.FIXED;
         this.fixedWidth = width;
@@ -110,6 +113,7 @@ public class NodeSpec {
         return this;
     }
 
+    /** Sets a fixed height and switches height mode to {@link SizeMode#FIXED}. */
     public NodeSpec fixedHeight(float height) {
         this.heightMode = SizeMode.FIXED;
         this.fixedHeight = height;
@@ -117,24 +121,28 @@ public class NodeSpec {
         return this;
     }
 
+    /** Sets the relative grow weight for horizontal distribution. */
     public NodeSpec growWeightHorizontal(float weight) {
         this.growWeightHorizontal = weight;
         invalidate();
         return this;
     }
 
+    /** Sets the relative grow weight for vertical distribution. */
     public NodeSpec growWeightVertical(float weight) {
         this.growWeightVertical = weight;
         invalidate();
         return this;
     }
 
+    /** Overrides the parent's cross-axis alignment for this node. */
     public NodeSpec alignSelf(AlignSelf alignSelf) {
         this.alignSelf = alignSelf;
         invalidate();
         return this;
     }
 
+    /** Sets both width and height modes to {@link SizeMode#GROW}. */
     public NodeSpec grow() {
         this.widthMode = SizeMode.GROW;
         this.heightMode = SizeMode.GROW;
@@ -142,34 +150,41 @@ public class NodeSpec {
         return this;
     }
 
+    /** Sets width mode to {@link SizeMode#GROW}. */
     public NodeSpec growX() {
         this.widthMode = SizeMode.GROW;
         invalidate();
         return this;
     }
 
+    /** Sets height mode to {@link SizeMode#GROW}. */
     public NodeSpec growY() {
         this.heightMode = SizeMode.GROW;
         invalidate();
         return this;
     }
 
+    /** Alias for {@link #fixedWidth(float)}. */
     public NodeSpec width(float width) {
         return fixedWidth(width);
     }
 
+    /** Alias for {@link #fixedHeight(float)}. */
     public NodeSpec height(float height) {
         return fixedHeight(height);
     }
 
+    /** Sets uniform padding on all four sides. */
     public NodeSpec padding(float all) {
         return padding(all, all, all, all);
     }
 
+    /** Sets vertical and horizontal padding (top=bottom, left=right). */
     public NodeSpec padding(float vertical, float horizontal) {
         return padding(vertical, horizontal, vertical, horizontal);
     }
 
+    /** Sets independent padding for each side. */
     public NodeSpec padding(float top, float right, float bottom, float left) {
         this.paddingTop = top;
         this.paddingRight = right;
@@ -179,48 +194,56 @@ public class NodeSpec {
         return this;
     }
 
+    /** Sets the top padding. */
     public NodeSpec paddingTop(float padding) {
         this.paddingTop = padding;
         invalidate();
         return this;
     }
 
+    /** Sets the bottom padding. */
     public NodeSpec paddingBottom(float padding) {
         this.paddingBottom = padding;
         invalidate();
         return this;
     }
 
+    /** Sets the left padding. */
     public NodeSpec paddingLeft(float padding) {
         this.paddingLeft = padding;
         invalidate();
         return this;
     }
 
+    /** Sets the right padding. */
     public NodeSpec paddingRight(float padding) {
         this.paddingRight = padding;
         invalidate();
         return this;
     }
 
+    /** Sets a minimum width constraint (-1 disables). */
     public NodeSpec minimumWidth(float width) {
         this.minimumWidth = width;
         invalidate();
         return this;
     }
 
+    /** Sets a maximum width constraint (-1 disables). */
     public NodeSpec maximumWidth(float width) {
         this.maximumWidth = width;
         invalidate();
         return this;
     }
 
+    /** Sets a minimum height constraint (-1 disables). */
     public NodeSpec minimumHeight(float height) {
         this.minimumHeight = height;
         invalidate();
         return this;
     }
 
+    /** Sets a maximum height constraint (-1 disables). */
     public NodeSpec maximumHeight(float height) {
         this.maximumHeight = height;
         invalidate();
@@ -256,14 +279,17 @@ public class NodeSpec {
 
     // --- Helpers / Utilities ---
 
+    /** Returns the sum of left and right padding. */
     public float getHorizontalPadding() {
         return paddingLeft + paddingRight;
     }
 
+    /** Returns the sum of top and bottom padding. */
     public float getVerticalPadding() {
         return paddingTop + paddingBottom;
     }
 
+    /** Clamps the given width within the min/max constraints. */
     public float constrainWidth(float value) {
         if (minimumWidth >= 0.0f && value < minimumWidth) {
             value = minimumWidth;
@@ -274,6 +300,7 @@ public class NodeSpec {
         return value;
     }
 
+    /** Clamps the given height within the min/max constraints. */
     public float constrainHeight(float value) {
         if (minimumHeight >= 0.0f && value < minimumHeight) {
             value = minimumHeight;
