@@ -1,4 +1,4 @@
-package org.mindustrytool.libs.ui.component;
+package org.mindustrytool.libs.ui.components;
 
 import arc.scene.Element;
 import arc.scene.event.Touchable;

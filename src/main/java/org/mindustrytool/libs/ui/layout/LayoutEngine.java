@@ -2,7 +2,7 @@ package org.mindustrytool.libs.ui.layout;
 
 import arc.scene.Element;
 
-import org.mindustrytool.libs.ui.component.Component;
+import org.mindustrytool.libs.ui.components.Component;
 import org.mindustrytool.libs.ui.layout.NodeSpec.SizeMode;
 import org.mindustrytool.libs.ui.layout.LayoutSpec.AlignItems;
 import org.mindustrytool.libs.ui.layout.LayoutSpec.JustifyContent;

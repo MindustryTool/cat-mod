@@ -6,11 +6,8 @@ import arc.graphics.Texture;
 import arc.scene.Element;
 import arc.scene.Scene;
 
-import org.mindustrytool.libs.signal.Effect;
-import org.mindustrytool.libs.signal.ThreadTarget;
-import org.mindustrytool.libs.ui.component.Component;
-import org.mindustrytool.libs.ui.component.ComponentStyle;
-import org.mindustrytool.libs.ui.component.EffectHost;
+import org.mindustrytool.libs.ui.components.Component;
+import org.mindustrytool.libs.ui.components.ComponentStyle;
 import org.mindustrytool.libs.ui.layout.NodeSpec;
 
 /**

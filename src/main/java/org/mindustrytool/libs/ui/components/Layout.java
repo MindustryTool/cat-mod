@@ -7,8 +7,7 @@ import arc.scene.Scene;
 import arc.scene.ui.layout.WidgetGroup;
 import arc.struct.Seq;
 
-import org.mindustrytool.libs.ui.component.Component;
-import org.mindustrytool.libs.ui.component.EffectHost;
+import org.mindustrytool.libs.ui.core.EffectHost;
 import org.mindustrytool.libs.ui.element.ScrollElement;
 import org.mindustrytool.libs.ui.layout.LayoutEngine;
 import org.mindustrytool.libs.ui.layout.LayoutSpec;
@@ -22,7 +21,7 @@ import java.util.Set;
  * Flexbox-based container that can host child {@link Component}s and an optional background.
  * It uses a {@link ScrollElement} root group to support scrolling.
  *
- * <p><b>Style effects accumulate</b> — each call to {@link #style(Cons)} registers a new
+ * <p>Style effects accumulate — each call to {@link #style(Cons)} registers a new
  * reactive configurator. This allows composing orthogonal concerns:
  * <pre>{@code
  * Layout.of()
@@ -38,6 +37,7 @@ public class Layout implements Component {
     private final LayoutSpec spec;
     private final ScrollElement group;
     private final WidgetGroup contentGroup;
+    public final Style style;
 
     private final EffectHost effects = new EffectHost();
 
@@ -108,6 +108,7 @@ public class Layout implements Component {
 
         group.userObject = this;
         spec.onInvalidate(contentGroup::invalidateHierarchy);
+        style = new Style();
     }
 
     /** Creates a new empty Layout. */
@@ -143,12 +144,70 @@ public class Layout implements Component {
      * accumulate and are re-run in registration order when their signal dependencies change.
      * Call {@link LayoutSpec#reset(boolean)} inside the configurator to start from defaults.
      */
-    public Layout style(Cons<LayoutSpec> configurator) {
+    public Layout style(Cons<Style> configurator) {
         effects.add(() -> {
-            configurator.get(spec);
+            configurator.get(style);
             group.invalidateHierarchy();
         });
         return this;
+    }
+
+    /**
+     * Builder-style configurator class to set properties on the underlying elements.
+     * Inherits from ContainerStyle to provide flexbox layout options.
+     */
+    public class Style extends ContainerStyle<Style> {
+        @Override
+        protected NodeSpec sizing() {
+            return spec;
+        }
+
+        @Override
+        protected Element styledElement() {
+            return group;
+        }
+
+        @Override
+        protected LayoutSpec layoutSpec() {
+            return spec;
+        }
+
+        /** Enable or disable horizontal scrolling. */
+        public Style scrollX(boolean scrollable) {
+            group.getX().setDisabled(!scrollable);
+            return this;
+        }
+
+        /** Enable or disable vertical scrolling. */
+        public Style scrollY(boolean scrollable) {
+            group.getY().setDisabled(!scrollable);
+            return this;
+        }
+
+        /** Enable or disable scrolling on both axes. */
+        public Style scroll(boolean scrollX, boolean scrollY) {
+            group.getX().setDisabled(!scrollX);
+            group.getY().setDisabled(!scrollY);
+            return this;
+        }
+
+        /** Enable or disable scrollbar fading. */
+        public Style fadeScrollBars(boolean fade) {
+            group.setFadeScrollBars(fade);
+            return this;
+        }
+
+        /** Enable or disable smooth scroll interpolation. */
+        public Style smoothScrolling(boolean smooth) {
+            group.setSmoothScrolling(smooth);
+            return this;
+        }
+
+        /** Enable or disable viewport clipping. */
+        public Style clip(boolean clip) {
+            group.setClip(clip);
+            return this;
+        }
     }
 
     @Override

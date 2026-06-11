@@ -1,4 +1,4 @@
-package org.mindustrytool.libs.ui.component;
+package org.mindustrytool.libs.ui.core;
 
 import arc.struct.Seq;
 
