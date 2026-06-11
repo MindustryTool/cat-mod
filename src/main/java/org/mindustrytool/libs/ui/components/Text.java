@@ -1,5 +1,6 @@
 package org.mindustrytool.libs.ui.components;
 
+import arc.graphics.Color;
 import arc.graphics.g2d.Font;
 import arc.scene.Element;
 import arc.scene.Scene;
@@ -49,6 +50,17 @@ public class Text implements Component {
          */
         public Style text(String value) {
             element.setText(value);
+            return this;
+        }
+
+        /**
+         * Sets the text color tint.
+         *
+         * @param value the color tint
+         * @return this Style instance for chaining
+         */
+        public Style color(Color value) {
+            element.color.set(value);
             return this;
         }
 

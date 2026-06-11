@@ -158,7 +158,7 @@ public class TextElement extends Element {
     public void draw() {
         validate();
         if (cache != null) {
-            cache.tint(Color.white);
+            cache.tint(color);
             cache.setPosition(x, y);
             cache.draw();
         }
