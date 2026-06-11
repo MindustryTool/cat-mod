@@ -29,7 +29,7 @@ public interface Component {
 
     /**
      * Returns the sizing specification that controls this component's
-     * layout constraints (width, height, padding, grow behaviour, etc.).
+     * layout constraints (width, height, padding, grow behavior, etc.).
      */
     NodeSpec sizing();
 

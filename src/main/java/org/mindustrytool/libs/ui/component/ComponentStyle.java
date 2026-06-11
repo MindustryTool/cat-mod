@@ -16,6 +16,7 @@ import org.mindustrytool.libs.ui.layout.NodeSpec.SizeMode;
  */
 @SuppressWarnings("unchecked")
 public abstract class ComponentStyle<S extends ComponentStyle<S>> {
+
     /**
      * Returns the {@link NodeSpec} to which configuration methods delegate.
      * Implementations return the owning component's sizing instance.
@@ -30,6 +31,17 @@ public abstract class ComponentStyle<S extends ComponentStyle<S>> {
 
     protected ComponentStyle() {
 
+    }
+
+    /**
+     * Resets the sizing specification to default values.
+     *
+     * @param invalidate whether to trigger the invalidation callback after reset
+     * @return this style builder instance
+     */
+    public S reset(boolean invalidate) {
+        sizing().reset(invalidate);
+        return (S) this;
     }
 
     // --- Core Element Configuration Builders ---

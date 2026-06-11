@@ -1,4 +1,4 @@
-package org.mindustrytool.util;
+package org.mindustrytool.libs.ui.core;
 
 import arc.graphics.Pixmap;
 import arc.graphics.Texture;
@@ -15,6 +15,7 @@ import java.util.concurrent.locks.ReentrantLock;
 import lombok.experimental.UtilityClass;
 
 import org.mindustrytool.libs.signal.MultithreadSignal;
+import org.mindustrytool.util.Resources;
 
 /**
  * Reactive image loader backed by a state-machine signal pipeline.

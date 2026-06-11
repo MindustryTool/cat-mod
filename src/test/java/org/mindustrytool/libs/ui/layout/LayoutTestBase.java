@@ -108,11 +108,11 @@ public abstract class LayoutTestBase {
     }
 
     protected static float prefW(LayoutSpec spec, MockNode... children) {
-        return LayoutEngine.prefWidth(spec, spec.isColumn(), spec.gap(), Arrays.asList(children), ACCESSOR);
+        return LayoutEngine.prefWidth(spec, spec.isColumn(), spec.getGap(), Arrays.asList(children), ACCESSOR);
     }
 
     protected static float prefH(LayoutSpec spec, MockNode... children) {
-        return LayoutEngine.prefHeight(spec, spec.isColumn(), spec.gap(), Arrays.asList(children), ACCESSOR);
+        return LayoutEngine.prefHeight(spec, spec.isColumn(), spec.getGap(), Arrays.asList(children), ACCESSOR);
     }
 
     protected static void assertNoOverlap(List<MockNode> children) {
@@ -169,7 +169,7 @@ public abstract class LayoutTestBase {
                 visibleCount++;
                 totalMain += (isColumn ? c.height : c.width);
             }
-            if (visibleCount > 1) totalMain += spec.gap() * (visibleCount - 1);
+            if (visibleCount > 1) totalMain += spec.getGap() * (visibleCount - 1);
             final float totalMainFinal = totalMain;
             org.junit.jupiter.api.Assertions.assertTrue(totalMainFinal <= mainLimit + EPS,
                 () -> "Total main size " + totalMainFinal + " > limit " + mainLimit);

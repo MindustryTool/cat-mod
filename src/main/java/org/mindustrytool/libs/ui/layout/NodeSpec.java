@@ -1,5 +1,7 @@
 package org.mindustrytool.libs.ui.layout;
 
+import lombok.Getter;
+
 /**
  * NodeSpec defines the sizing policies, padding, and size constraints for a layout element (Node).
  * It provides a fluent builder-like API to configure layout options.
@@ -53,33 +55,31 @@ public class NodeSpec {
 
     protected Runnable onInvalidateCallback;
 
-    private SizeMode widthMode = SizeMode.WRAP;
-    private SizeMode heightMode = SizeMode.WRAP;
-    private float fixedWidth = 0.0f;
-    private float fixedHeight = 0.0f;
-    private float growWeightHorizontal = 1.0f;
-    private float growWeightVertical = 1.0f;
-    private AlignSelf alignSelf = AlignSelf.AUTO;
+    private @Getter SizeMode widthMode = SizeMode.WRAP;
+    private @Getter SizeMode heightMode = SizeMode.WRAP;
+    private @Getter float fixedWidth = 0.0f;
+    private @Getter float fixedHeight = 0.0f;
+    private @Getter float growWeightHorizontal = 1.0f;
+    private @Getter float growWeightVertical = 1.0f;
+    private @Getter AlignSelf alignSelf = AlignSelf.AUTO;
 
-    private float paddingTop = 0.0f;
-    private float paddingBottom = 0.0f;
-    private float paddingLeft = 0.0f;
-    private float paddingRight = 0.0f;
+    private @Getter float paddingTop = 0.0f;
+    private @Getter float paddingBottom = 0.0f;
+    private @Getter float paddingLeft = 0.0f;
+    private @Getter float paddingRight = 0.0f;
 
-    private float minimumWidth = -1.0f;
-    private float maximumWidth = -1.0f;
-    private float minimumHeight = -1.0f;
-    private float maximumHeight = -1.0f;
+    private @Getter float minimumWidth = -1.0f;
+    private @Getter float maximumWidth = -1.0f;
+    private @Getter float minimumHeight = -1.0f;
+    private @Getter float maximumHeight = -1.0f;
 
     /**
      * Sets the callback to be triggered when any layout property changes.
      *
      * @param callback the invalidation callback runnable
-     * @return this instance for chaining
      */
-    public NodeSpec onInvalidate(Runnable callback) {
+    public void onInvalidate(Runnable callback) {
         this.onInvalidateCallback = callback;
-        return this;
     }
 
     /**
@@ -89,68 +89,6 @@ public class NodeSpec {
         if (onInvalidateCallback != null) {
             onInvalidateCallback.run();
         }
-    }
-
-    // --- Getters ---
-
-    public SizeMode getWidthMode() {
-        return widthMode;
-    }
-
-    public SizeMode getHeightMode() {
-        return heightMode;
-    }
-
-    public float getFixedWidth() {
-        return fixedWidth;
-    }
-
-    public float getFixedHeight() {
-        return fixedHeight;
-    }
-
-    public float getGrowWeightHorizontal() {
-        return growWeightHorizontal;
-    }
-
-    public float getGrowWeightVertical() {
-        return growWeightVertical;
-    }
-
-    public AlignSelf getAlignSelf() {
-        return alignSelf;
-    }
-
-    public float getPaddingTop() {
-        return paddingTop;
-    }
-
-    public float getPaddingBottom() {
-        return paddingBottom;
-    }
-
-    public float getPaddingLeft() {
-        return paddingLeft;
-    }
-
-    public float getPaddingRight() {
-        return paddingRight;
-    }
-
-    public float getMinimumWidth() {
-        return minimumWidth;
-    }
-
-    public float getMaximumWidth() {
-        return maximumWidth;
-    }
-
-    public float getMinimumHeight() {
-        return minimumHeight;
-    }
-
-    public float getMaximumHeight() {
-        return maximumHeight;
     }
 
     // --- Fluent Setters ---
@@ -288,6 +226,33 @@ public class NodeSpec {
     public NodeSpec maximumHeight(float height) {
         this.maximumHeight = height;
         invalidate();
+        return this;
+    }
+
+    /**
+     * Resets all properties to their default values.
+     *
+     * @param invalidate whether to trigger the invalidation callback after reset
+     * @return this instance for chaining
+     */
+    public NodeSpec reset(boolean invalidate) {
+        widthMode = SizeMode.WRAP;
+        heightMode = SizeMode.WRAP;
+        fixedWidth = 0f;
+        fixedHeight = 0f;
+        growWeightHorizontal = 1f;
+        growWeightVertical = 1f;
+        alignSelf = AlignSelf.AUTO;
+        paddingTop = 0f;
+        paddingBottom = 0f;
+        paddingLeft = 0f;
+        paddingRight = 0f;
+        minimumWidth = -1f;
+        maximumWidth = -1f;
+        minimumHeight = -1f;
+        maximumHeight = -1f;
+
+        if (invalidate) invalidate();
         return this;
     }
 

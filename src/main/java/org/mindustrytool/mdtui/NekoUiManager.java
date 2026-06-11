@@ -6,7 +6,7 @@ import lombok.RequiredArgsConstructor;
 
 @Singleton
 @RequiredArgsConstructor(onConstructor_ = @Inject)
-public class NekoUiManager {
+public final class NekoUiManager {
     private final FontManager fontManager;
 
     public void init() {

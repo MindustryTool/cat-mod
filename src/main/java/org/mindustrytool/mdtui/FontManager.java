@@ -4,6 +4,8 @@ import arc.freetype.FreeTypeFontGenerator;
 import arc.freetype.FreeTypeFontGenerator.FreeTypeFontParameter;
 import arc.graphics.g2d.Font;
 
+import lombok.Getter;
+
 import mindustry.Vars;
 
 import org.mindustrytool.util.Resources;
@@ -12,8 +14,8 @@ import javax.inject.Inject;
 import javax.inject.Singleton;
 
 @Singleton
-public class FontManager {
-    public final Font mono;
+public final class FontManager {
+    private final @Getter Font mono;
 
     @Inject
     public FontManager() {
@@ -25,5 +27,4 @@ public class FontManager {
 
         mono.getData().markupEnabled = true;
     }
-
 }

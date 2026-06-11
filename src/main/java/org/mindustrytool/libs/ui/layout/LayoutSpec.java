@@ -1,6 +1,6 @@
 package org.mindustrytool.libs.ui.layout;
 
-import arc.func.Cons;
+import lombok.Getter;
 
 /**
  * LayoutSpec specifies the layout configuration properties for a container element.
@@ -62,13 +62,14 @@ public class LayoutSpec extends NodeSpec {
         STRETCH
     }
 
-    private boolean isColumn = false;
-    private boolean isWrap = false;
-    private boolean isReverse = false;
-    private float gap = 0.0f;
-    private JustifyContent justifyContent = JustifyContent.START;
-    private AlignItems alignItems = AlignItems.STRETCH;
+    private @Getter boolean isColumn = false;
+    private @Getter boolean isWrap = false;
+    private @Getter boolean isReverse = false;
+    private @Getter float gap = 0.0f;
+    private @Getter JustifyContent justifyContent = JustifyContent.START;
+    private @Getter AlignItems alignItems = AlignItems.STRETCH;
 
+    // --- Fluent Setters ---
 
     /**
      * Configures the layout direction to be vertical (column).
@@ -77,6 +78,7 @@ public class LayoutSpec extends NodeSpec {
      */
     public LayoutSpec column() {
         this.isColumn = true;
+        invalidate();
         return this;
     }
 
@@ -87,6 +89,7 @@ public class LayoutSpec extends NodeSpec {
      */
     public LayoutSpec row() {
         this.isColumn = false;
+        invalidate();
         return this;
     }
 
@@ -97,6 +100,7 @@ public class LayoutSpec extends NodeSpec {
      */
     public LayoutSpec wrap() {
         this.isWrap = true;
+        invalidate();
         return this;
     }
 
@@ -107,6 +111,7 @@ public class LayoutSpec extends NodeSpec {
      */
     public LayoutSpec noWrap() {
         this.isWrap = false;
+        invalidate();
         return this;
     }
 
@@ -117,6 +122,7 @@ public class LayoutSpec extends NodeSpec {
      */
     public LayoutSpec reverse() {
         this.isReverse = true;
+        invalidate();
         return this;
     }
 
@@ -128,6 +134,7 @@ public class LayoutSpec extends NodeSpec {
      */
     public LayoutSpec reverse(boolean reverse) {
         this.isReverse = reverse;
+        invalidate();
         return this;
     }
 
@@ -139,6 +146,7 @@ public class LayoutSpec extends NodeSpec {
      */
     public LayoutSpec gap(float value) {
         this.gap = value;
+        invalidate();
         return this;
     }
 
@@ -150,6 +158,7 @@ public class LayoutSpec extends NodeSpec {
      */
     public LayoutSpec justifyContent(JustifyContent justifyContent) {
         this.justifyContent = justifyContent;
+        invalidate();
         return this;
     }
 
@@ -161,6 +170,7 @@ public class LayoutSpec extends NodeSpec {
      */
     public LayoutSpec alignItems(AlignItems alignItems) {
         this.alignItems = alignItems;
+        invalidate();
         return this;
     }
 
@@ -305,39 +315,32 @@ public class LayoutSpec extends NodeSpec {
     }
 
     @Override
-    public LayoutSpec onInvalidate(Runnable callback) {
+    public void onInvalidate(Runnable callback) {
         super.onInvalidate(callback);
+    }
+
+    // --- Reset ---
+
+    /**
+     * Resets all layout properties — both {@link NodeSpec} sizing fields and the
+     * LayoutSpec-specific direction, alignment, and gap fields — to their defaults.
+     *
+     * <p>Call this at the start of a reactive style configurator so that re-running
+     * the effect produces the same result regardless of previous state.
+     *
+     * @return this instance for chaining
+     */
+    @Override
+    public LayoutSpec reset(boolean invalidate) {
+        super.reset(false);
+        isColumn = false;
+        isWrap = false;
+        isReverse = false;
+        gap = 0f;
+        justifyContent = JustifyContent.START;
+        alignItems = AlignItems.STRETCH;
+
+        if (invalidate) invalidate();
         return this;
-    }
-
-    public LayoutSpec size(Cons<NodeSpec> configurator) {
-        configurator.get(this);
-        return this;
-    }
-
-    // --- Getters ---
-
-    public boolean isColumn() {
-        return isColumn;
-    }
-
-    public boolean isWrap() {
-        return isWrap;
-    }
-
-    public boolean isReverse() {
-        return isReverse;
-    }
-
-    public float gap() {
-        return gap;
-    }
-
-    public JustifyContent justifyContent() {
-        return justifyContent;
-    }
-
-    public AlignItems alignItems() {
-        return alignItems;
     }
 }

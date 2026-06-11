@@ -256,7 +256,7 @@ public class LayoutEngine {
                                   float width,
                                   float height,
                                   LayoutAccessor<T> accessor) {
-        float gapSpacing = spec.gap();
+        float gapSpacing = spec.getGap();
         boolean isColumn = spec.isColumn();
         Axis mainAxis = isColumn ? AXIS_Y : AXIS_X;
         Axis crossAxis = isColumn ? AXIS_X : AXIS_Y;
@@ -359,7 +359,7 @@ public class LayoutEngine {
 
         for (LayoutLine<T> line : layoutLines) {
             float extraMainSpace = mainLimit - line.mainSize;
-            float[] offsets = computeJustifyOffsets(extraMainSpace, line.items.size(), gapSpacing, spec.justifyContent());
+            float[] offsets = computeJustifyOffsets(extraMainSpace, line.items.size(), gapSpacing, spec.getJustifyContent());
 
             float cursorPosition;
             if (isForwardDirection) {
@@ -375,7 +375,7 @@ public class LayoutEngine {
             int index = 0;
             for (LayoutItem<T> item : line.items) {
                 NodeSpec childSizing = accessor.getSizing(item.node);
-                AlignItems childAlignment = getChildAlignment(childSizing, spec.alignItems());
+                AlignItems childAlignment = getChildAlignment(childSizing, spec.getAlignItems());
 
                 if (childAlignment == AlignItems.STRETCH) {
                     item.crossSize = line.crossSize;
