@@ -12,13 +12,15 @@ import org.mindustrytool.libs.ui.core.CustomComponent;
 import org.mindustrytool.libs.ui.components.Layout;
 import org.mindustrytool.libs.ui.components.Text;
 
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
-@Singleton
 @Slf4j
+@Singleton
+@RequiredArgsConstructor(onConstructor_ = @Inject)
 public class DemoUI {
 
     private static final Color[] PALETTE = {
@@ -33,10 +35,6 @@ public class DemoUI {
     private final Signal<Boolean> borderEnabled = new Signal<>(false);
     private final Signal<Integer> colorIndex = new Signal<>(0);
     private final Signal<Integer> opacityStep = new Signal<>(10);
-
-    @Inject
-    public DemoUI() {
-    }
 
     public void show() {
         var preview = CustomComponent.of().style(s -> s.radius(12f).background(Color.valueOf("1c1c22")));
