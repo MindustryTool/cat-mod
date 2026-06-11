@@ -4,37 +4,37 @@ import java.util.Collections;
 import java.util.Set;
 import java.util.WeakHashMap;
 
-import arc.util.Log;
+import lombok.extern.slf4j.Slf4j;
 
 /**
- * Package-private base class for reactive computations ({@link Effect}, {@link Computed}).
- * A reaction tracks which signals it depends on and re-runs its {@link #execute()}
- * when any of those signals change.
+ * Package-private base class for reactive computations ({@link Effect},
+ * {@link Computed}). Tracks signal dependencies and re-runs
+ * {@link #execute()} when any of them change.
  * <p>
- * Auto-tracking works via {@link ReactiveContext}: before execution, the reaction
- * pushes itself onto a thread-local stack. Any {@link Signal#get()} call detects
- * the active reaction and registers it as a subscriber.
+ * Auto-tracking works via {@link ReactiveContext}: before execution the
+ * reaction pushes itself onto a per-thread stack. Any {@link Signal#get()}
+ * call during {@link #execute()} registers the signal as a dependency.
  */
+@Slf4j
 abstract class Reaction {
     final Set<Signal<?>> dependencies = Collections.newSetFromMap(new WeakHashMap<>());
-    private boolean disposed = false;
-    private boolean running = false;
+    volatile boolean disposed = false;
+    private volatile boolean running = false;
+    final ThreadTarget target;
 
-    /**
-     * The user-defined computation to run.
-     */
+    Reaction(ThreadTarget target) {
+        this.target = target;
+    }
+
+    /** User-defined computation. Runs inside a tracking context. */
     protected abstract void execute();
 
-    /**
-     * Runs or re-runs this reaction. Clears old dependencies first, then
-     * re-executes to rebuild the dependency graph via auto-tracking.
-     * Prevents re-entrant cycles.
-     */
+    /** Runs or re-runs this reaction. Clears and rebuilds dependency graph. */
     final void run() {
         if (disposed) return;
 
         if (running) {
-            Log.err("Reaction cycle detected", new IllegalStateException("Reaction cycle"));
+            log.error("Reaction cycle detected", new IllegalStateException("Reaction cycle"));
             return;
         }
 
@@ -42,7 +42,7 @@ abstract class Reaction {
             ReactiveContext.push(this);
             running = true;
 
-            for (var s : dependencies) s.subscribers.remove(this);
+            for (var signal : dependencies) signal.removeSubscriber(this);
             dependencies.clear();
 
             execute();
@@ -52,21 +52,16 @@ abstract class Reaction {
         }
     }
 
-    /**
-     * Links this reaction to the given signal as a dependency.
-     * Called by {@link ReactiveContext#active} during signal reads.
-     */
-    void link(Signal<?> signal) {
+    /** Registers a signal as a dependency of this reaction. */
+    void linkDependency(Signal<?> signal) {
         dependencies.add(signal);
     }
 
-    /**
-     * Disposes this reaction, removing it from all signal subscriber lists.
-     */
+    /** Unsubscribes from all tracked signals. Safe to call from any thread. */
     void dispose() {
         disposed = true;
 
-        for (var s : dependencies) s.subscribers.remove(this);
+        for (var signal : dependencies) signal.removeSubscriber(this);
         dependencies.clear();
     }
 }

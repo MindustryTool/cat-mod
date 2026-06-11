@@ -4,34 +4,36 @@ import java.util.ArrayDeque;
 import java.util.Deque;
 
 /**
- * Thread-local stack tracking the currently-executing {@link Reaction}.
- * Enables automatic dependency discovery: when a {@link Signal#get()} is called
- * during a reaction's execution, {@link #active(Signal)} links the signal to
- * the top-of-stack reaction.
+ * Per-thread stack tracking the currently-executing {@link Reaction}.
+ * <p>
+ * When a {@link Signal#get()} is called during a reaction's
+ * {@link Reaction#execute()}, this class links the signal to the
+ * top-of-stack reaction so it receives change notifications.
  * <p>
  * This is package-private; users interact with it indirectly through
  * {@link Signal#get()}, {@link Effect}, and {@link Computed}.
  */
 final class ReactiveContext {
-    private static final Deque<Reaction> STACK = new ArrayDeque<>();
+    private static final ThreadLocal<Deque<Reaction>> STACK =
+        ThreadLocal.withInitial(ArrayDeque::new);
 
     static void push(Reaction r) {
-        STACK.push(r);
+        STACK.get().push(r);
     }
 
     static void pop() {
-        STACK.pop();
+        STACK.get().pop();
     }
 
     /**
-     * Called by {@link Signal#get()} to register the signal as a dependency
-     * of the currently-active reaction, if any.
+     * Registers {@code signal} as a dependency of the currently-executing
+     * reaction (if any). Called by {@link Signal#get()}.
      */
-    static void active(Signal<?> signal) {
-        var active = STACK.peek();
+    static void collectSubscriber(Signal<?> signal) {
+        var active = STACK.get().peek();
         if (active == null) return;
 
-        active.link(signal);
-        signal.subscribers.add(active);
+        active.linkDependency(signal);
+        signal.addSubscriber(active);
     }
 }
