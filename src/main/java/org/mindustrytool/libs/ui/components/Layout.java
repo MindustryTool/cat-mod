@@ -1,6 +1,9 @@
 package org.mindustrytool.libs.ui.components;
 
+import arc.func.Cons;
+import arc.func.Prov;
 import arc.scene.Element;
+import arc.scene.Scene;
 import arc.scene.ui.layout.WidgetGroup;
 import arc.struct.Seq;
 
@@ -11,9 +14,6 @@ import org.mindustrytool.libs.ui.layout.LayoutEngine;
 import org.mindustrytool.libs.ui.layout.LayoutSpec;
 import org.mindustrytool.libs.ui.layout.NodeSpec;
 import org.mindustrytool.libs.ui.layout.NodeSpec.SizeMode;
-
-import arc.func.Cons;
-import arc.func.Prov;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -95,7 +95,7 @@ public class Layout implements Component {
 
         group = new ScrollElement(contentGroup) {
             @Override
-            protected void setScene(arc.scene.Scene scene) {
+            protected void setScene(Scene scene) {
                 super.setScene(scene);
                 if (scene == null) Layout.this.dispose();
             }

@@ -27,7 +27,6 @@ public record Gradient(Texture texture, float... params) implements Disposable {
     /** The resolution of the generated gradient texture. */
     public static final int RESOLUTION = 256;
 
-
     /**
      * Stop represents a color stop point along the gradient ramp.
      *
@@ -35,7 +34,6 @@ public record Gradient(Texture texture, float... params) implements Disposable {
      * @param color    the Color associated with this stop position
      */
     public record Stop(float position, Color color) {}
-
 
     /**
      * Creates a type-safe color Stop with a Color object.

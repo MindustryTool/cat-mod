@@ -5,9 +5,9 @@ import arc.graphics.Color;
 import arc.graphics.Texture;
 import arc.scene.Element;
 import arc.scene.Scene;
-import arc.scene.event.Touchable;
 
-import org.mindustrytool.libs.signal.MultithreadSignal;
+import org.mindustrytool.libs.signal.Effect;
+import org.mindustrytool.libs.signal.ThreadTarget;
 import org.mindustrytool.libs.ui.component.Component;
 import org.mindustrytool.libs.ui.component.ComponentStyle;
 import org.mindustrytool.libs.ui.component.EffectHost;
@@ -42,17 +42,23 @@ public class CustomComponent implements Component {
         public float borderWidth;
         public final Color borderColor = new Color(Color.white);
         public int borderStyle;
-        /** The border dash length and ratio. */
+        /**
+         * The border dash length and ratio.
+         */
         public float dashLength = 10f;
         public float dashRatio = 0.5f;
 
-        /** Fixed slots for stacked gradients (gradient0 is base, gradient3 is top overlay). */
+        /**
+         * Fixed slots for stacked gradients (gradient0 is base, gradient3 is top overlay).
+         */
         public Gradient gradient0;
         public Gradient gradient1;
         public Gradient gradient2;
         public Gradient gradient3;
 
-        /** Background texture fill. */
+        /**
+         * Background texture fill.
+         */
         public Texture fillTexture;
         public float uvScaleX = 1f;
         public float uvScaleY = 1f;
@@ -76,8 +82,6 @@ public class CustomComponent implements Component {
         public int filterMode;
         public float filterAmount;
         public float noiseAmount;
-
-        Style() {}
 
         @Override
         protected NodeSpec sizing() {
@@ -286,7 +290,6 @@ public class CustomComponent implements Component {
     public final Style style = new Style();
     protected final CustomDraw drawer = new CustomDraw();
 
-    private MultithreadSignal.Handle imageHandle;
     private Texture ownedTexture;
 
     private final EffectHost effects = new EffectHost();
@@ -322,7 +325,6 @@ public class CustomComponent implements Component {
         sizing.onInvalidate(element::invalidateHierarchy);
         sizing.grow();
 
-        element.touchable = Touchable.disabled;
         element.userObject = this;
     }
 
@@ -334,17 +336,10 @@ public class CustomComponent implements Component {
      * Applies a style configurator immediately (no signal tracking).
      */
     public CustomComponent style(Cons<Style> configurator) {
-        configurator.get(style);
-        element.invalidateHierarchy();
-        return this;
-    }
-
-    /**
-     * Applies a size configurator immediately.
-     */
-    public CustomComponent size(Cons<NodeSpec> configurator) {
-        configurator.get(sizing);
-        element.invalidateHierarchy();
+        effects.add(() -> {
+            configurator.get(style);
+            element.invalidateHierarchy();
+        });
         return this;
     }
 
@@ -353,31 +348,21 @@ public class CustomComponent implements Component {
      * Disposes any previously loaded owned texture.
      */
     public CustomComponent loadImage(String url, Color tint) {
+        effects.add(() -> {
+            var signal = ImageLoader.get(url);
+            var state = signal.get();
+            if (state.state() != ImageLoader.ImageLoadState.LOADED || state.texture() == null) return;
 
-        var signal = ImageLoader.get(url);
-        imageHandle = signal.subscribeOnMain(
-            res -> res.state() == ImageLoader.ImageLoadState.LOADED,
-            () -> {
-                var res = signal.state();
-                if (res.state() != ImageLoader.ImageLoadState.LOADED) return;
-
-                disposeImageResources();
-                applyLoadedTexture(res.texture(), tint);
-            });
+            disposeImageResources();
+            this.style.background(state.texture(), tint);
+            ownedTexture = state.texture();
+        });
 
         return this;
     }
 
     public CustomComponent loadImage(String url) {
         return loadImage(url, Color.white);
-    }
-
-    /**
-     * Overrides the touchable mode. Default is {@code Touchable.disabled}.
-     */
-    public CustomComponent touchable(Touchable mode) {
-        element.touchable = mode;
-        return this;
     }
 
     @Override
@@ -397,22 +382,10 @@ public class CustomComponent implements Component {
         drawer.dispose();
     }
 
-    private void applyLoadedTexture(Texture texture, Color tint) {
-        style.backgroundMode = Style.BackgroundMode.TEXTURE;
-        style.fillTexture = texture;
-        ownedTexture = texture;
-        style.fillColor.set(tint);
-        element.invalidateHierarchy();
-    }
-
     private void disposeImageResources() {
         if (ownedTexture != null) {
             ownedTexture.dispose();
             ownedTexture = null;
-        }
-        if (imageHandle != null) {
-            imageHandle.dispose();
-            imageHandle = null;
         }
     }
 }

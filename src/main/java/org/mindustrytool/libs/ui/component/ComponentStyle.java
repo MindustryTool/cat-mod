@@ -29,10 +29,6 @@ public abstract class ComponentStyle<S extends ComponentStyle<S>> {
      */
     protected abstract Element styledElement();
 
-    protected ComponentStyle() {
-
-    }
-
     /**
      * Resets the sizing specification to default values.
      *

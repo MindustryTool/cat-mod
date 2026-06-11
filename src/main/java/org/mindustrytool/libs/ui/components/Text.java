@@ -193,18 +193,16 @@ public class Text implements Component {
     public final Style style = new Style();
 
     private final EffectHost effects = new EffectHost();
-    private final TextElement element;
+    private final TextElement element = new TextElement() {
+
+        @Override
+        protected void setScene(Scene sceneInstance) {
+            super.setScene(sceneInstance);
+            if (sceneInstance == null) Text.this.dispose();
+        }
+    };
 
     private Text() {
-        element = new TextElement() {
-
-            @Override
-            protected void setScene(Scene sceneInstance) {
-                super.setScene(sceneInstance);
-                if (sceneInstance == null) Text.this.dispose();
-            }
-        };
-
         element.userObject = this;
         sizing.onInvalidate(element::invalidateHierarchy);
     }
