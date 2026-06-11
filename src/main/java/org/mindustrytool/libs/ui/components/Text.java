@@ -197,8 +197,9 @@ public class Text implements Component {
 
         @Override
         protected void setScene(Scene sceneInstance) {
+            boolean hadScene = getScene() != null;
             super.setScene(sceneInstance);
-            if (sceneInstance == null) Text.this.dispose();
+            if (hadScene && sceneInstance == null) Text.this.dispose();
         }
     };
 

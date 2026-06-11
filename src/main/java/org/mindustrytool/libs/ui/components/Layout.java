@@ -96,8 +96,9 @@ public class Layout implements Component {
         group = new ScrollElement(contentGroup) {
             @Override
             protected void setScene(Scene scene) {
+                boolean hadScene = getScene() != null;
                 super.setScene(scene);
-                if (scene == null) Layout.this.dispose();
+                if (hadScene && scene == null) Layout.this.dispose();
             }
         };
 

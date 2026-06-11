@@ -337,8 +337,9 @@ public class CustomComponent implements Component {
 
         @Override
         protected void setScene(Scene scene) {
+            boolean hadScene = getScene() != null;
             super.setScene(scene);
-            if (scene == null) CustomComponent.this.dispose();
+            if (hadScene && scene == null) CustomComponent.this.dispose();
         }
 
         @Override

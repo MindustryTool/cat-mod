@@ -43,11 +43,13 @@ public class TextElement extends Element {
     protected @Getter boolean wrap;
     protected @Getter float fontScaleX = 1;
     protected @Getter float fontScaleY = 1;
+    private float baseFontScaleX = font.getScaleX();
+    private float baseFontScaleY = font.getScaleY();
     protected @Getter int labelAlign = Align.left;
     protected @Getter int lineAlign = Align.left;
     protected @Getter String ellipsis;
 
-    protected FontCache cache;
+    protected FontCache cache = font.newFontCache();
     protected float lastPrefHeight;
     protected boolean prefSizeInvalid = true;
     protected boolean fontScaleChanged = false;
@@ -64,6 +66,8 @@ public class TextElement extends Element {
         if (this.font == font || font == null) return;
         this.font = font;
         this.cache = font.newFontCache();
+        baseFontScaleX = font.getScaleX();
+        baseFontScaleY = font.getScaleY();
         invalidateHierarchy();
     }
 
@@ -154,6 +158,7 @@ public class TextElement extends Element {
     public void draw() {
         validate();
         if (cache != null) {
+            cache.tint(Color.white);
             cache.setPosition(x, y);
             cache.draw();
         }
@@ -165,7 +170,7 @@ public class TextElement extends Element {
         Font font = cache.getFont();
         float oldScaleX = font.getScaleX();
         float oldScaleY = font.getScaleY();
-        if (fontScaleChanged) font.getData().setScale(fontScaleX, fontScaleY);
+        if (fontScaleChanged) font.getData().setScale(baseFontScaleX * fontScaleX, baseFontScaleY * fontScaleY);
 
         boolean wrap = this.wrap && ellipsis == null;
         if (wrap) {
@@ -225,7 +230,7 @@ public class TextElement extends Element {
         if (cache == null) return 0;
         if (prefSizeInvalid) scaleAndComputePrefSize();
         float descentScaleCorrection = 1;
-        if (fontScaleChanged) descentScaleCorrection = fontScaleY / font.getScaleY();
+        if (fontScaleChanged) descentScaleCorrection = (baseFontScaleY * fontScaleY) / font.getScaleY();
         return prefSize.y - font.getDescent() * descentScaleCorrection * 2;
     }
 
@@ -234,7 +239,7 @@ public class TextElement extends Element {
         Font font = cache.getFont();
         float oldScaleX = font.getScaleX();
         float oldScaleY = font.getScaleY();
-        if (fontScaleChanged) font.getData().setScale(fontScaleX, fontScaleY);
+        if (fontScaleChanged) font.getData().setScale(baseFontScaleX * fontScaleX, baseFontScaleY * fontScaleY);
 
         computePrefSize();
 

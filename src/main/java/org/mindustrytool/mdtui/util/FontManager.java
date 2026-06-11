@@ -26,12 +26,13 @@ public final class FontManager {
 
     @Inject
     public FontManager() {
+        var param = new FreeTypeFontParameter();
+        param.size = 48;
+        param.incremental = true;
         jetbrainsMono = new FreeTypeFontGenerator(Vars.tree.get(Resources.FONT_JETBRAINS_MONO))
-            .generateFont(new FreeTypeFontParameter() {{
-                size = 32;
-                incremental = true;
-            }});
+            .generateFont(param);
 
+        jetbrainsMono.getData().setScale(0.4f);
         jetbrainsMono.getData().markupEnabled = true;
     }
 }
