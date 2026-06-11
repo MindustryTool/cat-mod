@@ -45,9 +45,8 @@ public class Layout implements Component {
     private final EffectHost effects = new EffectHost();
 
     private Component background;
-    private final Seq<Component> staticChildren = new Seq<>();
     private final Seq<Component> currentChildren = new Seq<>();
-    private Prov<Seq<Component>> childrenProvider = () -> staticChildren;
+    private Prov<Seq<Component>> childrenProvider = Seq::new;
 
 
 
@@ -138,13 +137,6 @@ public class Layout implements Component {
     }
 
 
-    public Layout child(Component child) {
-        staticChildren.add(child);
-        triggerRebuild();
-        return this;
-    }
-
-
     public Layout children(Prov<Seq<Component>> provider) {
         childrenProvider = provider;
         triggerRebuild();
@@ -166,30 +158,6 @@ public class Layout implements Component {
             configurator.get(spec);
             group.invalidateHierarchy();
         });
-        return this;
-    }
-
-
-    // ─── Scroll API ───────────────────────────────────────────────────────────
-
-    /** Enables vertical scrolling. Content outside the group bounds is scissor-clipped. */
-    public Layout scrollY() {
-        group.getY().setDisabled(false);
-        return this;
-    }
-
-
-    /** Enables horizontal scrolling. Content outside the group bounds is scissor-clipped. */
-    public Layout scrollX() {
-        group.getX().setDisabled(false);
-        return this;
-    }
-
-
-    /** Enables both axes of scrolling. */
-    public Layout scroll() {
-        group.getX().setDisabled(false);
-        group.getY().setDisabled(false);
         return this;
     }
 
