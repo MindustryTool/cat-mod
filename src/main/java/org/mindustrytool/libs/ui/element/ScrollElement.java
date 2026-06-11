@@ -28,7 +28,8 @@ public class ScrollElement extends WidgetGroup {
         boolean scrollBarOnEdge = true;
         float amount, visualAmount, max, velocity, areaSize;
         boolean touchScroll;
-        Drawable bar, knob;
+        Drawable bar = new RectDrawable(new arc.graphics.Color(0.2f, 0.2f, 0.2f, 0.2f), 10f, 10f);
+        Drawable knob = new RectDrawable(new arc.graphics.Color(0.5f, 0.5f, 0.5f, 0.5f), 10f, 10f);
         final Rect barBounds = new Rect();
         final Rect knobBounds = new Rect();
     }
@@ -635,5 +636,21 @@ public class ScrollElement extends WidgetGroup {
 
     private static float safePercent(float amount, float max) {
         return max == 0 ? 1f : Mathf.clamp(amount / max, 0, 1);
+    }
+
+    private static class RectDrawable extends BaseDrawable {
+        private final arc.graphics.Color color;
+
+        public RectDrawable(arc.graphics.Color color, float minWidth, float minHeight) {
+            this.color = color;
+            setMinWidth(minWidth);
+            setMinHeight(minHeight);
+        }
+
+        @Override
+        public void draw(float x, float y, float width, float height) {
+            Draw.color(color);
+            Fill.rect(x + width / 2f, y + height / 2f, width, height);
+        }
     }
 }

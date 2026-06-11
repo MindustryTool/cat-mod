@@ -4,7 +4,6 @@ import arc.graphics.g2d.Font;
 import arc.scene.Element;
 import arc.scene.Scene;
 
-import org.mindustrytool.libs.signal.Effect;
 import org.mindustrytool.libs.ui.component.Component;
 import org.mindustrytool.libs.ui.component.ComponentStyle;
 import org.mindustrytool.libs.ui.component.EffectHost;
