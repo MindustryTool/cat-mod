@@ -5,6 +5,7 @@ import arc.scene.Element;
 import arc.scene.ui.layout.WidgetGroup;
 import arc.struct.Seq;
 
+import org.mindustrytool.libs.signal.Effect;
 import org.mindustrytool.libs.ui.component.Component;
 import org.mindustrytool.libs.ui.component.EffectHost;
 import org.mindustrytool.libs.ui.element.ScrollElement;
@@ -33,8 +34,6 @@ import arc.func.Prov;
  */
 public class Layout implements Component {
 
-    // ─── Fields ──────────────────────────────────────────────────────────────
-
     private final LayoutSpec spec;
     private final ScrollElement group;
     private final WidgetGroup contentGroup;
@@ -43,8 +42,7 @@ public class Layout implements Component {
     private Component background;
     private final Seq<Component> currentChildren = new Seq<>();
     private Prov<Seq<Component>> childrenProvider = Seq::new;
-
-    // ─── Constructor ─────────────────────────────────────────────────────────
+    private Effect childrenEffect;
 
     private Layout() {
         spec = new LayoutSpec();
@@ -108,7 +106,7 @@ public class Layout implements Component {
         group.userObject = this;
         spec.onInvalidate(contentGroup::invalidateHierarchy);
 
-        effects.add(() -> rebuild(childrenProvider.get()));
+        childrenEffect = effects.replace(childrenEffect, () -> rebuild(childrenProvider.get()));
     }
 
 
@@ -117,9 +115,6 @@ public class Layout implements Component {
     public static Layout of() {
         return new Layout();
     }
-
-
-    // ─── Child management ─────────────────────────────────────────────────────
 
     public Layout background(Component bg) {
         if (background != null && background != bg) background.dispose();
@@ -131,12 +126,9 @@ public class Layout implements Component {
 
     public Layout children(Prov<Seq<Component>> provider) {
         childrenProvider = provider;
-        triggerRebuild();
+        childrenEffect = effects.replace(childrenEffect, () -> rebuild(childrenProvider.get()));
         return this;
     }
-
-
-    // ─── Style ───────────────────────────────────────────────────────────────
 
     /**
      * Registers a reactive layout style configurator.
@@ -153,9 +145,6 @@ public class Layout implements Component {
         return this;
     }
 
-
-    // ─── Component interface ─────────────────────────────────────────────────
-
     @Override
     public Element element() {
         return group;
@@ -167,7 +156,6 @@ public class Layout implements Component {
         return spec;
     }
 
-
     @Override
     public void dispose() {
         effects.disposeAll();
@@ -175,20 +163,16 @@ public class Layout implements Component {
         for (int i = 0; i < currentChildren.size; i++) currentChildren.get(i).dispose();
     }
 
-    // ─── Private helpers ─────────────────────────────────────────────────────
-
     private Seq<Element> foregroundElements() {
         Seq<Element> elements = new Seq<>(currentChildren.size);
         for (int i = 0; i < currentChildren.size; i++) elements.add(currentChildren.get(i).element());
         return elements;
     }
 
-
     private void triggerRebuild() {
         // Force the rebuildEffect to re-run immediately (the effect itself reads childrenProvider)
         rebuild(childrenProvider.get());
     }
-
 
     private void rebuild(Seq<Component> newChildren) {
         java.util.Set<Component> newSet = new java.util.HashSet<>();
