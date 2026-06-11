@@ -74,8 +74,7 @@ public class Layout implements Component {
     private float velocityX;
     private float velocityY;
 
-    private CustomComponent vertScrollBar;
-    private CustomComponent horizScrollBar;
+
 
 
     // ─── Touch tracking ───────────────────────────────────────────────────────
@@ -231,7 +230,6 @@ public class Layout implements Component {
     public Layout scrollY() {
         if (scrollableY) return this;
         scrollableY = true;
-        initVertScrollBar();
         addScrollTouchListener();
         return this;
     }
@@ -241,7 +239,6 @@ public class Layout implements Component {
     public Layout scrollX() {
         if (scrollableX) return this;
         scrollableX = true;
-        initHorizScrollBar();
         addScrollTouchListener();
         return this;
     }
@@ -272,26 +269,6 @@ public class Layout implements Component {
         effects.disposeAll();
         if (background != null) background.dispose();
         for (int i = 0; i < currentChildren.size; i++) currentChildren.get(i).dispose();
-        if (vertScrollBar != null) vertScrollBar.dispose();
-        if (horizScrollBar != null) horizScrollBar.dispose();
-    }
-
-
-    // ─── Scroll internals ─────────────────────────────────────────────────────
-
-    private void initVertScrollBar() {
-        vertScrollBar = CustomComponent.of()
-            .style(s -> s.fill(new Color(1f, 1f, 1f, 0.3f)).radius(SCROLL_BAR_WIDTH / 2f))
-            .size(sz -> sz.fixedWidth(SCROLL_BAR_WIDTH));
-        group.addChild(vertScrollBar.element());
-    }
-
-
-    private void initHorizScrollBar() {
-        horizScrollBar = CustomComponent.of()
-            .style(s -> s.fill(new Color(1f, 1f, 1f, 0.3f)).radius(SCROLL_BAR_WIDTH / 2f))
-            .size(sz -> sz.fixedHeight(SCROLL_BAR_WIDTH));
-        group.addChild(horizScrollBar.element());
     }
 
 
@@ -408,49 +385,6 @@ public class Layout implements Component {
             if (scrollableX) child.x -= scrollX;
         }
 
-        // Position scroll bars
-        positionVertScrollBar(containerWidth, containerHeight, contentHeight);
-        positionHorizScrollBar(containerWidth, containerHeight, contentWidth);
-    }
-
-
-    private void positionVertScrollBar(float containerWidth, float containerHeight, float contentHeight) {
-        if (vertScrollBar == null || maxScrollY <= 0f) {
-            if (vertScrollBar != null) vertScrollBar.element().visible = false;
-            return;
-        }
-        vertScrollBar.element().visible = true;
-
-        float trackHeight = containerHeight - 2f * SCROLL_BAR_PADDING;
-        float thumbHeight = Math.max(20f, trackHeight * (containerHeight / contentHeight));
-        float thumbY = SCROLL_BAR_PADDING + (trackHeight - thumbHeight) * (1f - scrollY / maxScrollY);
-
-        vertScrollBar.element().setBounds(
-            containerWidth - SCROLL_BAR_WIDTH - SCROLL_BAR_PADDING,
-            thumbY,
-            SCROLL_BAR_WIDTH,
-            thumbHeight
-        );
-    }
-
-
-    private void positionHorizScrollBar(float containerWidth, float containerHeight, float contentWidth) {
-        if (horizScrollBar == null || maxScrollX <= 0f) {
-            if (horizScrollBar != null) horizScrollBar.element().visible = false;
-            return;
-        }
-        horizScrollBar.element().visible = true;
-
-        float trackWidth = containerWidth - 2f * SCROLL_BAR_PADDING;
-        float thumbWidth = Math.max(20f, trackWidth * (containerWidth / contentWidth));
-        float thumbX = SCROLL_BAR_PADDING + (trackWidth - thumbWidth) * (scrollX / maxScrollX);
-
-        horizScrollBar.element().setBounds(
-            thumbX,
-            SCROLL_BAR_PADDING,
-            thumbWidth,
-            SCROLL_BAR_WIDTH
-        );
     }
 
 
@@ -485,9 +419,7 @@ public class Layout implements Component {
         if (background != null) group.addChild(background.element());
         for (int i = 0; i < newChildren.size; i++) group.addChild(newChildren.get(i).element());
 
-        // Re-add scroll bars on top after clear
-        if (vertScrollBar != null) group.addChild(vertScrollBar.element());
-        if (horizScrollBar != null) group.addChild(horizScrollBar.element());
+
 
         group.invalidateHierarchy();
     }
