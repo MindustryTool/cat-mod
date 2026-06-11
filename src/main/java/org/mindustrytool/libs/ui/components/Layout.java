@@ -50,29 +50,7 @@ public class Layout implements Component {
     private Prov<Seq<Component>> childrenProvider = () -> staticChildren;
 
 
-    // ─── Scroll state ─────────────────────────────────────────────────────────
 
-    private boolean scrollableX;
-    private boolean scrollableY;
-    private float scrollX;
-    private float scrollY;
-    private float maxScrollX;
-    private float maxScrollY;
-    private float velocityX;
-    private float velocityY;
-
-
-
-
-    // ─── Touch tracking ───────────────────────────────────────────────────────
-
-    private float touchStartX;
-    private float touchStartY;
-    private float prevTouchX;
-    private float prevTouchY;
-    private float prevTouchTime;
-    private float instantVelocityX;
-    private float instantVelocityY;
 
 
     // ─── Constructor ─────────────────────────────────────────────────────────
