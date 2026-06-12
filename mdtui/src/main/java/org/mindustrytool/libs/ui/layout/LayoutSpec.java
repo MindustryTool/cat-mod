@@ -118,6 +118,7 @@ public record LayoutSpec(
     /**
      * Lombok builder class helper that defines the default properties for a LayoutSpec builder.
      */
+    @SuppressWarnings({"unused", "FieldMayBeFinal"})
     public static class LayoutSpecBuilder {
         private SizeMode widthMode = SizeMode.WRAP;
         private SizeMode heightMode = SizeMode.WRAP;
