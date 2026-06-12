@@ -40,6 +40,10 @@ dependencies {
     implementation("org.slf4j:slf4j-simple:2.0.9")
 
     implementation("org.codejargon.feather:feather:1.0")
+
+    implementation("com.squareup.okhttp3:okhttp:4.12.0")
+    implementation("com.squareup.retrofit2:retrofit:2.11.0")
+    implementation("com.squareup.retrofit2:converter-gson:2.11.0")
 }
 
 tasks.withType<JavaCompile>().configureEach {
