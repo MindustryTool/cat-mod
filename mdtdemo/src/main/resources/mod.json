@@ -1,0 +1,10 @@
+{
+  "name": "mdt-demo",
+  "displayName": "MDT Demo",
+  "author": "meohexa1a",
+  "main": "org.mindustrytool.mdtui.MDTDemoMod",
+  "description": "Demo UI for the MDT framework",
+  "version": "1.0.0",
+  "minGameVersion": "158",
+  "java": true
+}
