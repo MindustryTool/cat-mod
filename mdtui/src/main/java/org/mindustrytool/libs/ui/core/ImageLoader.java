@@ -1,62 +1,59 @@
 package org.mindustrytool.libs.ui.core;
 
-
 import arc.graphics.Pixmap;
 import arc.graphics.Texture;
 import arc.graphics.Texture.TextureFilter;
-import arc.util.Http;
-import arc.util.Http.HttpMethod;
 
 import lombok.experimental.UtilityClass;
 import lombok.extern.slf4j.Slf4j;
 
 import org.mindustrytool.libs.signal.Effect;
 import org.mindustrytool.libs.signal.Signal;
-import org.mindustrytool.util.Resources;
 
-/**
- * Asynchronous image pipeline: URL → Pixmap → Texture, driven by reactive
- * {@link Signal} / {@link Effect} with per-step {@link ThreadTarget} dispatch.
- * <p>
- * The returned signal transitions through {@link ImageLoadState}
- * {@code IDLE → DECODED → LOADED} (or straight to {@code FAILED}).
- * <p>
- * Downloaded images are cached on disk via a sanitised URL-derived filename;
- * duplicate loads for the same URL result in fresh pipeline instances (no
- * in-memory cache).
- */
+import java.util.concurrent.TimeUnit;
+
+import okhttp3.OkHttpClient;
+import okhttp3.ResponseBody;
+import retrofit2.Response;
+import retrofit2.Retrofit;
+
 @Slf4j
 @UtilityClass
 public class ImageLoader {
 
-    /**
-     * Initiates an async image load for the given URL.
-     * <p>
-     * Pipeline steps:
-     * <ol>
-     *   <li><b>IO thread</b> — download or disk-cache read → {@code DECODED}</li>
-     *   <li><b>Main thread</b> — upload decoded {@link Pixmap} to GPU as {@link Texture}
-     *       → {@code LOADED}</li>
-     * </ol>
-     *
-     * @param url the image URL
-     * @return a signal that progresses through {@link ImageLoadState} as the
-     *         pipeline advances
-     */
+    private static final OkHttpClient client = new OkHttpClient.Builder()
+        .connectTimeout(15, TimeUnit.SECONDS)
+        .readTimeout(15, TimeUnit.SECONDS)
+        .build();
+
+    private static final Retrofit retrofit = new Retrofit.Builder()
+        .baseUrl("https://example.com/")
+        .client(client)
+        .build();
+
+    private static final ImageApi api = retrofit.create(ImageApi.class);
+
     public static Signal<ImageResource> get(String url) {
         if (url == null || url.isEmpty()) return new Signal<>(ImageResource.failed());
 
         var signal = new Signal<>(ImageResource.failed());
 
-        Effect.ofIO(() -> {
+        Effect.of(() -> {
             var state = signal.get();
             if (state.state() != ImageLoadState.IDLE) return;
 
-            Pixmap pixmap = resolvePixmap(url);
-            signal.set(pixmap != null ? ImageResource.decoded(pixmap) : ImageResource.failed());
+            new Thread(() -> {
+                try {
+                    Pixmap pixmap = resolvePixmap(url);
+                    signal.set(pixmap != null ? ImageResource.decoded(pixmap) : ImageResource.failed());
+                } catch (Exception e) {
+                    log.error("Failed to download image: {}", url, e);
+                    signal.set(ImageResource.failed());
+                }
+            }).start();
         });
 
-        Effect.ofMain(() -> {
+        Effect.of(() -> {
             var state = signal.get();
             if (state.state() != ImageLoadState.DECODED) return;
             Pixmap pixmap = state.pixmap();
@@ -76,8 +73,7 @@ public class ImageLoader {
         return signal;
     }
 
-    /** Downloads (or reads from disk cache) and decodes a Pixmap for the given URL. */
-    private static Pixmap resolvePixmap(String url) {
+    private static Pixmap resolvePixmap(String url) throws Exception {
         Resources.IMAGE_CACHE_DIR.mkdirs();
         var cachedFile = Resources.IMAGE_CACHE_DIR.child(url.replaceAll("[^a-zA-Z0-9._-]", "-"));
 
@@ -87,61 +83,48 @@ public class ImageLoader {
             ? url + (url.contains("?") ? "&format=jpeg" : "?format=jpeg")
             : url;
 
-        var ref = new HttpResult[]{null};
-        Http.request(HttpMethod.GET, downloadUrl)
-            .timeout(15000)
-            .error(err -> ref[0] = new HttpResult(null, err))
-            .block(res -> ref[0] = new HttpResult(res.getResult(), null));
-        var httpRef = ref[0];
-
-        if (httpRef.error() != null) {
-            log.error("Failed to load image: {}", url, httpRef.error());
+        Response<ResponseBody> response = api.downloadImage(downloadUrl).execute();
+        if (!response.isSuccessful()) {
+            log.error("Failed to load image: {} - HTTP {}", url, response.code());
             return null;
         }
 
-        if (httpRef.bytes() == null || httpRef.bytes().length == 0) {
+        ResponseBody body = response.body();
+        if (body == null) {
+            log.error("Empty response body for: {}", url);
+            return null;
+        }
+
+        byte[] bytes = body.bytes();
+        if (bytes.length == 0) {
             log.error("Empty response bytes for: {}", url);
             return null;
         }
 
-        cachedFile.writeBytes(httpRef.bytes());
-        return new Pixmap(httpRef.bytes());
+        cachedFile.writeBytes(bytes);
+        return new Pixmap(bytes);
     }
 
-    private record HttpResult(byte[] bytes, Throwable error) {
-
-    }
-
-    /** Pipeline state machine for a single image load. */
     public enum ImageLoadState {
-        /** Initial state before any work starts. */
         IDLE,
-        /** Pixmap has been decoded (on IO thread). */
         DECODED,
-        /** Texture has been uploaded to GPU (on main thread). */
         LOADED,
-        /** Loading failed at any step. */
         FAILED
     }
 
-    /** Snapshot of the image pipeline at a given state. */
     public record ImageResource(ImageLoadState state, Texture texture, Pixmap pixmap) {
-        /** Creates an idle resource (no work started). */
         public static ImageResource idle() {
             return new ImageResource(ImageLoadState.IDLE, null, null);
         }
 
-        /** Creates a decoded resource holding a CPU-side {@link Pixmap}. */
         public static ImageResource decoded(Pixmap p) {
             return new ImageResource(ImageLoadState.DECODED, null, p);
         }
 
-        /** Creates a loaded resource holding a GPU {@link Texture}. */
         public static ImageResource loaded(Texture t) {
             return new ImageResource(ImageLoadState.LOADED, t, null);
         }
 
-        /** Creates a failed resource (no data). */
         public static ImageResource failed() {
             return new ImageResource(ImageLoadState.FAILED, null, null);
         }

@@ -154,7 +154,7 @@ public class DemoUI {
         });
 
         // Trigger loadImage on previewCard reactively
-        Effect.ofMain(() -> {
+        Effect.of(() -> {
             if (bgMode.get() == 2 && !backdropOn.get()) {
                 previewCard.loadImage(activeUrl.get());
             }

@@ -1,4 +1,4 @@
-package org.mindustrytool.libs.ui.element;
+package org.mindustrytool.libs.ui.components;
 
 import arc.graphics.g2d.*;
 import arc.input.*;

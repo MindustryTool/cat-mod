@@ -14,8 +14,7 @@ import java.util.Deque;
  * {@link Signal#get()}, {@link Effect}, and {@link Computed}.
  */
 final class ReactiveContext {
-    private static final ThreadLocal<Deque<Reaction>> STACK =
-        ThreadLocal.withInitial(ArrayDeque::new);
+    private static final ThreadLocal<Deque<Reaction>> STACK = ThreadLocal.withInitial(ArrayDeque::new);
 
     static void push(Reaction r) {
         STACK.get().push(r);
@@ -34,6 +33,6 @@ final class ReactiveContext {
         if (active == null) return;
 
         active.linkDependency(signal);
-        signal.addSubscriber(active);
+        signal.subscribers.add(active);
     }
 }

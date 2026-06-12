@@ -7,6 +7,7 @@ import arc.scene.Element;
 import arc.scene.Scene;
 
 import org.mindustrytool.libs.signal.Effect;
+import org.mindustrytool.libs.signal.Signal;
 import org.mindustrytool.libs.ui.components.Component;
 import org.mindustrytool.libs.ui.components.ComponentStyle;
 import org.mindustrytool.libs.ui.layout.NodeSpec;
@@ -397,7 +398,7 @@ public class CustomComponent implements Component {
         }
 
         var signal = ImageLoader.get(url);
-        activeLoadEffect = Effect.ofMain(() -> {
+        activeLoadEffect = Effect.of(() -> {
             var state = signal.get();
             if (state.state() == ImageLoader.ImageLoadState.LOADED && state.texture() != null) {
                 disposeImageResources();

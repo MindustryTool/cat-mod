@@ -10,8 +10,6 @@ import arc.graphics.gl.FrameBuffer;
 import arc.graphics.gl.Shader;
 import arc.util.Disposable;
 
-import org.mindustrytool.util.Resources;
-
 /**
  * Low-level rendering engine for custom UI elements.
  *

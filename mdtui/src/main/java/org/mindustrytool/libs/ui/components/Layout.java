@@ -8,7 +8,6 @@ import arc.scene.ui.layout.WidgetGroup;
 import arc.struct.Seq;
 
 import org.mindustrytool.libs.ui.core.EffectHost;
-import org.mindustrytool.libs.ui.element.ScrollElement;
 import org.mindustrytool.libs.ui.layout.LayoutEngine;
 import org.mindustrytool.libs.ui.layout.LayoutSpec;
 import org.mindustrytool.libs.ui.layout.NodeSpec;

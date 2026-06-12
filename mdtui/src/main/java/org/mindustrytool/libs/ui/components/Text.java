@@ -6,7 +6,6 @@ import arc.scene.Element;
 import arc.scene.Scene;
 
 import org.mindustrytool.libs.ui.core.EffectHost;
-import org.mindustrytool.libs.ui.element.TextElement;
 import org.mindustrytool.libs.ui.layout.NodeSpec;
 
 import arc.func.Cons;
