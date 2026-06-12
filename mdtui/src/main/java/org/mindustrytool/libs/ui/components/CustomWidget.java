@@ -103,6 +103,7 @@ public record CustomWidget(
     /**
      * Custom builder specifying the default parameters for CustomWidget.
      */
+    @SuppressWarnings({"unused", "FieldMayBeFinal"})
     public static class CustomWidgetBuilder {
         private LayoutSpec layoutSpec = LayoutSpec.defaultSpec();
         private BackgroundMode backgroundMode = BackgroundMode.SOLID;

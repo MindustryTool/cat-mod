@@ -11,7 +11,7 @@ import java.util.Deque;
  * top-of-stack reaction so it receives change notifications.
  * <p>
  * This is package-private; users interact with it indirectly through
- * {@link Signal#get()}, {@link Effect}, and {@link Computed}.
+ * {@link Signal#get()}, {@link Effect}.
  */
 final class ReactiveContext {
     private static final ThreadLocal<Deque<Reaction>> STACK = ThreadLocal.withInitial(ArrayDeque::new);

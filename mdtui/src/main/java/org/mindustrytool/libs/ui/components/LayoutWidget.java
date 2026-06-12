@@ -57,6 +57,7 @@ public record LayoutWidget(
     /**
      * Lombok builder class helper that defines the default properties for a LayoutWidget builder.
      */
+    @SuppressWarnings({"unused", "FieldMayBeFinal"})
     public static class LayoutWidgetBuilder {
         private LayoutSpec layoutSpec = LayoutSpec.defaultSpec();
         private boolean scrollX = false;

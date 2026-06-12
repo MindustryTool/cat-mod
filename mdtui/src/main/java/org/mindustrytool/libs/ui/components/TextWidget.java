@@ -44,6 +44,7 @@ public record TextWidget(
     /**
      * Lombok builder class helper that defines the default properties for a TextWidget builder.
      */
+    @SuppressWarnings({"unused", "FieldMayBeFinal"})
     public static class TextWidgetBuilder {
         private LayoutSpec layoutSpec = LayoutSpec.defaultSpec();
         private String text = "";
