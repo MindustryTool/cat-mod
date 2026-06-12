@@ -12,9 +12,22 @@ import lombok.Builder;
 
 import org.mindustrytool.libs.ui.widget.ElementNode;
 import org.mindustrytool.libs.ui.widget.Widget;
-
 import org.mindustrytool.libs.ui.layout.LayoutSpec;
 
+/**
+ * A declarative, immutable text widget supporting custom scaling, alignment, coloring,
+ * and wrapping layout.
+ *
+ * @param layoutSpec  the layout spec rules and sizing constraints.
+ * @param text        the string text content to display.
+ * @param color       the coloring tint.
+ * @param font        the custom Font to render with.
+ * @param fontScale   font scaling factor.
+ * @param labelAlign  label alignment within the bound container (combination of Align top/bottom/left/right).
+ * @param lineAlign   line justification layout (Align left/right/center).
+ * @param wrap        true if text wrapping should be calculated.
+ * @param ellipsis    ellipsis string replacement when text overflows bounds, or null if disabled.
+ */
 @Builder(toBuilder = true)
 public record TextWidget(
     LayoutSpec layoutSpec,
@@ -28,6 +41,9 @@ public record TextWidget(
     String ellipsis
 ) implements Widget {
 
+    /**
+     * Lombok builder class helper that defines the default properties for a TextWidget builder.
+     */
     public static class TextWidgetBuilder {
         private LayoutSpec layoutSpec = LayoutSpec.defaultSpec();
         private String text = "";
@@ -38,13 +54,11 @@ public record TextWidget(
         private boolean wrap = false;
     }
 
+    /**
+     * Default constructor creating a default TextWidget.
+     */
     public TextWidget() {
         this(LayoutSpec.defaultSpec(), "", Color.white, null, 1f, Align.left, Align.left, false, null);
-    }
-
-    @Override
-    public LayoutSpec getLayoutSpec() {
-        return layoutSpec;
     }
 
     @Override
@@ -53,11 +67,24 @@ public record TextWidget(
     }
 }
 
+/**
+ * Backing ElementNode that binds a {@link TextWidget} to a mutable {@link TextElement}.
+ */
 class TextElementNode extends ElementNode {
+
+    /**
+     * The backing Arc element for rendering text.
+     */
     private final TextElement element = new TextElement();
 
+    /**
+     * Constructs a text element node.
+     *
+     * @param widget the text widget blueprint.
+     */
     TextElementNode(TextWidget widget) {
         super(widget);
+        
         arcElement = element;
         arcElement.userObject = this;
     }
@@ -71,29 +98,76 @@ class TextElementNode extends ElementNode {
     @Override
     public void update(Widget newWidget) {
         super.update(newWidget);
+        
         element.setWidget((TextWidget) newWidget);
         element.color.set(((TextWidget) newWidget).color());
     }
+
+    @Override
+    public LayoutSpec sizing() {
+        return ((TextWidget) widget).layoutSpec();
+    }
 }
 
+/**
+ * Backing Arc scene Element representing text rendering.
+ * Operates glyph text calculation and layout rendering on demand.
+ */
 class TextElement extends Element {
+
+    /**
+     * Shared glyph layout instance for calculating preferred dimensions.
+     */
     private static final GlyphLayout prefSizeLayout = new GlyphLayout();
 
+    /**
+     * The glyph layout instance containing visual bounds of the active text.
+     */
     private final GlyphLayout layout = new GlyphLayout();
+
+    /**
+     * Cached preferred size vector.
+     */
     private final Vec2 prefSize = new Vec2();
 
+    /**
+     * The bound text widget blueprint containing layout and style settings.
+     */
     TextWidget widget;
+
+    /**
+     * Cached font cache used to optimize text drawing operations.
+     */
     FontCache cache;
+
+    /**
+     * The last font configuration used to track font updates.
+     */
     private Font lastFont;
+
+    /**
+     * The last measured preferred height used to trigger hierarchy invalidation on wrap.
+     */
     private float lastPrefHeight;
+
+    /**
+     * Flag indicating whether the cached preferred size has been invalidated.
+     */
     private boolean prefSizeInvalid = true;
 
+    /**
+     * Binds a new text widget configuration and invalidates the layout if font or layout changes.
+     *
+     * @param w the text widget configuration.
+     */
     void setWidget(TextWidget w) {
         this.widget = w;
+        
         if (w.font() != lastFont) {
             cache = w.font() == null ? null : w.font().newFontCache();
             lastFont = w.font();
         }
+        
         invalidateHierarchy();
     }
 
@@ -106,6 +180,7 @@ class TextElement extends Element {
     @Override
     public void draw() {
         validate();
+        
         if (cache != null) {
             cache.tint(color);
             cache.setPosition(x, y);
@@ -115,12 +190,18 @@ class TextElement extends Element {
 
     @Override
     public void layout() {
-        if (cache == null) return;
+        if (cache == null) {
+            return;
+        }
+        
         Font font = cache.getFont();
         float baseScaleX = font.getScaleX();
         float baseScaleY = font.getScaleY();
         boolean scaleChanged = widget.fontScale() != 1f;
-        if (scaleChanged) font.getData().setScale(baseScaleX * widget.fontScale(), baseScaleY * widget.fontScale());
+        
+        if (scaleChanged) {
+            font.getData().setScale(baseScaleX * widget.fontScale(), baseScaleY * widget.fontScale());
+        }
 
         boolean wrap = widget.wrap() && widget.ellipsis() == null;
         if (wrap) {
@@ -137,14 +218,18 @@ class TextElement extends Element {
 
         GlyphLayout layout = this.layout;
         float textWidth, textHeight;
+        
         if (wrap || text.contains("\n")) {
             layout.setText(font, text, 0, text.length(), Color.white, width, widget.lineAlign(), wrap, widget.ellipsis());
             textWidth = layout.width;
             textHeight = layout.height;
 
             if ((widget.labelAlign() & Align.left) == 0) {
-                if ((widget.labelAlign() & Align.right) != 0) x += width - textWidth;
-                else x += (width - textWidth) / 2;
+                if ((widget.labelAlign() & Align.right) != 0) {
+                    x += width - textWidth;
+                } else {
+                    x += (width - textWidth) / 2;
+                }
             }
         } else {
             textWidth = width;
@@ -160,54 +245,87 @@ class TextElement extends Element {
         } else {
             y += (height - textHeight) / 2;
         }
-        if (!cache.getFont().isFlipped()) y += textHeight;
+        
+        if (!cache.getFont().isFlipped()) {
+            y += textHeight;
+        }
 
         layout.setText(font, text, 0, text.length(), Color.white, textWidth, widget.lineAlign(), wrap, widget.ellipsis());
         cache.setText(layout, x, y);
 
-        if (scaleChanged) font.getData().setScale(baseScaleX, baseScaleY);
+        if (scaleChanged) {
+            font.getData().setScale(baseScaleX, baseScaleY);
+        }
     }
 
     @Override
     public float getPrefWidth() {
-        if (cache == null) return 0;
-        if (widget.wrap()) return 0;
-        if (prefSizeInvalid) computePrefSize();
+        if (cache == null) {
+            return 0;
+        }
+        
+        if (widget.wrap()) {
+            return 0;
+        }
+        
+        if (prefSizeInvalid) {
+            computePrefSize();
+        }
+        
         return prefSize.x;
     }
 
     @Override
     public float getPrefHeight() {
-        if (cache == null) return 0;
-        if (prefSizeInvalid) computePrefSize();
+        if (cache == null) {
+            return 0;
+        }
+        
+        if (prefSizeInvalid) {
+            computePrefSize();
+        }
+        
         Font font = cache.getFont();
         float descent = font.getDescent();
+        
         if (widget.fontScale() != 1f) {
             float baseScaleY = font.getScaleY();
             font.getData().setScale(baseScaleY * widget.fontScale(), baseScaleY * widget.fontScale());
             descent *= widget.fontScale();
             font.getData().setScale(baseScaleY, baseScaleY);
         }
+        
         return prefSize.y - descent * 2;
     }
 
+    /**
+     * Computes the preferred width and height of the text element using the configured font, scale, and constraints.
+     */
     private void computePrefSize() {
         prefSizeInvalid = false;
+        
         Font font = cache.getFont();
         float baseScaleX = font.getScaleX();
         float baseScaleY = font.getScaleY();
         boolean scaleChanged = widget.fontScale() != 1f;
-        if (scaleChanged) font.getData().setScale(baseScaleX * widget.fontScale(), baseScaleY * widget.fontScale());
+        
+        if (scaleChanged) {
+            font.getData().setScale(baseScaleX * widget.fontScale(), baseScaleY * widget.fontScale());
+        }
 
         GlyphLayout ps = TextElement.prefSizeLayout;
         String text = widget.text();
+        
         if (widget.wrap() && widget.ellipsis() == null) {
             ps.setText(font, text, Color.white, getWidth(), Align.left, true);
         } else {
             ps.setText(font, text, 0, text.length(), Color.white, 0, widget.lineAlign(), widget.wrap(), widget.ellipsis());
         }
+        
         prefSize.set(ps.width, ps.height);
 
-        if (scaleChanged) font.getData().setScale(baseScaleX, baseScaleY);
+        if (scaleChanged) {
+            font.getData().setScale(baseScaleX, baseScaleY);
+        }
     }
 }
