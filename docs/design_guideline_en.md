@@ -6,87 +6,90 @@ This document defines the visual standards, design tokens, responsive layout pat
 
 ## 1. Visual Aesthetics & Design Tokens
 
-To achieve a premium, state-of-the-art interface (avoiding cheap or default looks), adhere to the following design tokens:
+To achieve a premium, modern user interface (avoiding simple or default styling), adhere to the following design tokens:
 
 ### 1. Color Palettes
-Avoid plain, saturated primary colors (red, green, blue). Use curated hex codes matching sleek dark modes:
-* **Backgrounds**: Deep obsidian/navy shades:
-  - Base Panel: `#1c1c22`
-  - Inner Settings Card: `#303052`
-  - Interactive Hover: `#55556a`
+Avoid using overly saturated primary colors (pure red, green, blue). Use curated hex codes tailored for dark interfaces:
+* **Backgrounds**: Dark charcoal / slate blue tones:
+  - Main Panel (Base Panel): `#1c1c22`
+  - Settings Card: `#303052`
+  - Interactive Hover/Active States: `#55556a`
 * **Accents / Status**:
   - Success (Green): `#5cb85c`
-  - Info (Cyan): `#5bc0de`
-  - Warning (Orange): `#f0c040`
+  - Info (Blue): `#5bc0de`
+  - Warning (Gold/Yellow): `#f0c040`
   - Danger (Red): `#d9534f`
-  - Primary Pink: `#ff79c6`
+  - Primary Accent (Primary Pink): `#ff79c6`
 
 ### 2. Glassmorphism & Backdrop Filters
-For overlay menus, dialogs, and popups, use glassmorphic styling:
-- **Opacity**: Use `0.8f` to `0.9f` to create transparency.
-- **Borders**: Add thin white borders (`border(1f, Color.valueOf("ffffff15"))`) to frame the element.
-- **Radii**: Use soft corners (typically `12f` for panels, `8f` for settings blocks, `6f` for buttons).
+For overlay menus, dialogs, and popups, use a frosted glass look:
+- **Opacity**: Use values between `0.8f` and `0.9f` to create subtle translucency.
+- **Borders**: Add a thin, semi-transparent white border (`borderWidth(1f).borderColor(Color.valueOf("ffffff15"))`) to frame the container.
+- **Corner Radii**: Use soft corner rounding (typically `12f` for panels, `8f` for settings blocks, `6f` for buttons).
 
 ---
 
-## 2. Layout Patterns & Hierarchy
+## 2. Layout & Visual Hierarchy
 
-Always structure UI containers using structural layers to establish clear visual hierarchy:
+Always organize UI containers into clear layers to establish visual hierarchy:
 
 ```
 +-------------------------------------------------------+
-|  Layout (Root Panel)                                  |
+|  LayoutWidget (Root Panel)                            |
 |  +-------------------------------------------------+  |
-|  |  Layout (Header Section)                         |  |
-|  |  [Text: Preview Demo]                            |  |
+|  |  LayoutWidget (Header Section)                  |  |
+|  |  [TextWidget: Preview Demo]                     |  |
 |  +-------------------------------------------------+  |
 |  +------------------------+ +----------------------+  |
-|  |  Layout (Sidebar)      | |  CustomComponent     |  |
+|  |  LayoutWidget (Sidebar)| |  CustomWidget        |  |
 |  |  - Border Settings     | |  (Reactive Preview)  |  |
 |  |  - Color Picker        | |                      |  |
 |  |  - Opacity Slider      | |                      |  |
 |  |                        | |                      |  |
 |  +------------------------+ +----------------------+  |
+|  +-------------------------------------------------+  |
 +-------------------------------------------------------+
 ```
 
 ### 1. Spacing & Margins
-- **Container Padding**: Always apply standard padding of `16f` for main containers.
-- **Item Gap**: Use a gap of `8f` for listing options vertically or horizontally.
-- **Spacers**: Avoid empty layout groups unless specifically created as a spacer (e.g. `CustomComponent.of().style(s -> s.opacity(0f).fixedHeight(8f))`).
+- **Container Padding**: Always apply standard padding of `12f` to `16f` for parent containers.
+- **Element Spacing (Gap)**: Use gaps of `8f` to `12f` when listing options vertically or horizontally.
+- **Spacers**: Avoid empty layout groups. If you need fixed spacing, use empty widgets:
+  ```java
+  LayoutWidget.builder().fixedHeight(8f).build()
+  ```
 
 ### 2. Sizing Constraints
-- Avoid hardcoding absolute coordinate values for responsive elements. Instead, utilize `SizeMode.GROW` combined with constraints:
-  - For sidebars/settings panels: use a fixed width (e.g. `fixedWidth(260f)`) and let height grow or wrap.
-  - For dynamic preview blocks: use `grow()` to take all remaining viewport space.
+- Avoid hardcoding absolute coordinates for elements that need to adapt. Instead, use `NodeSpec.SizeMode.GROW` combined with constraints:
+  - For toolbars/sidebars: use a fixed width (e.g. `fixedWidth(320f)`) and allow the height to scale automatically.
+  - For dynamic preview blocks: use `widthMode(NodeSpec.SizeMode.GROW).heightMode(NodeSpec.SizeMode.GROW)` to occupy all remaining space.
 
 ---
 
-## 3. Micro-Interactions & Feedback
+## 3. Micro-Interactions & State-driven Styling
 
-Static layouts feel dead. Add subtle feedback loops for interaction:
+To keep the declarative, nested structure of immutable widget trees clean, all visual updates must be driven by application state (`Signal<AppState>`).
 
-### 1. Hover States (Reactive State Binding)
-To maintain the declarative, nested tree structure of components (without storing references in local variables), always bind hover styles reactively using a `Signal<Boolean>` state rather than imperatively modifying the style in callbacks:
+### Active States
+Instead of imperatively modifying styles inline, compute colors and border properties based on current state parameters:
 
 ```java
-Signal<Boolean> isHovered = new Signal<>(false);
+boolean isActive = s.activeTab() == tabIndex;
+Color bg = isActive ? Color.valueOf("ff79c6") : Color.valueOf("303042");
 
-CustomComponent.of()
-    .style(s -> s.background(isHovered.get() ? hoverColor : normalColor))
-    .onHover(() -> isHovered.set(true))
-    .onExit(() -> isHovered.set(false));
+return LayoutWidget.builder()
+    .background(CustomWidget.builder().fillColor(bg).build())
+    .onClick(() -> state.set(state.get().withActiveTab(tabIndex)))
+    .children(...)
+    .build();
 ```
-This keeps the scene graph fully nested, fluent, and responsive.
-
-### 2. Active States
-Provide instant visual confirmation on click before completing actions (e.g., color changing, borders changing, text updating reactive feedback).
+When clicked, the updated signal value triggers a root rebuild, automatically updating compatible widgets via the reconciliation engine.
 
 ---
 
 ## 4. Typography Scale
 
-Always use **JetBrains Mono** via the `FontManager`. Maintain consistent scale rules:
-- **Headers / Titles**: Size factor `1.4f` (bold/markup titles).
-- **Labels**: Size factor `0.8f` (dimmed descriptions, headings).
-- **Values / Button Text**: Size factor `0.9f` (white text, high contrast).
+Ensure a consistent typographic hierarchy using `TextWidget`:
+- **Main Headers**: Font scale `1.3f` (supports Mindustry markup tags like `[ff79c6]`).
+- **Description Labels**: Font scale `0.8f` (using muted text colors like `Color.lightGray`).
+- **Interactive Values / Button Text**: Font scale `0.9f` (white text with high contrast).
