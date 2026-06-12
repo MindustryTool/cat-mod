@@ -30,18 +30,18 @@ public abstract class LayoutTestBase {
 
         LayoutSpec getSizingObj() { return sizing; }
 
-        MockNode minimumWidth(float w) { sizing = sizing.minimumWidth(w); return this; }
-        MockNode maximumWidth(float w) { sizing = sizing.maximumWidth(w); return this; }
-        MockNode minimumHeight(float h) { sizing = sizing.minimumHeight(h); return this; }
-        MockNode maximumHeight(float h) { sizing = sizing.maximumHeight(h); return this; }
-        MockNode padding(float p) { sizing = sizing.padding(p); return this; }
-        MockNode padding(float top, float right, float bottom, float left) { sizing = sizing.padding(top, right, bottom, left); return this; }
-        MockNode growWeightHorizontal(float w) { sizing = sizing.growWeightHorizontal(w); return this; }
-        MockNode growWeightVertical(float w) { sizing = sizing.growWeightVertical(w); return this; }
-        MockNode growX() { sizing = sizing.growX(); return this; }
-        MockNode growY() { sizing = sizing.growY(); return this; }
-        MockNode grow() { sizing = sizing.grow(); return this; }
-        MockNode alignSelf(LayoutSpec.AlignSelf a) { sizing = sizing.alignSelf(a); return this; }
+        MockNode minimumWidth(float w) { sizing = sizing.toBuilder().minimumWidth(w).build(); return this; }
+        MockNode maximumWidth(float w) { sizing = sizing.toBuilder().maximumWidth(w).build(); return this; }
+        MockNode minimumHeight(float h) { sizing = sizing.toBuilder().minimumHeight(h).build(); return this; }
+        MockNode maximumHeight(float h) { sizing = sizing.toBuilder().maximumHeight(h).build(); return this; }
+        MockNode padding(float p) { sizing = sizing.toBuilder().padding(p).build(); return this; }
+        MockNode padding(float top, float right, float bottom, float left) { sizing = sizing.toBuilder().padding(top, right, bottom, left).build(); return this; }
+        MockNode growWeightHorizontal(float w) { sizing = sizing.toBuilder().growWeightHorizontal(w).build(); return this; }
+        MockNode growWeightVertical(float w) { sizing = sizing.toBuilder().growWeightVertical(w).build(); return this; }
+        MockNode growX() { sizing = sizing.toBuilder().growX().build(); return this; }
+        MockNode growY() { sizing = sizing.toBuilder().growY().build(); return this; }
+        MockNode grow() { sizing = sizing.toBuilder().grow().build(); return this; }
+        MockNode alignSelf(LayoutSpec.AlignSelf a) { sizing = sizing.toBuilder().alignSelf(a).build(); return this; }
 
         void set(String key, Object value) {
             switch (key) {
@@ -183,15 +183,15 @@ public abstract class LayoutTestBase {
     }
 
     // Convenience builders
-    protected static LayoutSpec row() { return new LayoutSpec().toBuilder().isColumn(false).alignItems(LayoutSpec.AlignItems.START).build(); }
-    protected static LayoutSpec row(LayoutSpec.AlignItems ai) { return new LayoutSpec().toBuilder().isColumn(false).alignItems(ai).build(); }
+    protected static LayoutSpec row() { return LayoutSpec.builder().isColumn(false).alignItems(LayoutSpec.AlignItems.START).build(); }
+    protected static LayoutSpec row(LayoutSpec.AlignItems ai) { return LayoutSpec.builder().isColumn(false).alignItems(ai).build(); }
     protected static LayoutSpec row(LayoutSpec.AlignItems ai, LayoutSpec.JustifyContent jc) {
-        return new LayoutSpec().toBuilder().isColumn(false).alignItems(ai).justifyContent(jc).build();
+        return LayoutSpec.builder().isColumn(false).alignItems(ai).justifyContent(jc).build();
     }
-    protected static LayoutSpec column() { return new LayoutSpec().toBuilder().isColumn(true).alignItems(LayoutSpec.AlignItems.START).build(); }
-    protected static LayoutSpec column(LayoutSpec.AlignItems ai) { return new LayoutSpec().toBuilder().isColumn(true).alignItems(ai).build(); }
+    protected static LayoutSpec column() { return LayoutSpec.builder().isColumn(true).alignItems(LayoutSpec.AlignItems.START).build(); }
+    protected static LayoutSpec column(LayoutSpec.AlignItems ai) { return LayoutSpec.builder().isColumn(true).alignItems(ai).build(); }
     protected static LayoutSpec column(LayoutSpec.AlignItems ai, LayoutSpec.JustifyContent jc) {
-        return new LayoutSpec().toBuilder().isColumn(true).alignItems(ai).justifyContent(jc).build();
+        return LayoutSpec.builder().isColumn(true).alignItems(ai).justifyContent(jc).build();
     }
 
     protected static LayoutSpec sizing(LayoutSpec.SizeMode mode, float pw, float ph) {

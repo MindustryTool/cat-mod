@@ -13,7 +13,7 @@ public class LayoutEngineAlignmentTest extends LayoutTestBase {
 
     @Test
     public void rowAlignItemsStart() {
-        LayoutSpec spec = new LayoutSpec().row().alignItems(LayoutSpec.AlignItems.START).gap(0);
+        LayoutSpec spec = LayoutSpec.builder().row().alignItems(LayoutSpec.AlignItems.START).gap(0).build();
         MockNode a = node("a", 20, 20);
         MockNode b = node("b", 30, 30);
         layout(spec, 100, 60, a, b);
@@ -27,7 +27,7 @@ public class LayoutEngineAlignmentTest extends LayoutTestBase {
 
     @Test
     public void rowAlignItemsCenter() {
-        LayoutSpec spec = new LayoutSpec().row().alignItems(LayoutSpec.AlignItems.CENTER).gap(0);
+        LayoutSpec spec = LayoutSpec.builder().row().alignItems(LayoutSpec.AlignItems.CENTER).gap(0).build();
         MockNode a = node("a", 20, 20);
         MockNode b = node("b", 30, 30);
         layout(spec, 100, 60, a, b);
@@ -41,7 +41,7 @@ public class LayoutEngineAlignmentTest extends LayoutTestBase {
 
     @Test
     public void rowAlignItemsEnd() {
-        LayoutSpec spec = new LayoutSpec().row().alignItems(LayoutSpec.AlignItems.END).gap(0);
+        LayoutSpec spec = LayoutSpec.builder().row().alignItems(LayoutSpec.AlignItems.END).gap(0).build();
         MockNode a = node("a", 20, 20);
         MockNode b = node("b", 30, 30);
         layout(spec, 100, 60, a, b);
@@ -55,7 +55,7 @@ public class LayoutEngineAlignmentTest extends LayoutTestBase {
 
     @Test
     public void rowAlignItemsStretch() {
-        LayoutSpec spec = new LayoutSpec().row().alignItems(LayoutSpec.AlignItems.STRETCH).gap(0);
+        LayoutSpec spec = LayoutSpec.builder().row().alignItems(LayoutSpec.AlignItems.STRETCH).gap(0).build();
         MockNode a = node("a", 20, 20);
         MockNode b = node("b", 30, 30);
         layout(spec, 100, 60, a, b);
@@ -71,7 +71,7 @@ public class LayoutEngineAlignmentTest extends LayoutTestBase {
 
     @Test
     public void columnAlignItemsStart() {
-        LayoutSpec spec = new LayoutSpec().column().alignItems(LayoutSpec.AlignItems.START).gap(0);
+        LayoutSpec spec = LayoutSpec.builder().column().alignItems(LayoutSpec.AlignItems.START).gap(0).build();
         MockNode a = node("a", 30, 20);
         MockNode b = node("b", 50, 30);
         layout(spec, 100, 100, a, b);
@@ -85,7 +85,7 @@ public class LayoutEngineAlignmentTest extends LayoutTestBase {
 
     @Test
     public void columnAlignItemsCenter() {
-        LayoutSpec spec = new LayoutSpec().column().alignItems(LayoutSpec.AlignItems.CENTER).gap(0);
+        LayoutSpec spec = LayoutSpec.builder().column().alignItems(LayoutSpec.AlignItems.CENTER).gap(0).build();
         MockNode a = node("a", 30, 20);
         MockNode b = node("b", 50, 30);
         layout(spec, 100, 100, a, b);
@@ -99,7 +99,7 @@ public class LayoutEngineAlignmentTest extends LayoutTestBase {
 
     @Test
     public void columnAlignItemsEnd() {
-        LayoutSpec spec = new LayoutSpec().column().alignItems(LayoutSpec.AlignItems.END).gap(0);
+        LayoutSpec spec = LayoutSpec.builder().column().alignItems(LayoutSpec.AlignItems.END).gap(0).build();
         MockNode a = node("a", 30, 20);
         MockNode b = node("b", 50, 30);
         layout(spec, 100, 100, a, b);
@@ -113,7 +113,7 @@ public class LayoutEngineAlignmentTest extends LayoutTestBase {
 
     @Test
     public void columnAlignItemsStretch() {
-        LayoutSpec spec = new LayoutSpec().column().alignItems(LayoutSpec.AlignItems.STRETCH).gap(0);
+        LayoutSpec spec = LayoutSpec.builder().column().alignItems(LayoutSpec.AlignItems.STRETCH).gap(0).build();
         MockNode a = node("a", 30, 20);
         MockNode b = node("b", 50, 30);
         layout(spec, 100, 100, a, b);
@@ -140,9 +140,9 @@ public class LayoutEngineAlignmentTest extends LayoutTestBase {
     @ParameterizedTest
     @MethodSource("alignSelfRowParams")
     public void rowAlignSelfOverride(LayoutSpec.AlignSelf alignSelf, float expectedY) {
-        LayoutSpec spec = new LayoutSpec().row().alignItems(LayoutSpec.AlignItems.START).gap(0);
+        LayoutSpec spec = LayoutSpec.builder().row().alignItems(LayoutSpec.AlignItems.START).gap(0).build();
         MockNode a = node("a", 20, 20);
-        MockNode b = nodeWithSizing("b", sizing(LayoutSpec.SizeMode.FIXED, 20, 30).alignSelf(alignSelf));
+        MockNode b = nodeWithSizing("b", sizing(LayoutSpec.SizeMode.FIXED, 20, 30).toBuilder().alignSelf(alignSelf).build());
         MockNode c = node("c", 20, 15);
         layout(spec, 100, 50, a, b, c);
         float expectedH = alignSelf == LayoutSpec.AlignSelf.STRETCH ? 50f : 30f;
@@ -158,9 +158,9 @@ public class LayoutEngineAlignmentTest extends LayoutTestBase {
 
     @Test
     public void rowAlignSelfStretch() {
-        LayoutSpec spec = new LayoutSpec().row().alignItems(LayoutSpec.AlignItems.START).gap(0);
+        LayoutSpec spec = LayoutSpec.builder().row().alignItems(LayoutSpec.AlignItems.START).gap(0).build();
         MockNode a = node("a", 20, 20);
-        MockNode b = nodeWithSizing("b", sizing(LayoutSpec.SizeMode.FIXED, 20, 30).alignSelf(LayoutSpec.AlignSelf.STRETCH));
+        MockNode b = nodeWithSizing("b", sizing(LayoutSpec.SizeMode.FIXED, 20, 30).toBuilder().alignSelf(LayoutSpec.AlignSelf.STRETCH).build());
         MockNode c = node("c", 20, 15);
         layout(spec, 100, 80, a, b, c);
         assertAll(
@@ -188,8 +188,8 @@ public class LayoutEngineAlignmentTest extends LayoutTestBase {
     @ParameterizedTest
     @MethodSource("alignSelfInCenterRowParams")
     public void rowAlignSelfOverridesCenterContainer(LayoutSpec.AlignSelf alignSelf, float expectedY) {
-        LayoutSpec spec = new LayoutSpec().row().alignItems(LayoutSpec.AlignItems.CENTER).gap(0);
-        MockNode a = nodeWithSizing("a", sizing(LayoutSpec.SizeMode.FIXED, 30, 20).alignSelf(alignSelf));
+        LayoutSpec spec = LayoutSpec.builder().row().alignItems(LayoutSpec.AlignItems.CENTER).gap(0).build();
+        MockNode a = nodeWithSizing("a", sizing(LayoutSpec.SizeMode.FIXED, 30, 20).toBuilder().alignSelf(alignSelf).build());
         layout(spec, 100, 50, a);
         assertEquals(expectedY, a.yPosition, EPS);
         assertEquals(30f, a.width);
@@ -212,8 +212,8 @@ public class LayoutEngineAlignmentTest extends LayoutTestBase {
     @ParameterizedTest
     @MethodSource("alignSelfInEndRowParams")
     public void rowAlignSelfOverridesEndContainer(LayoutSpec.AlignSelf alignSelf, float expectedY) {
-        LayoutSpec spec = new LayoutSpec().row().alignItems(LayoutSpec.AlignItems.END).gap(0);
-        MockNode a = nodeWithSizing("a", sizing(LayoutSpec.SizeMode.FIXED, 30, 20).alignSelf(alignSelf));
+        LayoutSpec spec = LayoutSpec.builder().row().alignItems(LayoutSpec.AlignItems.END).gap(0).build();
+        MockNode a = nodeWithSizing("a", sizing(LayoutSpec.SizeMode.FIXED, 30, 20).toBuilder().alignSelf(alignSelf).build());
         layout(spec, 100, 50, a);
         assertEquals(expectedY, a.yPosition, EPS);
         assertEquals(30f, a.width);
@@ -225,12 +225,12 @@ public class LayoutEngineAlignmentTest extends LayoutTestBase {
 
     @Test
     public void rowMixedAlignSelf() {
-        LayoutSpec spec = new LayoutSpec().row().alignItems(LayoutSpec.AlignItems.START).gap(5);
-        MockNode a = nodeWithSizing("a", sizing(LayoutSpec.SizeMode.FIXED, 15, 20).alignSelf(LayoutSpec.AlignSelf.START));
-        MockNode b = nodeWithSizing("b", sizing(LayoutSpec.SizeMode.FIXED, 15, 20).alignSelf(LayoutSpec.AlignSelf.CENTER));
-        MockNode c = nodeWithSizing("c", sizing(LayoutSpec.SizeMode.FIXED, 15, 20).alignSelf(LayoutSpec.AlignSelf.END));
-        MockNode d = nodeWithSizing("d", sizing(LayoutSpec.SizeMode.FIXED, 15, 20).alignSelf(LayoutSpec.AlignSelf.STRETCH));
-        MockNode e = nodeWithSizing("e", sizing(LayoutSpec.SizeMode.FIXED, 15, 20).alignSelf(LayoutSpec.AlignSelf.AUTO));
+        LayoutSpec spec = LayoutSpec.builder().row().alignItems(LayoutSpec.AlignItems.START).gap(5).build();
+        MockNode a = nodeWithSizing("a", sizing(LayoutSpec.SizeMode.FIXED, 15, 20).toBuilder().alignSelf(LayoutSpec.AlignSelf.START).build());
+        MockNode b = nodeWithSizing("b", sizing(LayoutSpec.SizeMode.FIXED, 15, 20).toBuilder().alignSelf(LayoutSpec.AlignSelf.CENTER).build());
+        MockNode c = nodeWithSizing("c", sizing(LayoutSpec.SizeMode.FIXED, 15, 20).toBuilder().alignSelf(LayoutSpec.AlignSelf.END).build());
+        MockNode d = nodeWithSizing("d", sizing(LayoutSpec.SizeMode.FIXED, 15, 20).toBuilder().alignSelf(LayoutSpec.AlignSelf.STRETCH).build());
+        MockNode e = nodeWithSizing("e", sizing(LayoutSpec.SizeMode.FIXED, 15, 20).toBuilder().alignSelf(LayoutSpec.AlignSelf.AUTO).build());
         layout(spec, 100, 60, a, b, c, d, e);
         assertAll(
             () -> assertEquals(0f, a.xPosition), () -> assertEquals(15f, a.width),
@@ -248,11 +248,11 @@ public class LayoutEngineAlignmentTest extends LayoutTestBase {
 
     @Test
     public void columnMixedAlignSelf() {
-        LayoutSpec spec = new LayoutSpec().column().alignItems(LayoutSpec.AlignItems.START).gap(5);
-        MockNode a = nodeWithSizing("a", sizing(LayoutSpec.SizeMode.FIXED, 50, 15).alignSelf(LayoutSpec.AlignSelf.START));
-        MockNode b = nodeWithSizing("b", sizing(LayoutSpec.SizeMode.FIXED, 50, 15).alignSelf(LayoutSpec.AlignSelf.CENTER));
-        MockNode c = nodeWithSizing("c", sizing(LayoutSpec.SizeMode.FIXED, 50, 15).alignSelf(LayoutSpec.AlignSelf.END));
-        MockNode d = nodeWithSizing("d", sizing(LayoutSpec.SizeMode.FIXED, 50, 15).alignSelf(LayoutSpec.AlignSelf.STRETCH));
+        LayoutSpec spec = LayoutSpec.builder().column().alignItems(LayoutSpec.AlignItems.START).gap(5).build();
+        MockNode a = nodeWithSizing("a", sizing(LayoutSpec.SizeMode.FIXED, 50, 15).toBuilder().alignSelf(LayoutSpec.AlignSelf.START).build());
+        MockNode b = nodeWithSizing("b", sizing(LayoutSpec.SizeMode.FIXED, 50, 15).toBuilder().alignSelf(LayoutSpec.AlignSelf.CENTER).build());
+        MockNode c = nodeWithSizing("c", sizing(LayoutSpec.SizeMode.FIXED, 50, 15).toBuilder().alignSelf(LayoutSpec.AlignSelf.END).build());
+        MockNode d = nodeWithSizing("d", sizing(LayoutSpec.SizeMode.FIXED, 50, 15).toBuilder().alignSelf(LayoutSpec.AlignSelf.STRETCH).build());
         layout(spec, 100, 100, a, b, c, d);
         assertAll(
             () -> assertEquals(0f, a.xPosition), () -> assertEquals(50f, a.width),
@@ -270,9 +270,9 @@ public class LayoutEngineAlignmentTest extends LayoutTestBase {
 
     @Test
     public void rowStretchWithGrow() {
-        LayoutSpec spec = new LayoutSpec().row().alignItems(LayoutSpec.AlignItems.STRETCH).gap(0);
-        MockNode a = nodeWithSizing("a", sizing(LayoutSpec.SizeMode.GROW, 0, 20).growWeightHorizontal(1));
-        MockNode b = nodeWithSizing("b", sizing(LayoutSpec.SizeMode.GROW, 0, 30).growWeightHorizontal(1));
+        LayoutSpec spec = LayoutSpec.builder().row().alignItems(LayoutSpec.AlignItems.STRETCH).gap(0).build();
+        MockNode a = nodeWithSizing("a", sizing(LayoutSpec.SizeMode.GROW, 0, 20).toBuilder().growWeightHorizontal(1).build());
+        MockNode b = nodeWithSizing("b", sizing(LayoutSpec.SizeMode.GROW, 0, 30).toBuilder().growWeightHorizontal(1).build());
         layout(spec, 100, 60, a, b);
         assertAll(
             () -> assertEquals(0f, a.xPosition), () -> assertEquals(50f, a.width),
@@ -284,9 +284,9 @@ public class LayoutEngineAlignmentTest extends LayoutTestBase {
 
     @Test
     public void columnStretchWithGrow() {
-        LayoutSpec spec = new LayoutSpec().column().alignItems(LayoutSpec.AlignItems.STRETCH).gap(0);
-        MockNode a = nodeWithSizing("a", sizing(LayoutSpec.SizeMode.GROW, 30, 0).growWeightVertical(1));
-        MockNode b = nodeWithSizing("b", sizing(LayoutSpec.SizeMode.GROW, 40, 0).growWeightVertical(1));
+        LayoutSpec spec = LayoutSpec.builder().column().alignItems(LayoutSpec.AlignItems.STRETCH).gap(0).build();
+        MockNode a = nodeWithSizing("a", sizing(LayoutSpec.SizeMode.GROW, 30, 0).toBuilder().growWeightVertical(1).build());
+        MockNode b = nodeWithSizing("b", sizing(LayoutSpec.SizeMode.GROW, 40, 0).toBuilder().growWeightVertical(1).build());
         layout(spec, 100, 80, a, b);
         assertAll(
             () -> assertEquals(0f, a.xPosition), () -> assertEquals(100f, a.width),
@@ -302,7 +302,7 @@ public class LayoutEngineAlignmentTest extends LayoutTestBase {
     public void rowStretchRespectsPrefHeight() {
         MockNode a = node("a", 30, 20);
         MockNode b = node("b", 40, 25);
-        layout(row().alignItems(LayoutSpec.AlignItems.STRETCH).gap(0), 100, 60, a, b);
+        layout(row().toBuilder().alignItems(LayoutSpec.AlignItems.STRETCH).gap(0).build(), 100, 60, a, b);
         assertAll(
             () -> assertEquals(0f, a.xPosition), () -> assertEquals(30f, a.width),
             () -> assertEquals(0f, a.yPosition), () -> assertEquals(60f, a.height),
@@ -315,7 +315,7 @@ public class LayoutEngineAlignmentTest extends LayoutTestBase {
     public void columnStretchRespectsPrefWidth() {
         MockNode a = node("a", 40, 20);
         MockNode b = node("b", 60, 30);
-        layout(column().alignItems(LayoutSpec.AlignItems.STRETCH).gap(0), 100, 100, a, b);
+        layout(column().toBuilder().alignItems(LayoutSpec.AlignItems.STRETCH).gap(0).build(), 100, 100, a, b);
         assertAll(
             () -> assertEquals(0f, a.xPosition), () -> assertEquals(100f, a.width),
             () -> assertEquals(80f, a.yPosition), () -> assertEquals(20f, a.height),
@@ -329,7 +329,7 @@ public class LayoutEngineAlignmentTest extends LayoutTestBase {
     @ParameterizedTest
     @MethodSource("alignModes")
     public void rowAlignItemsAllModes(LayoutSpec.AlignItems ai) {
-        LayoutSpec spec = new LayoutSpec().row().alignItems(ai).gap(0);
+        LayoutSpec spec = LayoutSpec.builder().row().alignItems(ai).gap(0).build();
         MockNode a = node("a", 20, 20);
         MockNode b = node("b", 30, 30);
         layout(spec, 100, 50, a, b);
@@ -339,7 +339,7 @@ public class LayoutEngineAlignmentTest extends LayoutTestBase {
     @ParameterizedTest
     @MethodSource("alignModes")
     public void columnAlignItemsAllModes(LayoutSpec.AlignItems ai) {
-        LayoutSpec spec = new LayoutSpec().column().alignItems(ai).gap(0);
+        LayoutSpec spec = LayoutSpec.builder().column().alignItems(ai).gap(0).build();
         MockNode a = node("a", 30, 20);
         MockNode b = node("b", 40, 30);
         layout(spec, 100, 100, a, b);
@@ -351,9 +351,9 @@ public class LayoutEngineAlignmentTest extends LayoutTestBase {
     @ParameterizedTest
     @MethodSource("alignSelfModes")
     public void rowAlignSelfAllModes(LayoutSpec.AlignSelf alignSelf) {
-        LayoutSpec spec = new LayoutSpec().row().alignItems(LayoutSpec.AlignItems.START).gap(0);
+        LayoutSpec spec = LayoutSpec.builder().row().alignItems(LayoutSpec.AlignItems.START).gap(0).build();
         MockNode a = node("a", 10, 10);
-        MockNode b = nodeWithSizing("b", sizing(LayoutSpec.SizeMode.FIXED, 20, 20).alignSelf(alignSelf));
+        MockNode b = nodeWithSizing("b", sizing(LayoutSpec.SizeMode.FIXED, 20, 20).toBuilder().alignSelf(alignSelf).build());
         MockNode c = node("c", 10, 10);
         layout(spec, 100, 40, a, b, c);
         assertInvariants(spec, list(a, b, c), 0, 0, 100, 40);
@@ -362,9 +362,9 @@ public class LayoutEngineAlignmentTest extends LayoutTestBase {
     @ParameterizedTest
     @MethodSource("alignSelfModes")
     public void columnAlignSelfAllModes(LayoutSpec.AlignSelf alignSelf) {
-        LayoutSpec spec = new LayoutSpec().column().alignItems(LayoutSpec.AlignItems.START).gap(0);
+        LayoutSpec spec = LayoutSpec.builder().column().alignItems(LayoutSpec.AlignItems.START).gap(0).build();
         MockNode a = node("a", 10, 10);
-        MockNode b = nodeWithSizing("b", sizing(LayoutSpec.SizeMode.FIXED, 20, 20).alignSelf(alignSelf));
+        MockNode b = nodeWithSizing("b", sizing(LayoutSpec.SizeMode.FIXED, 20, 20).toBuilder().alignSelf(alignSelf).build());
         MockNode c = node("c", 10, 10);
         layout(spec, 100, 100, a, b, c);
         assertInvariants(spec, list(a, b, c), 0, 0, 100, 100);
@@ -375,9 +375,9 @@ public class LayoutEngineAlignmentTest extends LayoutTestBase {
     @ParameterizedTest
     @MethodSource("alignModes")
     public void rowAlignItemsWithAlignSelfCenter(LayoutSpec.AlignItems ai) {
-        LayoutSpec spec = new LayoutSpec().row().alignItems(ai).gap(0);
+        LayoutSpec spec = LayoutSpec.builder().row().alignItems(ai).gap(0).build();
         MockNode a = node("a", 15, 15);
-        MockNode b = nodeWithSizing("b", sizing(LayoutSpec.SizeMode.FIXED, 20, 25).alignSelf(LayoutSpec.AlignSelf.CENTER));
+        MockNode b = nodeWithSizing("b", sizing(LayoutSpec.SizeMode.FIXED, 20, 25).toBuilder().alignSelf(LayoutSpec.AlignSelf.CENTER).build());
         MockNode c = node("c", 15, 15);
         layout(spec, 100, 60, a, b, c);
         assertAll(
@@ -390,9 +390,9 @@ public class LayoutEngineAlignmentTest extends LayoutTestBase {
     @ParameterizedTest
     @MethodSource("alignModes")
     public void rowAlignItemsWithAlignSelfEnd(LayoutSpec.AlignItems ai) {
-        LayoutSpec spec = new LayoutSpec().row().alignItems(ai).gap(0);
+        LayoutSpec spec = LayoutSpec.builder().row().alignItems(ai).gap(0).build();
         MockNode a = node("a", 15, 15);
-        MockNode b = nodeWithSizing("b", sizing(LayoutSpec.SizeMode.FIXED, 20, 25).alignSelf(LayoutSpec.AlignSelf.END));
+        MockNode b = nodeWithSizing("b", sizing(LayoutSpec.SizeMode.FIXED, 20, 25).toBuilder().alignSelf(LayoutSpec.AlignSelf.END).build());
         MockNode c = node("c", 15, 15);
         layout(spec, 100, 60, a, b, c);
         assertAll(
@@ -406,9 +406,9 @@ public class LayoutEngineAlignmentTest extends LayoutTestBase {
 
     @Test
     public void rowStretchWithMixedFixedAndGrow() {
-        LayoutSpec spec = new LayoutSpec().row().alignItems(LayoutSpec.AlignItems.STRETCH).gap(0);
+        LayoutSpec spec = LayoutSpec.builder().row().alignItems(LayoutSpec.AlignItems.STRETCH).gap(0).build();
         MockNode a = node("a", 30, 15);
-        MockNode b = nodeWithSizing("b", sizing(LayoutSpec.SizeMode.GROW, 0, 0).growWeightHorizontal(1));
+        MockNode b = nodeWithSizing("b", sizing(LayoutSpec.SizeMode.GROW, 0, 0).toBuilder().growWeightHorizontal(1).build());
         MockNode c = node("c", 20, 20);
         layout(spec, 100, 50, a, b, c);
         assertAll(

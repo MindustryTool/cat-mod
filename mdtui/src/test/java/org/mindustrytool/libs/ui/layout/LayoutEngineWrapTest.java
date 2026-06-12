@@ -9,7 +9,7 @@ public class LayoutEngineWrapTest extends LayoutTestBase {
 
     @Test
     public void rowWrapTwoLines() {
-        LayoutSpec spec = row().wrap().gap(0);
+        LayoutSpec spec = row().toBuilder().wrap().gap(0).build();
         MockNode a = node("a", 40, 20);
         MockNode b = node("b", 40, 30);
         MockNode c = node("c", 40, 25);
@@ -26,7 +26,7 @@ public class LayoutEngineWrapTest extends LayoutTestBase {
 
     @Test
     public void columnWrapTwoLines() {
-        LayoutSpec spec = column().wrap().gap(0);
+        LayoutSpec spec = column().toBuilder().wrap().gap(0).build();
         MockNode a = node("a", 40, 30);
         MockNode b = node("b", 60, 30);
         MockNode c = node("c", 50, 30);
@@ -45,7 +45,7 @@ public class LayoutEngineWrapTest extends LayoutTestBase {
 
     @Test
     public void rowWrapThreeLines() {
-        LayoutSpec spec = row().wrap().gap(0);
+        LayoutSpec spec = row().toBuilder().wrap().gap(0).build();
         MockNode a = node("a", 60, 15);
         MockNode b = node("b", 60, 20);
         MockNode c = node("c", 60, 25);
@@ -65,7 +65,7 @@ public class LayoutEngineWrapTest extends LayoutTestBase {
 
     @Test
     public void columnWrapThreeLines() {
-        LayoutSpec spec = column().wrap().gap(0);
+        LayoutSpec spec = column().toBuilder().wrap().gap(0).build();
         MockNode a = node("a", 40, 50);
         MockNode b = node("b", 50, 50);
         MockNode c = node("c", 60, 50);
@@ -87,7 +87,7 @@ public class LayoutEngineWrapTest extends LayoutTestBase {
 
     @Test
     public void rowWrapWithGap() {
-        LayoutSpec spec = row().wrap().gap(10);
+        LayoutSpec spec = row().toBuilder().wrap().gap(10).build();
         MockNode a = node("a", 35, 20);
         MockNode b = node("b", 35, 25);
         MockNode c = node("c", 35, 30);
@@ -104,7 +104,7 @@ public class LayoutEngineWrapTest extends LayoutTestBase {
 
     @Test
     public void columnWrapWithGap() {
-        LayoutSpec spec = column().wrap().gap(10);
+        LayoutSpec spec = column().toBuilder().wrap().gap(10).build();
         MockNode a = node("a", 30, 35);
         MockNode b = node("b", 40, 35);
         MockNode c = node("c", 50, 35);
@@ -123,7 +123,7 @@ public class LayoutEngineWrapTest extends LayoutTestBase {
 
     @Test
     public void rowWrapJustifyCenter() {
-        LayoutSpec spec = row().wrap().justifyContent(LayoutSpec.JustifyContent.CENTER).gap(0);
+        LayoutSpec spec = row().toBuilder().wrap().justifyContent(LayoutSpec.JustifyContent.CENTER).gap(0).build();
         MockNode a = node("a", 30, 20);
         MockNode b = node("b", 30, 25);
         MockNode c = node("c", 30, 30);
@@ -140,7 +140,7 @@ public class LayoutEngineWrapTest extends LayoutTestBase {
 
     @Test
     public void rowWrapJustifyEnd() {
-        LayoutSpec spec = row().wrap().justifyContent(LayoutSpec.JustifyContent.END).gap(0);
+        LayoutSpec spec = row().toBuilder().wrap().justifyContent(LayoutSpec.JustifyContent.END).gap(0).build();
         MockNode a = node("a", 30, 20);
         MockNode b = node("b", 30, 25);
         MockNode c = node("c", 30, 30);
@@ -157,7 +157,7 @@ public class LayoutEngineWrapTest extends LayoutTestBase {
 
     @Test
     public void rowWrapJustifyBetween() {
-        LayoutSpec spec = row().wrap().justifyContent(LayoutSpec.JustifyContent.SPACE_BETWEEN).gap(0);
+        LayoutSpec spec = row().toBuilder().wrap().justifyContent(LayoutSpec.JustifyContent.SPACE_BETWEEN).gap(0).build();
         MockNode a = node("a", 30, 20);
         MockNode b = node("b", 30, 25);
         MockNode c = node("c", 30, 30);
@@ -174,7 +174,7 @@ public class LayoutEngineWrapTest extends LayoutTestBase {
 
     @Test
     public void columnWrapJustifyCenter() {
-        LayoutSpec spec = column().wrap().justifyContent(LayoutSpec.JustifyContent.CENTER).gap(0);
+        LayoutSpec spec = column().toBuilder().wrap().justifyContent(LayoutSpec.JustifyContent.CENTER).gap(0).build();
         MockNode a = node("a", 40, 25);
         MockNode b = node("b", 50, 25);
         MockNode c = node("c", 60, 25);
@@ -193,7 +193,7 @@ public class LayoutEngineWrapTest extends LayoutTestBase {
 
     @Test
     public void rowWrapAlignItemsEnd() {
-        LayoutSpec spec = row().wrap().alignItems(LayoutSpec.AlignItems.END).gap(0);
+        LayoutSpec spec = row().toBuilder().wrap().alignItems(LayoutSpec.AlignItems.END).gap(0).build();
         MockNode a = node("a", 35, 20);
         MockNode b = node("b", 35, 30);
         MockNode c = node("c", 35, 25);
@@ -210,7 +210,7 @@ public class LayoutEngineWrapTest extends LayoutTestBase {
 
     @Test
     public void rowWrapAlignItemsCenter() {
-        LayoutSpec spec = row().wrap().alignItems(LayoutSpec.AlignItems.CENTER).gap(0);
+        LayoutSpec spec = row().toBuilder().wrap().alignItems(LayoutSpec.AlignItems.CENTER).gap(0).build();
         MockNode a = node("a", 35, 20);
         MockNode b = node("b", 35, 30);
         MockNode c = node("c", 35, 25);
@@ -227,7 +227,7 @@ public class LayoutEngineWrapTest extends LayoutTestBase {
 
     @Test
     public void columnWrapAlignItemsCenter() {
-        LayoutSpec spec = column().wrap().alignItems(LayoutSpec.AlignItems.CENTER).gap(0);
+        LayoutSpec spec = column().toBuilder().wrap().alignItems(LayoutSpec.AlignItems.CENTER).gap(0).build();
         MockNode a = node("a", 40, 25);
         MockNode b = node("b", 50, 25);
         MockNode c = node("c", 60, 25);
@@ -246,7 +246,7 @@ public class LayoutEngineWrapTest extends LayoutTestBase {
 
     @Test
     public void rowWrapReverse() {
-        LayoutSpec spec = row().wrap().reverse(true).gap(0);
+        LayoutSpec spec = row().toBuilder().wrap().reverse(true).gap(0).build();
         MockNode a = node("a", 40, 20);
         MockNode b = node("b", 40, 25);
         MockNode c = node("c", 40, 30);
@@ -263,7 +263,7 @@ public class LayoutEngineWrapTest extends LayoutTestBase {
 
     @Test
     public void columnWrapReverse() {
-        LayoutSpec spec = column().wrap().reverse(true).gap(0);
+        LayoutSpec spec = column().toBuilder().wrap().reverse(true).gap(0).build();
         MockNode a = node("a", 40, 30);
         MockNode b = node("b", 50, 30);
         MockNode c = node("c", 60, 30);
@@ -282,9 +282,9 @@ public class LayoutEngineWrapTest extends LayoutTestBase {
 
     @Test
     public void rowWrapWithGrow() {
-        LayoutSpec spec = row().wrap().gap(0);
+        LayoutSpec spec = row().toBuilder().wrap().gap(0).build();
         MockNode a = node("a", 30, 20);
-        MockNode b = nodeWithSizing("b", sizing(LayoutSpec.SizeMode.GROW, 0, 25).growWeightHorizontal(1));
+        MockNode b = nodeWithSizing("b", sizing(LayoutSpec.SizeMode.GROW, 0, 25).toBuilder().growWeightHorizontal(1).build());
         MockNode c = node("c", 30, 30);
         layout(spec, 100, 80, a, b, c);
         float growW = 100f - 30f - 30f;
@@ -300,9 +300,9 @@ public class LayoutEngineWrapTest extends LayoutTestBase {
 
     @Test
     public void columnWrapWithGrow() {
-        LayoutSpec spec = column().wrap().gap(0);
+        LayoutSpec spec = column().toBuilder().wrap().gap(0).build();
         MockNode a = node("a", 40, 30);
-        MockNode b = nodeWithSizing("b", sizing(LayoutSpec.SizeMode.GROW, 50, 0).growWeightVertical(1));
+        MockNode b = nodeWithSizing("b", sizing(LayoutSpec.SizeMode.GROW, 50, 0).toBuilder().growWeightVertical(1).build());
         MockNode c = node("c", 60, 30);
         layout(spec, 150, 80, a, b, c);
         float growH = 80f - 30f - 30f;
@@ -320,7 +320,7 @@ public class LayoutEngineWrapTest extends LayoutTestBase {
 
     @Test
     public void noWrapDoesNotWrap() {
-        LayoutSpec spec = row().noWrap().gap(0);
+        LayoutSpec spec = row().toBuilder().noWrap().gap(0).build();
         MockNode a = node("a", 60, 20);
         MockNode b = node("b", 60, 25);
         layout(spec, 80, 50, a, b);
@@ -332,7 +332,7 @@ public class LayoutEngineWrapTest extends LayoutTestBase {
 
     @Test
     public void singleChildWrapping() {
-        LayoutSpec spec = row().wrap().gap(0);
+        LayoutSpec spec = row().toBuilder().wrap().gap(0).build();
         MockNode a = node("a", 30, 20);
         layout(spec, 50, 50, a);
         assertEquals(0f, a.xPosition);
@@ -343,7 +343,7 @@ public class LayoutEngineWrapTest extends LayoutTestBase {
 
     @Test
     public void allChildrenExactlyFitNoWrap() {
-        LayoutSpec spec = row().wrap().gap(0);
+        LayoutSpec spec = row().toBuilder().wrap().gap(0).build();
         MockNode a = node("a", 40, 20);
         MockNode b = node("b", 40, 25);
         layout(spec, 80, 60, a, b);
@@ -354,13 +354,13 @@ public class LayoutEngineWrapTest extends LayoutTestBase {
 
     @Test
     public void wrapWithZeroChildren() {
-        LayoutSpec spec = row().wrap().gap(0);
+        LayoutSpec spec = row().toBuilder().wrap().gap(0).build();
         layout(spec, 100, 50);
     }
 
     @Test
     public void rowWrapInvariants() {
-        LayoutSpec spec = row().wrap().gap(5);
+        LayoutSpec spec = row().toBuilder().wrap().gap(5).build();
         MockNode a = node("a", 30, 15);
         MockNode b = node("b", 30, 20);
         MockNode c = node("c", 30, 25);
@@ -371,7 +371,7 @@ public class LayoutEngineWrapTest extends LayoutTestBase {
 
     @Test
     public void columnWrapInvariants() {
-        LayoutSpec spec = column().wrap().gap(5);
+        LayoutSpec spec = column().toBuilder().wrap().gap(5).build();
         MockNode a = node("a", 40, 25);
         MockNode b = node("b", 50, 25);
         MockNode c = node("c", 60, 25);

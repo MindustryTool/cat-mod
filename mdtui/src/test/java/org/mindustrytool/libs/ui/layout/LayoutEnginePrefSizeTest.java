@@ -16,7 +16,7 @@ public class LayoutEnginePrefSizeTest extends LayoutTestBase {
         MockNode a = node("a", 20, 15);
         MockNode b = node("b", 30, 25);
         a.set("prefW", 25f); a.set("prefH", 20f);
-        layout(row().gap(0), 100, 50, a, b);
+        layout(row().toBuilder().gap(0).build(), 100, 50, a, b);
         assertAll(
             () -> assertEquals(0f, a.xPosition), () -> assertEquals(25f, a.width),
             () -> assertEquals(0f, a.yPosition), () -> assertEquals(20f, a.height),
@@ -28,7 +28,7 @@ public class LayoutEnginePrefSizeTest extends LayoutTestBase {
     public void rowPrefSizeForWrapNode() {
         MockNode a = nodeWithSizing("a", sizing(LayoutSpec.SizeMode.FIXED, 40, 20));
         MockNode b = nodeWithSizing("b", sizing(LayoutSpec.SizeMode.FIXED, 60, 30));
-        layout(row().gap(0), 120, 50, a, b);
+        layout(row().toBuilder().gap(0).build(), 120, 50, a, b);
         assertAll(
             () -> assertEquals(0f, a.xPosition), () -> assertEquals(40f, a.width),
             () -> assertEquals(0f, a.yPosition), () -> assertEquals(20f, a.height),
@@ -43,7 +43,7 @@ public class LayoutEnginePrefSizeTest extends LayoutTestBase {
         MockNode b = node("b", 40, 30);
         a.set("prefH", 25f);
         b.set("prefH", 35f);
-        layout(column().gap(0), 100, 100, a, b);
+        layout(column().toBuilder().gap(0).build(), 100, 100, a, b);
         assertAll(
             () -> assertEquals(0f, a.xPosition), () -> assertEquals(30f, a.width),
             () -> assertEquals(75f, a.yPosition), () -> assertEquals(25f, a.height),
@@ -59,7 +59,7 @@ public class LayoutEnginePrefSizeTest extends LayoutTestBase {
         MockNode a = node("a", 20, 15);
         MockNode b = node("b", 30, 25);
         a.set("prefW", 35f);
-        layout(row().gap(10), 100, 50, a, b);
+        layout(row().toBuilder().gap(10).build(), 100, 50, a, b);
         assertAll(
             () -> assertEquals(0f, a.xPosition), () -> assertEquals(35f, a.width),
             () -> assertEquals(0f, a.yPosition), () -> assertEquals(15f, a.height),
@@ -73,7 +73,7 @@ public class LayoutEnginePrefSizeTest extends LayoutTestBase {
         MockNode a = node("a", 30, 20);
         MockNode b = node("b", 40, 30);
         a.set("prefH", 25f);
-        layout(column().gap(8), 100, 100, a, b);
+        layout(column().toBuilder().gap(8).build(), 100, 100, a, b);
         assertAll(
             () -> assertEquals(0f, a.xPosition), () -> assertEquals(30f, a.width),
             () -> assertEquals(75f, a.yPosition), () -> assertEquals(25f, a.height),
@@ -89,7 +89,7 @@ public class LayoutEnginePrefSizeTest extends LayoutTestBase {
         MockNode a = node("a", 20, 15);
         a.set("prefW", 10f);
         a.minimumWidth(25);
-        layout(row().gap(0), 100, 50, a);
+        layout(row().toBuilder().gap(0).build(), 100, 50, a);
         assertEquals(25f, a.width);
         assertEquals(0f, a.xPosition);
     }
@@ -99,7 +99,7 @@ public class LayoutEnginePrefSizeTest extends LayoutTestBase {
         MockNode a = node("a", 20, 15);
         a.set("prefW", 50f);
         a.maximumWidth(30);
-        layout(row().gap(0), 100, 50, a);
+        layout(row().toBuilder().gap(0).build(), 100, 50, a);
         assertEquals(30f, a.width);
     }
 
@@ -110,7 +110,7 @@ public class LayoutEnginePrefSizeTest extends LayoutTestBase {
         MockNode a = node("a", 20, 15);
         a.set("prefW", 30f);
         a.padding(5);
-        layout(row().gap(0), 100, 50, a);
+        layout(row().toBuilder().gap(0).build(), 100, 50, a);
         assertEquals(0f, a.xPosition);
         assertEquals(30f, a.width);
         assertEquals(0f, a.yPosition);
@@ -121,7 +121,7 @@ public class LayoutEnginePrefSizeTest extends LayoutTestBase {
 
     @Test
     public void invisibleChildPrefSizeIgnored() {
-        LayoutSpec spec = new LayoutSpec().row().gap(0);
+        LayoutSpec spec = LayoutSpec.builder().row().gap(0).build();
         MockNode a = node("a", 20, 15);
         MockNode b = node("b", 30, 25);
         MockNode c = node("c", 10, 10);
@@ -139,7 +139,7 @@ public class LayoutEnginePrefSizeTest extends LayoutTestBase {
 
     @Test
     public void prefSizeInFixedContainer() {
-        LayoutSpec spec = new LayoutSpec().row().gap(0);
+        LayoutSpec spec = LayoutSpec.builder().row().gap(0).build();
         MockNode a = node("a", 20, 15);
         MockNode b = node("b", 30, 25);
         a.set("prefW", 50f); a.set("prefH", 30f);
@@ -156,7 +156,7 @@ public class LayoutEnginePrefSizeTest extends LayoutTestBase {
 
     @Test
     public void prefSizeWithNoChildren() {
-        LayoutSpec spec = new LayoutSpec().row().gap(0);
+        LayoutSpec spec = LayoutSpec.builder().row().gap(0).build();
         layout(spec, 100, 50);
     }
 
@@ -167,7 +167,7 @@ public class LayoutEnginePrefSizeTest extends LayoutTestBase {
         MockNode a = node(null, 0, 0);
         a.set("prefW", 35f); a.set("prefH", 20f);
         a.set("sizing", null);
-        layout(row().gap(0), 100, 50, a);
+        layout(row().toBuilder().gap(0).build(), 100, 50, a);
         assertEquals(0f, a.xPosition);
         assertEquals(35f, a.width);
         assertEquals(0f, a.yPosition);
@@ -178,7 +178,7 @@ public class LayoutEnginePrefSizeTest extends LayoutTestBase {
 
     @Test
     public void columnPrefSizeWithContainerPadding() {
-        LayoutSpec spec = new LayoutSpec().column().padding(10).gap(0);
+        LayoutSpec spec = LayoutSpec.builder().column().padding(10).gap(0).build();
         MockNode a = node("a", 30, 20);
         MockNode b = node("b", 40, 30);
         a.set("prefH", 15f);
@@ -197,7 +197,7 @@ public class LayoutEnginePrefSizeTest extends LayoutTestBase {
     public void prefSizeExactMatch() {
         MockNode a = node("a", 20, 15);
         a.set("prefW", 20f); a.set("prefH", 15f);
-        layout(row().gap(0), 100, 50, a);
+        layout(row().toBuilder().gap(0).build(), 100, 50, a);
         assertEquals(0f, a.xPosition);
         assertEquals(20f, a.width);
         assertEquals(0f, a.yPosition);
@@ -217,9 +217,9 @@ public class LayoutEnginePrefSizeTest extends LayoutTestBase {
     @ParameterizedTest
     @MethodSource("prefSizeSizingModes")
     public void rowPrefSizeAcrossModes(LayoutSpec.SizeMode mode) {
-        LayoutSpec spec = new LayoutSpec().row().gap(0);
-        MockNode a = nodeWithSizing("a", sizing(mode, 0, 0).minimumWidth(0).maximumWidth(500));
-        MockNode b = nodeWithSizing("b", sizing(mode, 0, 0).minimumWidth(0).maximumWidth(500));
+        LayoutSpec spec = LayoutSpec.builder().row().gap(0).build();
+        MockNode a = nodeWithSizing("a", sizing(mode, 0, 0).toBuilder().minimumWidth(0).maximumWidth(500).build());
+        MockNode b = nodeWithSizing("b", sizing(mode, 0, 0).toBuilder().minimumWidth(0).maximumWidth(500).build());
         a.set("prefW", 30f); a.set("prefH", 15f);
         b.set("prefW", 40f); b.set("prefH", 20f);
         if (mode == LayoutSpec.SizeMode.GROW) {
@@ -237,7 +237,7 @@ public class LayoutEnginePrefSizeTest extends LayoutTestBase {
         MockNode b = node("b", 30, 25);
         MockNode c = node("c", 15, 10);
         a.set("prefW", 60f);
-        layout(row().gap(0), 100, 50, a, b, c);
+        layout(row().toBuilder().gap(0).build(), 100, 50, a, b, c);
         assertEquals(0f, a.xPosition);
         assertEquals(60f, a.width);
         assertEquals(60f, b.xPosition);
@@ -250,7 +250,7 @@ public class LayoutEnginePrefSizeTest extends LayoutTestBase {
 
     @Test
     public void rowPrefSizeInvariants() {
-        LayoutSpec spec = new LayoutSpec().row().gap(3);
+        LayoutSpec spec = LayoutSpec.builder().row().gap(3).build();
         MockNode a = node("a", 15, 10);
         MockNode b = node("b", 20, 15);
         MockNode c = node("c", 25, 20);
@@ -261,7 +261,7 @@ public class LayoutEnginePrefSizeTest extends LayoutTestBase {
 
     @Test
     public void columnPrefSizeInvariants() {
-        LayoutSpec spec = new LayoutSpec().column().gap(4);
+        LayoutSpec spec = LayoutSpec.builder().column().gap(4).build();
         MockNode a = node("a", 30, 12);
         MockNode b = node("b", 40, 18);
         MockNode c = node("c", 50, 24);

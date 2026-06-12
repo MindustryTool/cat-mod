@@ -9,7 +9,7 @@ public class LayoutEngineTest extends LayoutTestBase {
 
     @Test
     public void testBasicRowLayout() {
-        LayoutSpec spec = new LayoutSpec().row().gap(10f);
+        LayoutSpec spec = LayoutSpec.builder().row().gap(10f).build();
         MockNode node1 = node("node1", 30f, 20f);
         MockNode node2 = node("node2", 40f, 25f);
         List<MockNode> children = Arrays.asList(node1, node2);
@@ -26,7 +26,7 @@ public class LayoutEngineTest extends LayoutTestBase {
 
     @Test
     public void testAlignSelfOverride() {
-        LayoutSpec spec = new LayoutSpec().row().alignItems(LayoutSpec.AlignItems.START);
+        LayoutSpec spec = LayoutSpec.builder().row().alignItems(LayoutSpec.AlignItems.START).build();
         MockNode node1 = node("node1", 30f, 20f);
         MockNode node2 = node("node2", 40f, 10f);
         node2.alignSelf(LayoutSpec.AlignSelf.END);
@@ -40,7 +40,7 @@ public class LayoutEngineTest extends LayoutTestBase {
 
     @Test
     public void testJustifyEvenly() {
-        LayoutSpec spec = new LayoutSpec().row().justifyContent(LayoutSpec.JustifyContent.SPACE_EVENLY).gap(0f);
+        LayoutSpec spec = LayoutSpec.builder().row().justifyContent(LayoutSpec.JustifyContent.SPACE_EVENLY).gap(0f).build();
         MockNode node1 = node("node1", 20f, 20f);
         MockNode node2 = node("node2", 30f, 20f);
         List<MockNode> children = Arrays.asList(node1, node2);
@@ -52,7 +52,7 @@ public class LayoutEngineTest extends LayoutTestBase {
 
     @Test
     public void testReverseRowLayout() {
-        LayoutSpec spec = new LayoutSpec().row().reverse().gap(10f);
+        LayoutSpec spec = LayoutSpec.builder().row().reverse().gap(10f).build();
         MockNode node1 = node("node1", 30f, 20f);
         MockNode node2 = node("node2", 40f, 20f);
         List<MockNode> children = Arrays.asList(node1, node2);
@@ -63,7 +63,7 @@ public class LayoutEngineTest extends LayoutTestBase {
 
     @Test
     public void testFlexWrapMultiLine() {
-        LayoutSpec spec = new LayoutSpec().row().wrap().gap(10f).alignItems(LayoutSpec.AlignItems.START);
+        LayoutSpec spec = LayoutSpec.builder().row().wrap().gap(10f).alignItems(LayoutSpec.AlignItems.START).build();
         MockNode node1 = node("node1", 30f, 20f);
         MockNode node2 = node("node2", 30f, 15f);
         MockNode node3 = node("node3", 30f, 25f);

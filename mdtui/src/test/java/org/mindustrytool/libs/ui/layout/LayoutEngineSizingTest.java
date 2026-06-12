@@ -13,7 +13,7 @@ public class LayoutEngineSizingTest extends LayoutTestBase {
 
     @Test
     public void fixedSizingRow() {
-        LayoutSpec spec = row().gap(0);
+        LayoutSpec spec = row().toBuilder().gap(0).build();
         MockNode a = node("a", 20, 15);
         MockNode b = node("b", 30, 25);
         layout(spec, 100, 50, a, b);
@@ -27,7 +27,7 @@ public class LayoutEngineSizingTest extends LayoutTestBase {
 
     @Test
     public void fixedSizingColumn() {
-        LayoutSpec spec = column().gap(0);
+        LayoutSpec spec = column().toBuilder().gap(0).build();
         MockNode a = node("a", 30, 15);
         MockNode b = node("b", 50, 25);
         layout(spec, 100, 100, a, b);
@@ -43,7 +43,7 @@ public class LayoutEngineSizingTest extends LayoutTestBase {
 
     @Test
     public void singleGrowRow() {
-        LayoutSpec spec = row().gap(0);
+        LayoutSpec spec = row().toBuilder().gap(0).build();
         MockNode a = node("a", 0, 20);
         a.growX().growWeightHorizontal(1);
         layout(spec, 100, 50, a);
@@ -55,7 +55,7 @@ public class LayoutEngineSizingTest extends LayoutTestBase {
 
     @Test
     public void singleGrowColumn() {
-        LayoutSpec spec = column().gap(0);
+        LayoutSpec spec = column().toBuilder().gap(0).build();
         MockNode a = node("a", 30, 0);
         a.growY().growWeightVertical(1);
         layout(spec, 100, 80, a);
@@ -67,7 +67,7 @@ public class LayoutEngineSizingTest extends LayoutTestBase {
 
     @Test
     public void twoEqualGrowRow() {
-        LayoutSpec spec = row().gap(0);
+        LayoutSpec spec = row().toBuilder().gap(0).build();
         MockNode a = node("a", 0, 15);
         a.growX().growWeightHorizontal(1);
         MockNode b = node("b", 0, 25);
@@ -83,7 +83,7 @@ public class LayoutEngineSizingTest extends LayoutTestBase {
 
     @Test
     public void twoEqualGrowColumn() {
-        LayoutSpec spec = column().gap(0);
+        LayoutSpec spec = column().toBuilder().gap(0).build();
         MockNode a = node("a", 20, 0);
         a.growY().growWeightVertical(1);
         MockNode b = node("b", 30, 0);
@@ -101,7 +101,7 @@ public class LayoutEngineSizingTest extends LayoutTestBase {
 
     @Test
     public void weightedGrowRow() {
-        LayoutSpec spec = row().gap(0);
+        LayoutSpec spec = row().toBuilder().gap(0).build();
         MockNode a = node("a", 0, 20);
         a.growX().growWeightHorizontal(1);
         MockNode b = node("b", 0, 30);
@@ -117,7 +117,7 @@ public class LayoutEngineSizingTest extends LayoutTestBase {
 
     @Test
     public void weightedGrowColumn() {
-        LayoutSpec spec = column().gap(0);
+        LayoutSpec spec = column().toBuilder().gap(0).build();
         MockNode a = node("a", 30, 0);
         a.growY().growWeightVertical(2);
         MockNode b = node("b", 40, 0);
@@ -133,7 +133,7 @@ public class LayoutEngineSizingTest extends LayoutTestBase {
 
     @Test
     public void threeUnequalGrowRow() {
-        LayoutSpec spec = row().gap(0);
+        LayoutSpec spec = row().toBuilder().gap(0).build();
         MockNode a = node("a", 0, 10);
         a.growX().growWeightHorizontal(1);
         MockNode b = node("b", 0, 20);
@@ -155,7 +155,7 @@ public class LayoutEngineSizingTest extends LayoutTestBase {
 
     @Test
     public void wrapSizingRow() {
-        LayoutSpec spec = row().gap(0);
+        LayoutSpec spec = row().toBuilder().gap(0).build();
         MockNode a = nodeWithSizing("a", sizing(LayoutSpec.SizeMode.FIXED, 20, 15));
         MockNode b = nodeWithSizing("b", sizing(LayoutSpec.SizeMode.FIXED, 30, 25));
         layout(spec, 100, 50, a, b);
@@ -169,7 +169,7 @@ public class LayoutEngineSizingTest extends LayoutTestBase {
 
     @Test
     public void wrapSizingColumn() {
-        LayoutSpec spec = column().gap(0);
+        LayoutSpec spec = column().toBuilder().gap(0).build();
         MockNode a = nodeWithSizing("a", sizing(LayoutSpec.SizeMode.FIXED, 30, 15));
         MockNode b = nodeWithSizing("b", sizing(LayoutSpec.SizeMode.FIXED, 50, 25));
         layout(spec, 100, 100, a, b);
@@ -185,7 +185,7 @@ public class LayoutEngineSizingTest extends LayoutTestBase {
 
     @Test
     public void mixedFixedGrowWrapRow() {
-        LayoutSpec spec = row().gap(5);
+        LayoutSpec spec = row().toBuilder().gap(5).build();
         MockNode a = node("a", 15, 10);
         MockNode b = node("b", 0, 20);
         b.growX().growWeightHorizontal(1);
@@ -204,7 +204,7 @@ public class LayoutEngineSizingTest extends LayoutTestBase {
 
     @Test
     public void mixedFixedGrowWrapColumn() {
-        LayoutSpec spec = column().gap(5);
+        LayoutSpec spec = column().toBuilder().gap(5).build();
         MockNode a = node("a", 30, 10);
         MockNode b = node("b", 40, 0);
         b.growY().growWeightVertical(1);
@@ -225,7 +225,7 @@ public class LayoutEngineSizingTest extends LayoutTestBase {
 
     @Test
     public void growWithGapRow() {
-        LayoutSpec spec = row().gap(10);
+        LayoutSpec spec = row().toBuilder().gap(10).build();
         MockNode a = node("a", 0, 15);
         a.growX().growWeightHorizontal(1);
         MockNode b = node("b", 0, 25);
@@ -241,7 +241,7 @@ public class LayoutEngineSizingTest extends LayoutTestBase {
 
     @Test
     public void growWithGapColumn() {
-        LayoutSpec spec = column().gap(8);
+        LayoutSpec spec = column().toBuilder().gap(8).build();
         MockNode a = node("a", 30, 0);
         a.growY().growWeightVertical(1);
         MockNode b = node("b", 40, 0);
@@ -261,7 +261,7 @@ public class LayoutEngineSizingTest extends LayoutTestBase {
     public void zeroGrowWeightIsTreatedAsFixed() {
         MockNode a = node("a", 30, 20);
         a.growX().growY().growWeightHorizontal(0).growWeightVertical(0);
-        layout(row().gap(0), 100, 50, a);
+        layout(row().toBuilder().gap(0).build(), 100, 50, a);
         assertEquals(0f, a.xPosition);
         assertEquals(100f, a.width);
         assertEquals(0f, a.yPosition);
@@ -272,7 +272,7 @@ public class LayoutEngineSizingTest extends LayoutTestBase {
 
     @Test
     public void growWithPrefSizeDoesNotGrowBelow() {
-        LayoutSpec spec = row().gap(0);
+        LayoutSpec spec = row().toBuilder().gap(0).build();
         MockNode a = node("a", 80, 20);
         a.growX().growWeightHorizontal(1);
         MockNode b = node("b", 10, 10);
@@ -289,7 +289,7 @@ public class LayoutEngineSizingTest extends LayoutTestBase {
 
     @Test
     public void nullSizingDefaultsToWrap() {
-        LayoutSpec spec = row().gap(0);
+        LayoutSpec spec = row().toBuilder().gap(0).build();
         MockNode a = node(null, 0, 0);
         a.set("prefW", 25f); a.set("prefH", 15f);
         a.set("sizing", null);
@@ -318,7 +318,7 @@ public class LayoutEngineSizingTest extends LayoutTestBase {
     @ParameterizedTest
     @MethodSource("growDistributionParams")
     public void growDistributionRow(int w1, int w2, float expectedW1, float expectedW2) {
-        LayoutSpec spec = row().gap(0);
+        LayoutSpec spec = row().toBuilder().gap(0).build();
         MockNode a = node("a", 0, 15);
         a.growX().growWeightHorizontal(w1);
         MockNode b = node("b", 0, 20);
@@ -335,7 +335,7 @@ public class LayoutEngineSizingTest extends LayoutTestBase {
     @ParameterizedTest
     @MethodSource("growDistributionParams")
     public void growDistributionColumn(int w1, int w2, float expectedH1, float expectedH2) {
-        LayoutSpec spec = column().gap(0);
+        LayoutSpec spec = column().toBuilder().gap(0).build();
         MockNode a = node("a", 20, 0);
         a.growY().growWeightVertical(w1);
         MockNode b = node("b", 30, 0);

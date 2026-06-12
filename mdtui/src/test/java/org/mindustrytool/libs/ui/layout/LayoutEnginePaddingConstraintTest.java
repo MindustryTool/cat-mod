@@ -13,7 +13,7 @@ public class LayoutEnginePaddingConstraintTest extends LayoutTestBase {
 
     @Test
     public void rowContainerPadding() {
-        LayoutSpec spec = new LayoutSpec().row().padding(10).gap(0);
+        LayoutSpec spec = LayoutSpec.builder().row().padding(10).gap(0).build();
         MockNode a = node("a", 20, 15);
         MockNode b = node("b", 30, 25);
         layout(spec, 100, 60, a, b);
@@ -27,7 +27,7 @@ public class LayoutEnginePaddingConstraintTest extends LayoutTestBase {
 
     @Test
     public void columnContainerPadding() {
-        LayoutSpec spec = new LayoutSpec().column().padding(15).gap(0);
+        LayoutSpec spec = LayoutSpec.builder().column().padding(15).gap(0).build();
         MockNode a = node("a", 30, 20);
         MockNode b = node("b", 40, 30);
         layout(spec, 100, 100, a, b);
@@ -43,7 +43,7 @@ public class LayoutEnginePaddingConstraintTest extends LayoutTestBase {
 
     @Test
     public void rowAsymmetricPadding() {
-        LayoutSpec spec = new LayoutSpec().row().padding(5, 10, 15, 20).gap(0);
+        LayoutSpec spec = LayoutSpec.builder().row().padding(5, 10, 15, 20).gap(0).build();
         MockNode a = node("a", 20, 15);
         layout(spec, 100, 60, a);
         assertAll(
@@ -54,7 +54,7 @@ public class LayoutEnginePaddingConstraintTest extends LayoutTestBase {
 
     @Test
     public void columnAsymmetricPadding() {
-        LayoutSpec spec = new LayoutSpec().column().padding(3, 8, 12, 6).gap(0);
+        LayoutSpec spec = LayoutSpec.builder().column().padding(3, 8, 12, 6).gap(0).build();
         MockNode a = node("a", 30, 20);
         layout(spec, 100, 80, a);
         assertAll(
@@ -67,8 +67,8 @@ public class LayoutEnginePaddingConstraintTest extends LayoutTestBase {
 
     @Test
     public void zeroPaddingBehavesSame() {
-        LayoutSpec spec1 = new LayoutSpec().row().padding(0).gap(0);
-        LayoutSpec spec2 = new LayoutSpec().row().gap(0);
+        LayoutSpec spec1 = LayoutSpec.builder().row().padding(0).gap(0).build();
+        LayoutSpec spec2 = LayoutSpec.builder().row().gap(0).build();
         MockNode a = node("a", 20, 15);
         MockNode b = node("b", 30, 25);
         layout(spec1, 100, 50, a, b);
@@ -85,7 +85,7 @@ public class LayoutEnginePaddingConstraintTest extends LayoutTestBase {
 
     @Test
     public void childPaddingRow() {
-        LayoutSpec spec = new LayoutSpec().row().gap(0);
+        LayoutSpec spec = LayoutSpec.builder().row().gap(0).build();
         MockNode a = node("a", 20, 15);
         a.padding(6);
         MockNode b = node("b", 30, 25);
@@ -100,7 +100,7 @@ public class LayoutEnginePaddingConstraintTest extends LayoutTestBase {
 
     @Test
     public void childPaddingColumn() {
-        LayoutSpec spec = new LayoutSpec().column().gap(0);
+        LayoutSpec spec = LayoutSpec.builder().column().gap(0).build();
         MockNode a = node("a", 30, 20);
         a.padding(5, 10, 5, 10);
         MockNode b = node("b", 40, 30);
@@ -119,7 +119,7 @@ public class LayoutEnginePaddingConstraintTest extends LayoutTestBase {
     public void minimumWidthConstraint() {
         MockNode a = node("a", 10, 15);
         a.minimumWidth(30);
-        layout(row().gap(0), 100, 50, a);
+        layout(row().toBuilder().gap(0).build(), 100, 50, a);
         assertEquals(0f, a.xPosition);
         assertEquals(30f, a.width);
         assertEquals(0f, a.yPosition);
@@ -130,17 +130,17 @@ public class LayoutEnginePaddingConstraintTest extends LayoutTestBase {
     public void minimumWidthDoesNotExpandIfAlreadyLarger() {
         MockNode a = node("a", 40, 15);
         a.minimumWidth(30);
-        layout(row().gap(0), 100, 50, a);
+        layout(row().toBuilder().gap(0).build(), 100, 50, a);
         assertEquals(0f, a.xPosition);
         assertEquals(40f, a.width);
     }
 
     @Test
     public void minimumWidthWithGrow() {
-        MockNode a = nodeWithSizing("a", sizing(LayoutSpec.SizeMode.GROW, 0, 20).growWeightHorizontal(1));
+        MockNode a = nodeWithSizing("a", sizing(LayoutSpec.SizeMode.GROW, 0, 20).toBuilder().growWeightHorizontal(1).build());
         a.set("minW", 80f);
         MockNode b = node("b", 10, 20);
-        layout(row().gap(0), 100, 50, a, b);
+        layout(row().toBuilder().gap(0).build(), 100, 50, a, b);
         assertAll(
             () -> assertEquals(0f, a.xPosition), () -> assertEquals(90f, a.width),
             () -> assertEquals(0f, a.yPosition), () -> assertEquals(20f, a.height),
@@ -155,7 +155,7 @@ public class LayoutEnginePaddingConstraintTest extends LayoutTestBase {
     public void maximumWidthConstraint() {
         MockNode a = node("a", 50, 15);
         a.maximumWidth(30);
-        layout(row().gap(0), 100, 50, a);
+        layout(row().toBuilder().gap(0).build(), 100, 50, a);
         assertEquals(0f, a.xPosition);
         assertEquals(30f, a.width);
     }
@@ -164,17 +164,17 @@ public class LayoutEnginePaddingConstraintTest extends LayoutTestBase {
     public void maximumWidthHasNoEffectIfSmaller() {
         MockNode a = node("a", 20, 15);
         a.maximumWidth(40);
-        layout(row().gap(0), 100, 50, a);
+        layout(row().toBuilder().gap(0).build(), 100, 50, a);
         assertEquals(0f, a.xPosition);
         assertEquals(20f, a.width);
     }
 
     @Test
     public void maximumWidthWithGrow() {
-        MockNode a = nodeWithSizing("a", sizing(LayoutSpec.SizeMode.GROW, 0, 20).growWeightHorizontal(1));
+        MockNode a = nodeWithSizing("a", sizing(LayoutSpec.SizeMode.GROW, 0, 20).toBuilder().growWeightHorizontal(1).build());
         a.set("maxW", 40f);
-        MockNode b = nodeWithSizing("b", sizing(LayoutSpec.SizeMode.GROW, 0, 20).growWeightHorizontal(1));
-        layout(row().gap(0), 100, 50, a, b);
+        MockNode b = nodeWithSizing("b", sizing(LayoutSpec.SizeMode.GROW, 0, 20).toBuilder().growWeightHorizontal(1).build());
+        layout(row().toBuilder().gap(0).build(), 100, 50, a, b);
         assertAll(
             () -> assertEquals(0f, a.xPosition), () -> assertEquals(50f, a.width),
             () -> assertEquals(0f, a.yPosition), () -> assertEquals(20f, a.height),
@@ -189,7 +189,7 @@ public class LayoutEnginePaddingConstraintTest extends LayoutTestBase {
     public void minimumHeightConstraint() {
         MockNode a = node("a", 30, 5);
         a.minimumHeight(25);
-        layout(column().gap(0), 100, 100, a);
+        layout(column().toBuilder().gap(0).build(), 100, 100, a);
         assertEquals(0f, a.xPosition);
         assertEquals(30f, a.width);
         assertEquals(75f, a.yPosition);
@@ -202,7 +202,7 @@ public class LayoutEnginePaddingConstraintTest extends LayoutTestBase {
     public void maximumHeightConstraint() {
         MockNode a = node("a", 30, 40);
         a.maximumHeight(20);
-        layout(column().gap(0), 100, 100, a);
+        layout(column().toBuilder().gap(0).build(), 100, 100, a);
         assertEquals(0f, a.xPosition);
         assertEquals(30f, a.width);
         assertEquals(80f, a.yPosition);
@@ -216,7 +216,7 @@ public class LayoutEnginePaddingConstraintTest extends LayoutTestBase {
         MockNode a = node("a", 10, 15);
         a.minimumWidth(30);
         MockNode b = node("b", 10, 15);
-        layout(row().gap(10), 100, 50, a, b);
+        layout(row().toBuilder().gap(10).build(), 100, 50, a, b);
         assertAll(
             () -> assertEquals(0f, a.xPosition), () -> assertEquals(30f, a.width),
             () -> assertEquals(0f, a.yPosition), () -> assertEquals(15f, a.height),
@@ -231,7 +231,7 @@ public class LayoutEnginePaddingConstraintTest extends LayoutTestBase {
     public void minMaxExactSame() {
         MockNode a = node("a", 20, 15);
         a.minimumWidth(20).maximumWidth(20);
-        layout(row().gap(0), 100, 50, a);
+        layout(row().toBuilder().gap(0).build(), 100, 50, a);
         assertEquals(20f, a.width);
     }
 
@@ -239,7 +239,7 @@ public class LayoutEnginePaddingConstraintTest extends LayoutTestBase {
     public void minLargerThanMaxTreatedAsMin() {
         MockNode a = node("a", 20, 15);
         a.minimumWidth(50).maximumWidth(30);
-        layout(row().gap(0), 100, 50, a);
+        layout(row().toBuilder().gap(0).build(), 100, 50, a);
         assertEquals(30f, a.width);
     }
 
@@ -247,9 +247,7 @@ public class LayoutEnginePaddingConstraintTest extends LayoutTestBase {
 
     @Test
     public void paddingIncreasesPreferredSize() {
-        LayoutSpec spec = new LayoutSpec().row().padding(10).gap(0);
-        spec.padding(10);
-        MockNode a = node("a", 20, 15);
+        LayoutSpec spec = LayoutSpec.builder().row().padding(10).gap(0).build();        MockNode a = node("a", 20, 15);
         layout(spec, 100, 50, a);
         assertEquals(0f, a.xPosition);
         assertEquals(20f, a.width);
@@ -272,7 +270,7 @@ public class LayoutEnginePaddingConstraintTest extends LayoutTestBase {
     @ParameterizedTest
     @MethodSource("paddingAndMinWidthParams")
     public void rowPaddingAndMinWidth(int pad, int minW, float expectedW, float expectedX) {
-        LayoutSpec spec = new LayoutSpec().row().padding(pad).gap(0);
+        LayoutSpec spec = LayoutSpec.builder().row().padding(pad).gap(0).build();
         MockNode a = node("a", 20, 15);
         a.minimumWidth(minW);
         layout(spec, 100, 50, a);
@@ -284,7 +282,7 @@ public class LayoutEnginePaddingConstraintTest extends LayoutTestBase {
 
     @Test
     public void rowPaddingInvariants() {
-        LayoutSpec spec = new LayoutSpec().row().padding(8).gap(3);
+        LayoutSpec spec = LayoutSpec.builder().row().padding(8).gap(3).build();
         MockNode a = node("a", 20, 10);
         MockNode b = node("b", 25, 15);
         MockNode c = node("c", 30, 20);
@@ -294,7 +292,7 @@ public class LayoutEnginePaddingConstraintTest extends LayoutTestBase {
 
     @Test
     public void columnPaddingInvariants() {
-        LayoutSpec spec = new LayoutSpec().column().padding(6).gap(4);
+        LayoutSpec spec = LayoutSpec.builder().column().padding(6).gap(4).build();
         MockNode a = node("a", 30, 15);
         MockNode b = node("b", 40, 20);
         MockNode c = node("c", 50, 25);
@@ -304,7 +302,7 @@ public class LayoutEnginePaddingConstraintTest extends LayoutTestBase {
 
     @Test
     public void rowConstraintsInvariants() {
-        LayoutSpec spec = new LayoutSpec().row().gap(2);
+        LayoutSpec spec = LayoutSpec.builder().row().gap(2).build();
         MockNode a = node("a", 15, 10);
         a.minimumWidth(20);
         MockNode b = node("b", 10, 15);
@@ -316,7 +314,7 @@ public class LayoutEnginePaddingConstraintTest extends LayoutTestBase {
 
     @Test
     public void columnConstraintsInvariants() {
-        LayoutSpec spec = new LayoutSpec().column().gap(2);
+        LayoutSpec spec = LayoutSpec.builder().column().gap(2).build();
         MockNode a = node("a", 30, 10);
         a.minimumHeight(20);
         MockNode b = node("b", 40, 20);

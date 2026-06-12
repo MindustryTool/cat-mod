@@ -121,117 +121,105 @@ public record LayoutSpec(
     public static class LayoutSpecBuilder {
         private SizeMode widthMode = SizeMode.WRAP;
         private SizeMode heightMode = SizeMode.WRAP;
+        private float fixedWidth = 0.0f;
+        private float fixedHeight = 0.0f;
         private float growWeightHorizontal = 1.0f;
         private float growWeightVertical = 1.0f;
         private AlignSelf alignSelf = AlignSelf.AUTO;
+        private float paddingTop = 0.0f;
+        private float paddingBottom = 0.0f;
+        private float paddingLeft = 0.0f;
+        private float paddingRight = 0.0f;
         private float minimumWidth = -1.0f;
         private float maximumWidth = -1.0f;
         private float minimumHeight = -1.0f;
         private float maximumHeight = -1.0f;
+        private boolean isColumn = false;
+        private boolean isWrap = false;
+        private boolean isReverse = false;
+        private float gap = 0.0f;
         private JustifyContent justifyContent = JustifyContent.START;
         private AlignItems alignItems = AlignItems.STRETCH;
+
+        /** @return row flow config */
+        public LayoutSpecBuilder row() {
+            this.isColumn = false;
+            return this;
+        }
+
+        /** @return column flow config */
+        public LayoutSpecBuilder column() {
+            this.isColumn = true;
+            return this;
+        }
+
+        /** @return wrap flow config */
+        public LayoutSpecBuilder wrap() {
+            this.isWrap = true;
+            return this;
+        }
+
+        /** @return no-wrap config */
+        public LayoutSpecBuilder noWrap() {
+            this.isWrap = false;
+            return this;
+        }
+
+        /** @return reverse config */
+        public LayoutSpecBuilder reverse() {
+            this.isReverse = true;
+            return this;
+        }
+
+        /** @param wrap wrapping value */
+        public LayoutSpecBuilder wrap(boolean wrap) {
+            this.isWrap = wrap;
+            return this;
+        }
+
+        /** @param reverse reverse value */
+        public LayoutSpecBuilder reverse(boolean reverse) {
+            this.isReverse = reverse;
+            return this;
+        }
+
+        /** @return grow both directions */
+        public LayoutSpecBuilder grow() {
+            this.widthMode = SizeMode.GROW;
+            this.heightMode = SizeMode.GROW;
+            return this;
+        }
+
+        /** @return grow horizontally */
+        public LayoutSpecBuilder growX() {
+            this.widthMode = SizeMode.GROW;
+            return this;
+        }
+
+        /** @return grow vertically */
+        public LayoutSpecBuilder growY() {
+            this.heightMode = SizeMode.GROW;
+            return this;
+        }
+
+        /** @param all padding space */
+        public LayoutSpecBuilder padding(float all) {
+            this.paddingTop = all;
+            this.paddingBottom = all;
+            this.paddingLeft = all;
+            this.paddingRight = all;
+            return this;
+        }
+
+        /** @param top top padding @param right right padding @param bottom bottom padding @param left left padding */
+        public LayoutSpecBuilder padding(float top, float right, float bottom, float left) {
+            this.paddingTop = top;
+            this.paddingRight = right;
+            this.paddingBottom = bottom;
+            this.paddingLeft = left;
+            return this;
+        }
     }
-
-    /**
-     * Default constructor creating a default LayoutSpec.
-     */
-    public LayoutSpec() {
-        this(SizeMode.WRAP, SizeMode.WRAP, 0.0f, 0.0f, 1.0f, 1.0f, AlignSelf.AUTO,
-             0.0f, 0.0f, 0.0f, 0.0f, -1.0f, -1.0f, -1.0f, -1.0f,
-             false, false, false, 0.0f, JustifyContent.START, AlignItems.STRETCH);
-    }
-
-    // --- Fluent Wither-style Setters for Test and Configuration Compatibility ---
-
-    /** @param widthMode new width size mode. @return new LayoutSpec. */
-    public LayoutSpec widthMode(SizeMode widthMode) { return toBuilder().widthMode(widthMode).build(); }
-    /** @param heightMode new height size mode. @return new LayoutSpec. */
-    public LayoutSpec heightMode(SizeMode heightMode) { return toBuilder().heightMode(heightMode).build(); }
-    /** @param fixedWidth new fixed width value. @return new LayoutSpec. */
-    public LayoutSpec fixedWidth(float fixedWidth) { return toBuilder().fixedWidth(fixedWidth).build(); }
-    /** @param fixedHeight new fixed height value. @return new LayoutSpec. */
-    public LayoutSpec fixedHeight(float fixedHeight) { return toBuilder().fixedHeight(fixedHeight).build(); }
-    /** @param growWeightHorizontal new horizontal grow weight. @return new LayoutSpec. */
-    public LayoutSpec growWeightHorizontal(float growWeightHorizontal) { return toBuilder().growWeightHorizontal(growWeightHorizontal).build(); }
-    /** @param growWeightVertical new vertical grow weight. @return new LayoutSpec. */
-    public LayoutSpec growWeightVertical(float growWeightVertical) { return toBuilder().growWeightVertical(growWeightVertical).build(); }
-    /** @param alignSelf new cross axis alignment override. @return new LayoutSpec. */
-    public LayoutSpec alignSelf(AlignSelf alignSelf) { return toBuilder().alignSelf(alignSelf).build(); }
-    /** @param paddingTop new top padding. @return new LayoutSpec. */
-    public LayoutSpec paddingTop(float paddingTop) { return toBuilder().paddingTop(paddingTop).build(); }
-    /** @param paddingBottom new bottom padding. @return new LayoutSpec. */
-    public LayoutSpec paddingBottom(float paddingBottom) { return toBuilder().paddingBottom(paddingBottom).build(); }
-    /** @param paddingLeft new left padding. @return new LayoutSpec. */
-    public LayoutSpec paddingLeft(float paddingLeft) { return toBuilder().paddingLeft(paddingLeft).build(); }
-    /** @param paddingRight new right padding. @return new LayoutSpec. */
-    public LayoutSpec paddingRight(float paddingRight) { return toBuilder().paddingRight(paddingRight).build(); }
-    /** @param minimumWidth new minimum width constraint. @return new LayoutSpec. */
-    public LayoutSpec minimumWidth(float minimumWidth) { return toBuilder().minimumWidth(minimumWidth).build(); }
-    /** @param maximumWidth new maximum width constraint. @return new LayoutSpec. */
-    public LayoutSpec maximumWidth(float maximumWidth) { return toBuilder().maximumWidth(maximumWidth).build(); }
-    /** @param minimumHeight new minimum height constraint. @return new LayoutSpec. */
-    public LayoutSpec minimumHeight(float minimumHeight) { return toBuilder().minimumHeight(minimumHeight).build(); }
-    /** @param maximumHeight new maximum height constraint. @return new LayoutSpec. */
-    public LayoutSpec maximumHeight(float maximumHeight) { return toBuilder().maximumHeight(maximumHeight).build(); }
-    /** @param isColumn new flow layout direction. @return new LayoutSpec. */
-    public LayoutSpec isColumn(boolean isColumn) { return toBuilder().isColumn(isColumn).build(); }
-    /** @param isWrap new wrapping flag. @return new LayoutSpec. */
-    public LayoutSpec isWrap(boolean isWrap) { return toBuilder().isWrap(isWrap).build(); }
-    /** @param isReverse new reverse flow flag. @return new LayoutSpec. */
-    public LayoutSpec isReverse(boolean isReverse) { return toBuilder().isReverse(isReverse).build(); }
-    /** @param gap new layout spacing gap. @return new LayoutSpec. */
-    public LayoutSpec gap(float gap) { return toBuilder().gap(gap).build(); }
-    /** @param justifyContent new main axis alignment justification. @return new LayoutSpec. */
-    public LayoutSpec justifyContent(JustifyContent justifyContent) { return toBuilder().justifyContent(justifyContent).build(); }
-    /** @param alignItems new cross axis alignment behavior. @return new LayoutSpec. */
-    public LayoutSpec alignItems(AlignItems alignItems) { return toBuilder().alignItems(alignItems).build(); }
-
-    // --- Fluent Builders for Unit Test Compatibility ---
-
-    /** @return new LayoutSpec configured as row flow. */
-    public LayoutSpec row() { return isColumn(false); }
-    /** @return new LayoutSpec configured as column flow. */
-    public LayoutSpec column() { return isColumn(true); }
-    /** @return new LayoutSpec configured with wrapping enabled. */
-    public LayoutSpec wrap() { return isWrap(true); }
-    /** @return new LayoutSpec configured with reverse flow enabled. */
-    public LayoutSpec reverse() { return isReverse(true); }
-    /** @param wrap wrapping enabled value. @return new LayoutSpec. */
-    public LayoutSpec wrap(boolean wrap) { return isWrap(wrap); }
-    /** @param reverse reverse flow value. @return new LayoutSpec. */
-    public LayoutSpec reverse(boolean reverse) { return isReverse(reverse); }
-    
-    /**
-     * Configures symmetric padding on all sides.
-     *
-     * @param all the padding space.
-     * @return new LayoutSpec.
-     */
-    public LayoutSpec padding(float all) {
-        return toBuilder().paddingTop(all).paddingBottom(all).paddingLeft(all).paddingRight(all).build();
-    }
-    
-    /**
-     * Configures padding on top, right, bottom, and left sides individually.
-     *
-     * @param top    the top padding space.
-     * @param right  the right padding space.
-     * @param bottom the bottom padding space.
-     * @param left   the left padding space.
-     * @return new LayoutSpec.
-     */
-    public LayoutSpec padding(float top, float right, float bottom, float left) {
-        return toBuilder().paddingTop(top).paddingRight(right).paddingBottom(bottom).paddingLeft(left).build();
-    }
-    
-    /** @return new LayoutSpec with width mode set to GROW. */
-    public LayoutSpec growX() { return toBuilder().widthMode(SizeMode.GROW).build(); }
-    /** @return new LayoutSpec with height mode set to GROW. */
-    public LayoutSpec growY() { return toBuilder().heightMode(SizeMode.GROW).build(); }
-    /** @return new LayoutSpec with both width and height modes set to GROW. */
-    public LayoutSpec grow() { return toBuilder().widthMode(SizeMode.GROW).heightMode(SizeMode.GROW).build(); }
-    /** @return new LayoutSpec with wrapping disabled. */
-    public LayoutSpec noWrap() { return isWrap(false); }
 
     /**
      * Computes the total horizontal padding (left + right).

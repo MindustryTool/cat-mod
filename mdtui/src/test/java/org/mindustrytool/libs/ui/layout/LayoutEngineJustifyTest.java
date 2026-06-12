@@ -13,7 +13,7 @@ public class LayoutEngineJustifyTest extends LayoutTestBase {
 
     @Test
     public void rowJustifyStart() {
-        LayoutSpec spec = new LayoutSpec().row().justifyContent(LayoutSpec.JustifyContent.START).gap(0);
+        LayoutSpec spec = LayoutSpec.builder().row().justifyContent(LayoutSpec.JustifyContent.START).gap(0).build();
         MockNode a = node("a", 20, 20);
         MockNode b = node("b", 30, 25);
         layout(spec, 100, 50, a, b);
@@ -27,7 +27,7 @@ public class LayoutEngineJustifyTest extends LayoutTestBase {
 
     @Test
     public void rowJustifyCenter() {
-        LayoutSpec spec = new LayoutSpec().row().justifyContent(LayoutSpec.JustifyContent.CENTER).gap(0);
+        LayoutSpec spec = LayoutSpec.builder().row().justifyContent(LayoutSpec.JustifyContent.CENTER).gap(0).build();
         MockNode a = node("a", 20, 20);
         MockNode b = node("b", 30, 25);
         layout(spec, 100, 50, a, b);
@@ -41,7 +41,7 @@ public class LayoutEngineJustifyTest extends LayoutTestBase {
 
     @Test
     public void rowJustifyEnd() {
-        LayoutSpec spec = new LayoutSpec().row().justifyContent(LayoutSpec.JustifyContent.END).gap(0);
+        LayoutSpec spec = LayoutSpec.builder().row().justifyContent(LayoutSpec.JustifyContent.END).gap(0).build();
         MockNode a = node("a", 20, 20);
         MockNode b = node("b", 30, 25);
         layout(spec, 100, 50, a, b);
@@ -55,7 +55,7 @@ public class LayoutEngineJustifyTest extends LayoutTestBase {
 
     @Test
     public void rowJustifySpaceBetween() {
-        LayoutSpec spec = new LayoutSpec().row().justifyContent(LayoutSpec.JustifyContent.SPACE_BETWEEN).gap(0);
+        LayoutSpec spec = LayoutSpec.builder().row().justifyContent(LayoutSpec.JustifyContent.SPACE_BETWEEN).gap(0).build();
         MockNode a = node("a", 20, 20);
         MockNode b = node("b", 30, 25);
         layout(spec, 100, 50, a, b);
@@ -69,7 +69,7 @@ public class LayoutEngineJustifyTest extends LayoutTestBase {
 
     @Test
     public void rowJustifySpaceAround() {
-        LayoutSpec spec = new LayoutSpec().row().justifyContent(LayoutSpec.JustifyContent.SPACE_AROUND).gap(0);
+        LayoutSpec spec = LayoutSpec.builder().row().justifyContent(LayoutSpec.JustifyContent.SPACE_AROUND).gap(0).build();
         MockNode a = node("a", 20, 20);
         MockNode b = node("b", 30, 25);
         layout(spec, 100, 50, a, b);
@@ -84,7 +84,7 @@ public class LayoutEngineJustifyTest extends LayoutTestBase {
 
     @Test
     public void rowJustifySpaceEvenly() {
-        LayoutSpec spec = new LayoutSpec().row().justifyContent(LayoutSpec.JustifyContent.SPACE_EVENLY).gap(0);
+        LayoutSpec spec = LayoutSpec.builder().row().justifyContent(LayoutSpec.JustifyContent.SPACE_EVENLY).gap(0).build();
         MockNode a = node("a", 20, 20);
         MockNode b = node("b", 30, 25);
         layout(spec, 100, 50, a, b);
@@ -101,7 +101,7 @@ public class LayoutEngineJustifyTest extends LayoutTestBase {
 
     @Test
     public void columnJustifyStart() {
-        LayoutSpec spec = new LayoutSpec().column().justifyContent(LayoutSpec.JustifyContent.START).gap(0);
+        LayoutSpec spec = LayoutSpec.builder().column().justifyContent(LayoutSpec.JustifyContent.START).gap(0).build();
         MockNode a = node("a", 30, 20);
         MockNode b = node("b", 40, 30);
         layout(spec, 100, 100, a, b);
@@ -115,7 +115,7 @@ public class LayoutEngineJustifyTest extends LayoutTestBase {
 
     @Test
     public void columnJustifyCenter() {
-        LayoutSpec spec = new LayoutSpec().column().justifyContent(LayoutSpec.JustifyContent.CENTER).gap(0);
+        LayoutSpec spec = LayoutSpec.builder().column().justifyContent(LayoutSpec.JustifyContent.CENTER).gap(0).build();
         MockNode a = node("a", 30, 20);
         MockNode b = node("b", 40, 30);
         layout(spec, 100, 100, a, b);
@@ -129,7 +129,7 @@ public class LayoutEngineJustifyTest extends LayoutTestBase {
 
     @Test
     public void columnJustifyEnd() {
-        LayoutSpec spec = new LayoutSpec().column().justifyContent(LayoutSpec.JustifyContent.END).gap(0);
+        LayoutSpec spec = LayoutSpec.builder().column().justifyContent(LayoutSpec.JustifyContent.END).gap(0).build();
         MockNode a = node("a", 30, 20);
         MockNode b = node("b", 40, 30);
         layout(spec, 100, 100, a, b);
@@ -143,7 +143,7 @@ public class LayoutEngineJustifyTest extends LayoutTestBase {
 
     @Test
     public void columnJustifySpaceBetween() {
-        LayoutSpec spec = new LayoutSpec().column().justifyContent(LayoutSpec.JustifyContent.SPACE_BETWEEN).gap(0);
+        LayoutSpec spec = LayoutSpec.builder().column().justifyContent(LayoutSpec.JustifyContent.SPACE_BETWEEN).gap(0).build();
         MockNode a = node("a", 30, 20);
         MockNode b = node("b", 40, 30);
         layout(spec, 100, 100, a, b);
@@ -157,7 +157,7 @@ public class LayoutEngineJustifyTest extends LayoutTestBase {
 
     @Test
     public void columnJustifySpaceAround() {
-        LayoutSpec spec = new LayoutSpec().column().justifyContent(LayoutSpec.JustifyContent.SPACE_AROUND).gap(0);
+        LayoutSpec spec = LayoutSpec.builder().column().justifyContent(LayoutSpec.JustifyContent.SPACE_AROUND).gap(0).build();
         MockNode a = node("a", 30, 20);
         MockNode b = node("b", 40, 30);
         layout(spec, 100, 100, a, b);
@@ -174,7 +174,7 @@ public class LayoutEngineJustifyTest extends LayoutTestBase {
 
     @Test
     public void columnJustifySpaceEvenly() {
-        LayoutSpec spec = new LayoutSpec().column().justifyContent(LayoutSpec.JustifyContent.SPACE_EVENLY).gap(0);
+        LayoutSpec spec = LayoutSpec.builder().column().justifyContent(LayoutSpec.JustifyContent.SPACE_EVENLY).gap(0).build();
         MockNode a = node("a", 30, 20);
         MockNode b = node("b", 40, 30);
         layout(spec, 100, 100, a, b);
@@ -190,7 +190,7 @@ public class LayoutEngineJustifyTest extends LayoutTestBase {
 
     @Test
     public void rowJustifyStartWithGap() {
-        LayoutSpec spec = new LayoutSpec().row().justifyContent(LayoutSpec.JustifyContent.START).gap(10);
+        LayoutSpec spec = LayoutSpec.builder().row().justifyContent(LayoutSpec.JustifyContent.START).gap(10).build();
         MockNode a = node("a", 20, 15);
         MockNode b = node("b", 30, 20);
         layout(spec, 120, 50, a, b);
@@ -204,7 +204,7 @@ public class LayoutEngineJustifyTest extends LayoutTestBase {
 
     @Test
     public void rowJustifyCenterWithGap() {
-        LayoutSpec spec = new LayoutSpec().row().justifyContent(LayoutSpec.JustifyContent.CENTER).gap(10);
+        LayoutSpec spec = LayoutSpec.builder().row().justifyContent(LayoutSpec.JustifyContent.CENTER).gap(10).build();
         MockNode a = node("a", 20, 15);
         MockNode b = node("b", 30, 20);
         layout(spec, 120, 50, a, b);
@@ -218,7 +218,7 @@ public class LayoutEngineJustifyTest extends LayoutTestBase {
 
     @Test
     public void rowJustifyEndWithGap() {
-        LayoutSpec spec = new LayoutSpec().row().justifyContent(LayoutSpec.JustifyContent.END).gap(10);
+        LayoutSpec spec = LayoutSpec.builder().row().justifyContent(LayoutSpec.JustifyContent.END).gap(10).build();
         MockNode a = node("a", 20, 15);
         MockNode b = node("b", 30, 20);
         layout(spec, 120, 50, a, b);
@@ -232,7 +232,7 @@ public class LayoutEngineJustifyTest extends LayoutTestBase {
 
     @Test
     public void rowJustifyBetweenWithGap() {
-        LayoutSpec spec = new LayoutSpec().row().justifyContent(LayoutSpec.JustifyContent.SPACE_BETWEEN).gap(10);
+        LayoutSpec spec = LayoutSpec.builder().row().justifyContent(LayoutSpec.JustifyContent.SPACE_BETWEEN).gap(10).build();
         MockNode a = node("a", 20, 15);
         MockNode b = node("b", 30, 20);
         layout(spec, 120, 50, a, b);
@@ -249,7 +249,7 @@ public class LayoutEngineJustifyTest extends LayoutTestBase {
 
     @Test
     public void rowJustifyAroundWithGap() {
-        LayoutSpec spec = new LayoutSpec().row().justifyContent(LayoutSpec.JustifyContent.SPACE_AROUND).gap(10);
+        LayoutSpec spec = LayoutSpec.builder().row().justifyContent(LayoutSpec.JustifyContent.SPACE_AROUND).gap(10).build();
         MockNode a = node("a", 20, 15);
         MockNode b = node("b", 30, 20);
         layout(spec, 120, 50, a, b);
@@ -266,7 +266,7 @@ public class LayoutEngineJustifyTest extends LayoutTestBase {
 
     @Test
     public void rowJustifyEvenlyWithGap() {
-        LayoutSpec spec = new LayoutSpec().row().justifyContent(LayoutSpec.JustifyContent.SPACE_EVENLY).gap(10);
+        LayoutSpec spec = LayoutSpec.builder().row().justifyContent(LayoutSpec.JustifyContent.SPACE_EVENLY).gap(10).build();
         MockNode a = node("a", 20, 15);
         MockNode b = node("b", 30, 20);
         layout(spec, 120, 50, a, b);
@@ -285,7 +285,7 @@ public class LayoutEngineJustifyTest extends LayoutTestBase {
 
     @Test
     public void rowThreeChildrenJustifyCenter() {
-        LayoutSpec spec = new LayoutSpec().row().justifyContent(LayoutSpec.JustifyContent.CENTER).gap(0);
+        LayoutSpec spec = LayoutSpec.builder().row().justifyContent(LayoutSpec.JustifyContent.CENTER).gap(0).build();
         MockNode a = node("a", 10, 15);
         MockNode b = node("b", 15, 20);
         MockNode c = node("c", 20, 25);
@@ -303,7 +303,7 @@ public class LayoutEngineJustifyTest extends LayoutTestBase {
 
     @Test
     public void rowThreeChildrenJustifyEnd() {
-        LayoutSpec spec = new LayoutSpec().row().justifyContent(LayoutSpec.JustifyContent.END).gap(0);
+        LayoutSpec spec = LayoutSpec.builder().row().justifyContent(LayoutSpec.JustifyContent.END).gap(0).build();
         MockNode a = node("a", 10, 15);
         MockNode b = node("b", 15, 20);
         MockNode c = node("c", 20, 25);
@@ -320,7 +320,7 @@ public class LayoutEngineJustifyTest extends LayoutTestBase {
 
     @Test
     public void rowThreeChildrenSpaceBetween() {
-        LayoutSpec spec = new LayoutSpec().row().justifyContent(LayoutSpec.JustifyContent.SPACE_BETWEEN).gap(0);
+        LayoutSpec spec = LayoutSpec.builder().row().justifyContent(LayoutSpec.JustifyContent.SPACE_BETWEEN).gap(0).build();
         MockNode a = node("a", 10, 15);
         MockNode b = node("b", 15, 20);
         MockNode c = node("c", 20, 25);
@@ -339,7 +339,7 @@ public class LayoutEngineJustifyTest extends LayoutTestBase {
 
     @Test
     public void rowThreeChildrenSpaceAround() {
-        LayoutSpec spec = new LayoutSpec().row().justifyContent(LayoutSpec.JustifyContent.SPACE_AROUND).gap(0);
+        LayoutSpec spec = LayoutSpec.builder().row().justifyContent(LayoutSpec.JustifyContent.SPACE_AROUND).gap(0).build();
         MockNode a = node("a", 10, 15);
         MockNode b = node("b", 15, 20);
         MockNode c = node("c", 20, 25);
@@ -358,7 +358,7 @@ public class LayoutEngineJustifyTest extends LayoutTestBase {
 
     @Test
     public void rowThreeChildrenSpaceEvenly() {
-        LayoutSpec spec = new LayoutSpec().row().justifyContent(LayoutSpec.JustifyContent.SPACE_EVENLY).gap(0);
+        LayoutSpec spec = LayoutSpec.builder().row().justifyContent(LayoutSpec.JustifyContent.SPACE_EVENLY).gap(0).build();
         MockNode a = node("a", 10, 15);
         MockNode b = node("b", 15, 20);
         MockNode c = node("c", 20, 25);
@@ -379,7 +379,7 @@ public class LayoutEngineJustifyTest extends LayoutTestBase {
 
     @Test
     public void singleChildJustifyCenter() {
-        LayoutSpec spec = new LayoutSpec().row().justifyContent(LayoutSpec.JustifyContent.CENTER).gap(0);
+        LayoutSpec spec = LayoutSpec.builder().row().justifyContent(LayoutSpec.JustifyContent.CENTER).gap(0).build();
         MockNode a = node("a", 30, 20);
         layout(spec, 100, 50, a);
         assertEquals(35f, a.xPosition, EPS);
@@ -390,7 +390,7 @@ public class LayoutEngineJustifyTest extends LayoutTestBase {
 
     @Test
     public void singleChildJustifyEnd() {
-        LayoutSpec spec = new LayoutSpec().row().justifyContent(LayoutSpec.JustifyContent.END).gap(0);
+        LayoutSpec spec = LayoutSpec.builder().row().justifyContent(LayoutSpec.JustifyContent.END).gap(0).build();
         MockNode a = node("a", 30, 20);
         layout(spec, 100, 50, a);
         assertEquals(70f, a.xPosition);
@@ -401,7 +401,7 @@ public class LayoutEngineJustifyTest extends LayoutTestBase {
 
     @Test
     public void singleChildJustifyBetween() {
-        LayoutSpec spec = new LayoutSpec().row().justifyContent(LayoutSpec.JustifyContent.SPACE_BETWEEN).gap(0);
+        LayoutSpec spec = LayoutSpec.builder().row().justifyContent(LayoutSpec.JustifyContent.SPACE_BETWEEN).gap(0).build();
         MockNode a = node("a", 30, 20);
         layout(spec, 100, 50, a);
         assertEquals(0f, a.xPosition);
@@ -410,7 +410,7 @@ public class LayoutEngineJustifyTest extends LayoutTestBase {
 
     @Test
     public void singleChildJustifyAround() {
-        LayoutSpec spec = new LayoutSpec().row().justifyContent(LayoutSpec.JustifyContent.SPACE_AROUND).gap(0);
+        LayoutSpec spec = LayoutSpec.builder().row().justifyContent(LayoutSpec.JustifyContent.SPACE_AROUND).gap(0).build();
         MockNode a = node("a", 30, 20);
         layout(spec, 100, 50, a);
         float extra = 100f - 30f;
@@ -419,7 +419,7 @@ public class LayoutEngineJustifyTest extends LayoutTestBase {
 
     @Test
     public void singleChildJustifyEvenly() {
-        LayoutSpec spec = new LayoutSpec().row().justifyContent(LayoutSpec.JustifyContent.SPACE_EVENLY).gap(0);
+        LayoutSpec spec = LayoutSpec.builder().row().justifyContent(LayoutSpec.JustifyContent.SPACE_EVENLY).gap(0).build();
         MockNode a = node("a", 30, 20);
         layout(spec, 100, 50, a);
         assertEquals(35f, a.xPosition, EPS);
@@ -427,7 +427,7 @@ public class LayoutEngineJustifyTest extends LayoutTestBase {
 
     @Test
     public void exactFitJustifyCenter() {
-        LayoutSpec spec = new LayoutSpec().row().justifyContent(LayoutSpec.JustifyContent.CENTER).gap(0);
+        LayoutSpec spec = LayoutSpec.builder().row().justifyContent(LayoutSpec.JustifyContent.CENTER).gap(0).build();
         MockNode a = node("a", 30, 20);
         MockNode b = node("b", 40, 20);
         layout(spec, 70, 50, a, b);
@@ -439,7 +439,7 @@ public class LayoutEngineJustifyTest extends LayoutTestBase {
 
     @Test
     public void rowJustifyEndContentOverflows() {
-        LayoutSpec spec = new LayoutSpec().row().justifyContent(LayoutSpec.JustifyContent.END).gap(0);
+        LayoutSpec spec = LayoutSpec.builder().row().justifyContent(LayoutSpec.JustifyContent.END).gap(0).build();
         MockNode a = node("a", 60, 20);
         MockNode b = node("b", 60, 20);
         layout(spec, 100, 50, a, b);
@@ -449,7 +449,7 @@ public class LayoutEngineJustifyTest extends LayoutTestBase {
 
     @Test
     public void rowJustifyCenterContentOverflows() {
-        LayoutSpec spec = new LayoutSpec().row().justifyContent(LayoutSpec.JustifyContent.CENTER).gap(0);
+        LayoutSpec spec = LayoutSpec.builder().row().justifyContent(LayoutSpec.JustifyContent.CENTER).gap(0).build();
         MockNode a = node("a", 60, 20);
         MockNode b = node("b", 60, 20);
         layout(spec, 100, 50, a, b);
@@ -473,7 +473,7 @@ public class LayoutEngineJustifyTest extends LayoutTestBase {
     @ParameterizedTest
     @MethodSource("rowJustifyTwoChildrenParams")
     public void rowJustifyTwoChildren(LayoutSpec.JustifyContent jc, float exA, float exB) {
-        LayoutSpec spec = new LayoutSpec().row().justifyContent(jc).gap(0);
+        LayoutSpec spec = LayoutSpec.builder().row().justifyContent(jc).gap(0).build();
         MockNode a = node("a", 20, 15);
         MockNode b = node("b", 30, 20);
         layout(spec, 100, 50, a, b);
@@ -499,7 +499,7 @@ public class LayoutEngineJustifyTest extends LayoutTestBase {
     @ParameterizedTest
     @MethodSource("columnJustifyTwoChildrenParams")
     public void columnJustifyTwoChildren(LayoutSpec.JustifyContent jc, float eyA, float eyB) {
-        LayoutSpec spec = new LayoutSpec().column().justifyContent(jc).gap(0);
+        LayoutSpec spec = LayoutSpec.builder().column().justifyContent(jc).gap(0).build();
         MockNode a = node("a", 30, 20);
         MockNode b = node("b", 40, 30);
         layout(spec, 100, 100, a, b);
@@ -515,7 +515,7 @@ public class LayoutEngineJustifyTest extends LayoutTestBase {
 
     @Test
     public void fiveChildrenJustifyStart() {
-        LayoutSpec spec = new LayoutSpec().row().justifyContent(LayoutSpec.JustifyContent.START).gap(0);
+        LayoutSpec spec = LayoutSpec.builder().row().justifyContent(LayoutSpec.JustifyContent.START).gap(0).build();
         MockNode[] ns = new MockNode[5];
         for (int i = 0; i < 5; i++) ns[i] = node("n" + i, 10, 10);
         layout(spec, 100, 30, ns);
@@ -529,7 +529,7 @@ public class LayoutEngineJustifyTest extends LayoutTestBase {
 
     @Test
     public void fiveChildrenJustifyEnd() {
-        LayoutSpec spec = new LayoutSpec().row().justifyContent(LayoutSpec.JustifyContent.END).gap(0);
+        LayoutSpec spec = LayoutSpec.builder().row().justifyContent(LayoutSpec.JustifyContent.END).gap(0).build();
         MockNode[] ns = new MockNode[5];
         for (int i = 0; i < 5; i++) ns[i] = node("n" + i, 10, 10);
         layout(spec, 100, 30, ns);
@@ -541,7 +541,7 @@ public class LayoutEngineJustifyTest extends LayoutTestBase {
 
     @Test
     public void fiveChildrenSpaceEvenly() {
-        LayoutSpec spec = new LayoutSpec().row().justifyContent(LayoutSpec.JustifyContent.SPACE_EVENLY).gap(0);
+        LayoutSpec spec = LayoutSpec.builder().row().justifyContent(LayoutSpec.JustifyContent.SPACE_EVENLY).gap(0).build();
         MockNode[] ns = new MockNode[5];
         for (int i = 0; i < 5; i++) ns[i] = node("n" + i, 10, 10);
         layout(spec, 100, 30, ns);
@@ -556,7 +556,7 @@ public class LayoutEngineJustifyTest extends LayoutTestBase {
     @ParameterizedTest
     @MethodSource("justifyModes")
     public void rowJustifyAllModesInvariants(LayoutSpec.JustifyContent jc) {
-        LayoutSpec spec = new LayoutSpec().row().justifyContent(jc).gap(0);
+        LayoutSpec spec = LayoutSpec.builder().row().justifyContent(jc).gap(0).build();
         MockNode[] ns = new MockNode[]{node("a", 20, 15), node("b", 25, 20), node("c", 30, 25)};
         layout(spec, 200, 80, ns);
         assertInvariants(spec, list(ns), 0, 0, 200, 80);
@@ -565,7 +565,7 @@ public class LayoutEngineJustifyTest extends LayoutTestBase {
     @ParameterizedTest
     @MethodSource("justifyModes")
     public void columnJustifyAllModesInvariants(LayoutSpec.JustifyContent jc) {
-        LayoutSpec spec = new LayoutSpec().column().justifyContent(jc).gap(0);
+        LayoutSpec spec = LayoutSpec.builder().column().justifyContent(jc).gap(0).build();
         MockNode[] ns = new MockNode[]{node("a", 30, 15), node("b", 40, 20), node("c", 50, 25)};
         layout(spec, 150, 150, ns);
         assertInvariants(spec, list(ns), 0, 0, 150, 150);

@@ -13,7 +13,7 @@ public class LayoutEngineReverseTest extends LayoutTestBase {
 
     @Test
     public void rowReverse() {
-        LayoutSpec spec = new LayoutSpec().row().reverse(true).gap(0);
+        LayoutSpec spec = LayoutSpec.builder().row().reverse(true).gap(0).build();
         MockNode a = node("a", 20, 15);
         MockNode b = node("b", 30, 25);
         layout(spec, 100, 50, a, b);
@@ -27,7 +27,7 @@ public class LayoutEngineReverseTest extends LayoutTestBase {
 
     @Test
     public void columnReverse() {
-        LayoutSpec spec = new LayoutSpec().column().reverse(true).gap(0);
+        LayoutSpec spec = LayoutSpec.builder().column().reverse(true).gap(0).build();
         MockNode a = node("a", 30, 20);
         MockNode b = node("b", 40, 30);
         layout(spec, 100, 100, a, b);
@@ -43,7 +43,7 @@ public class LayoutEngineReverseTest extends LayoutTestBase {
 
     @Test
     public void rowReverseJustifyCenter() {
-        LayoutSpec spec = new LayoutSpec().row().reverse(true).justifyContent(LayoutSpec.JustifyContent.CENTER).gap(0);
+        LayoutSpec spec = LayoutSpec.builder().row().reverse(true).justifyContent(LayoutSpec.JustifyContent.CENTER).gap(0).build();
         MockNode a = node("a", 20, 15);
         MockNode b = node("b", 30, 25);
         layout(spec, 100, 50, a, b);
@@ -57,7 +57,7 @@ public class LayoutEngineReverseTest extends LayoutTestBase {
 
     @Test
     public void rowReverseJustifyEnd() {
-        LayoutSpec spec = new LayoutSpec().row().reverse(true).justifyContent(LayoutSpec.JustifyContent.END).gap(0);
+        LayoutSpec spec = LayoutSpec.builder().row().reverse(true).justifyContent(LayoutSpec.JustifyContent.END).gap(0).build();
         MockNode a = node("a", 20, 15);
         MockNode b = node("b", 30, 25);
         layout(spec, 100, 50, a, b);
@@ -71,7 +71,7 @@ public class LayoutEngineReverseTest extends LayoutTestBase {
 
     @Test
     public void rowReverseJustifyStart() {
-        LayoutSpec spec = new LayoutSpec().row().reverse(true).justifyContent(LayoutSpec.JustifyContent.START).gap(0);
+        LayoutSpec spec = LayoutSpec.builder().row().reverse(true).justifyContent(LayoutSpec.JustifyContent.START).gap(0).build();
         MockNode a = node("a", 20, 15);
         MockNode b = node("b", 30, 25);
         layout(spec, 100, 50, a, b);
@@ -85,7 +85,7 @@ public class LayoutEngineReverseTest extends LayoutTestBase {
 
     @Test
     public void columnReverseJustifyCenter() {
-        LayoutSpec spec = new LayoutSpec().column().reverse(true).justifyContent(LayoutSpec.JustifyContent.CENTER).gap(0);
+        LayoutSpec spec = LayoutSpec.builder().column().reverse(true).justifyContent(LayoutSpec.JustifyContent.CENTER).gap(0).build();
         MockNode a = node("a", 30, 20);
         MockNode b = node("b", 40, 30);
         layout(spec, 100, 100, a, b);
@@ -99,7 +99,7 @@ public class LayoutEngineReverseTest extends LayoutTestBase {
 
     @Test
     public void columnReverseJustifyEnd() {
-        LayoutSpec spec = new LayoutSpec().column().reverse(true).justifyContent(LayoutSpec.JustifyContent.END).gap(0);
+        LayoutSpec spec = LayoutSpec.builder().column().reverse(true).justifyContent(LayoutSpec.JustifyContent.END).gap(0).build();
         MockNode a = node("a", 30, 20);
         MockNode b = node("b", 40, 30);
         layout(spec, 100, 100, a, b);
@@ -113,7 +113,7 @@ public class LayoutEngineReverseTest extends LayoutTestBase {
 
     @Test
     public void columnReverseJustifyStart() {
-        LayoutSpec spec = new LayoutSpec().column().reverse(true).justifyContent(LayoutSpec.JustifyContent.START).gap(0);
+        LayoutSpec spec = LayoutSpec.builder().column().reverse(true).justifyContent(LayoutSpec.JustifyContent.START).gap(0).build();
         MockNode a = node("a", 30, 20);
         MockNode b = node("b", 40, 30);
         layout(spec, 100, 100, a, b);
@@ -129,7 +129,7 @@ public class LayoutEngineReverseTest extends LayoutTestBase {
 
     @Test
     public void rowReverseWithGap() {
-        LayoutSpec spec = new LayoutSpec().row().reverse(true).gap(10);
+        LayoutSpec spec = LayoutSpec.builder().row().reverse(true).gap(10).build();
         MockNode a = node("a", 20, 15);
         MockNode b = node("b", 30, 25);
         layout(spec, 100, 50, a, b);
@@ -143,7 +143,7 @@ public class LayoutEngineReverseTest extends LayoutTestBase {
 
     @Test
     public void columnReverseWithGap() {
-        LayoutSpec spec = new LayoutSpec().column().reverse(true).gap(10);
+        LayoutSpec spec = LayoutSpec.builder().column().reverse(true).gap(10).build();
         MockNode a = node("a", 30, 20);
         MockNode b = node("b", 40, 30);
         layout(spec, 100, 100, a, b);
@@ -159,7 +159,7 @@ public class LayoutEngineReverseTest extends LayoutTestBase {
 
     @Test
     public void rowReverseWrap() {
-        LayoutSpec spec = new LayoutSpec().row().reverse(true).wrap().gap(0);
+        LayoutSpec spec = LayoutSpec.builder().row().reverse(true).wrap().gap(0).build();
         MockNode a = node("a", 50, 20);
         MockNode b = node("b", 50, 25);
         MockNode c = node("c", 50, 30);
@@ -176,7 +176,7 @@ public class LayoutEngineReverseTest extends LayoutTestBase {
 
     @Test
     public void columnReverseWrap() {
-        LayoutSpec spec = new LayoutSpec().column().reverse(true).wrap().gap(0);
+        LayoutSpec spec = LayoutSpec.builder().column().reverse(true).wrap().gap(0).build();
         MockNode a = node("a", 40, 40);
         MockNode b = node("b", 50, 40);
         MockNode c = node("c", 60, 40);
@@ -195,9 +195,9 @@ public class LayoutEngineReverseTest extends LayoutTestBase {
 
     @Test
     public void rowReverseGrow() {
-        LayoutSpec spec = new LayoutSpec().row().reverse(true).gap(0);
-        MockNode a = nodeWithSizing("a", sizing(LayoutSpec.SizeMode.GROW, 0, 15).growWeightHorizontal(1));
-        MockNode b = nodeWithSizing("b", sizing(LayoutSpec.SizeMode.GROW, 0, 25).growWeightHorizontal(3));
+        LayoutSpec spec = LayoutSpec.builder().row().reverse(true).gap(0).build();
+        MockNode a = nodeWithSizing("a", sizing(LayoutSpec.SizeMode.GROW, 0, 15).toBuilder().growWeightHorizontal(1).build());
+        MockNode b = nodeWithSizing("b", sizing(LayoutSpec.SizeMode.GROW, 0, 25).toBuilder().growWeightHorizontal(3).build());
         layout(spec, 100, 50, a, b);
         assertAll(
             () -> assertEquals(75f, a.xPosition), () -> assertEquals(25f, a.width),
@@ -209,9 +209,9 @@ public class LayoutEngineReverseTest extends LayoutTestBase {
 
     @Test
     public void columnReverseGrow() {
-        LayoutSpec spec = new LayoutSpec().column().reverse(true).gap(0);
-        MockNode a = nodeWithSizing("a", sizing(LayoutSpec.SizeMode.GROW, 30, 0).growWeightVertical(2));
-        MockNode b = nodeWithSizing("b", sizing(LayoutSpec.SizeMode.GROW, 40, 0).growWeightVertical(1));
+        LayoutSpec spec = LayoutSpec.builder().column().reverse(true).gap(0).build();
+        MockNode a = nodeWithSizing("a", sizing(LayoutSpec.SizeMode.GROW, 30, 0).toBuilder().growWeightVertical(2).build());
+        MockNode b = nodeWithSizing("b", sizing(LayoutSpec.SizeMode.GROW, 40, 0).toBuilder().growWeightVertical(1).build());
         layout(spec, 100, 90, a, b);
         assertAll(
             () -> assertEquals(0f, a.xPosition), () -> assertEquals(100f, a.width),
@@ -225,7 +225,7 @@ public class LayoutEngineReverseTest extends LayoutTestBase {
 
     @Test
     public void rowReverseThreeChildren() {
-        LayoutSpec spec = new LayoutSpec().row().reverse(true).gap(0);
+        LayoutSpec spec = LayoutSpec.builder().row().reverse(true).gap(0).build();
         MockNode a = node("a", 10, 10);
         MockNode b = node("b", 15, 15);
         MockNode c = node("c", 20, 20);
@@ -242,7 +242,7 @@ public class LayoutEngineReverseTest extends LayoutTestBase {
 
     @Test
     public void columnReverseThreeChildren() {
-        LayoutSpec spec = new LayoutSpec().column().reverse(true).gap(0);
+        LayoutSpec spec = LayoutSpec.builder().column().reverse(true).gap(0).build();
         MockNode a = node("a", 30, 10);
         MockNode b = node("b", 40, 15);
         MockNode c = node("c", 50, 20);
@@ -284,7 +284,7 @@ public class LayoutEngineReverseTest extends LayoutTestBase {
     @ParameterizedTest
     @MethodSource("reverseJustifyParams")
     public void rowReverseJustifyParam(LayoutSpec.JustifyContent jc, float exA, float exB) {
-        LayoutSpec spec = new LayoutSpec().row().reverse(true).justifyContent(jc).gap(0);
+        LayoutSpec spec = LayoutSpec.builder().row().reverse(true).justifyContent(jc).gap(0).build();
         MockNode a = node("a", 20, 15);
         MockNode b = node("b", 30, 20);
         layout(spec, 100, 50, a, b);
@@ -297,7 +297,7 @@ public class LayoutEngineReverseTest extends LayoutTestBase {
     @ParameterizedTest
     @MethodSource("columnReverseJustifyParams")
     public void columnReverseJustifyParam(LayoutSpec.JustifyContent jc, float eyA, float eyB) {
-        LayoutSpec spec = new LayoutSpec().column().reverse(true).justifyContent(jc).gap(0);
+        LayoutSpec spec = LayoutSpec.builder().column().reverse(true).justifyContent(jc).gap(0).build();
         MockNode a = node("a", 30, 20);
         MockNode b = node("b", 40, 30);
         layout(spec, 100, 100, a, b);
@@ -316,7 +316,7 @@ public class LayoutEngineReverseTest extends LayoutTestBase {
     @ParameterizedTest
     @MethodSource("reverseJustifyModes")
     public void rowReverseInvariants(LayoutSpec.JustifyContent jc) {
-        LayoutSpec spec = new LayoutSpec().row().reverse(true).justifyContent(jc).gap(0);
+        LayoutSpec spec = LayoutSpec.builder().row().reverse(true).justifyContent(jc).gap(0).build();
         MockNode a = node("a", 15, 10);
         MockNode b = node("b", 20, 15);
         MockNode c = node("c", 25, 20);
@@ -327,7 +327,7 @@ public class LayoutEngineReverseTest extends LayoutTestBase {
     @ParameterizedTest
     @MethodSource("reverseJustifyModes")
     public void columnReverseInvariants(LayoutSpec.JustifyContent jc) {
-        LayoutSpec spec = new LayoutSpec().column().reverse(true).justifyContent(jc).gap(0);
+        LayoutSpec spec = LayoutSpec.builder().column().reverse(true).justifyContent(jc).gap(0).build();
         MockNode a = node("a", 30, 10);
         MockNode b = node("b", 40, 15);
         MockNode c = node("c", 50, 20);

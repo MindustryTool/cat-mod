@@ -15,7 +15,7 @@ public class LayoutEngineEdgeTest extends LayoutTestBase {
 
     @Test
     public void noChildren() {
-        LayoutSpec spec = new LayoutSpec().row().gap(0);
+        LayoutSpec spec = LayoutSpec.builder().row().gap(0).build();
         layout(spec, 100, 50);
     }
 
@@ -25,7 +25,7 @@ public class LayoutEngineEdgeTest extends LayoutTestBase {
         MockNode b = node("b", 30, 25);
         a.set("visible", false);
         b.set("visible", false);
-        layout(row().gap(0), 100, 50, a, b);
+        layout(row().toBuilder().gap(0).build(), 100, 50, a, b);
         assertEquals(-1f, a.width);
         assertEquals(-1f, b.width);
     }
@@ -34,7 +34,7 @@ public class LayoutEngineEdgeTest extends LayoutTestBase {
     public void singleInvisibleChild() {
         MockNode a = node("a", 20, 15);
         a.set("visible", false);
-        layout(row().gap(0), 100, 50, a);
+        layout(row().toBuilder().gap(0).build(), 100, 50, a);
         assertEquals(-1f, a.width);
         assertEquals(-9999f, a.xPosition);
     }
@@ -45,7 +45,7 @@ public class LayoutEngineEdgeTest extends LayoutTestBase {
     public void zeroContainerSizeRow() {
         MockNode a = node("a", 20, 15);
         MockNode b = node("b", 30, 25);
-        layout(row().gap(0), 0, 0, a, b);
+        layout(row().toBuilder().gap(0).build(), 0, 0, a, b);
         assertEquals(0f, a.xPosition);
         assertEquals(20f, a.width);
         assertEquals(20f, b.xPosition);
@@ -56,7 +56,7 @@ public class LayoutEngineEdgeTest extends LayoutTestBase {
     public void zeroContainerSizeColumn() {
         MockNode a = node("a", 30, 20);
         MockNode b = node("b", 40, 30);
-        layout(column().gap(0), 0, 0, a, b);
+        layout(column().toBuilder().gap(0).build(), 0, 0, a, b);
         assertEquals(0f, a.xPosition);
         assertEquals(30f, a.width);
         assertEquals(-20f, a.yPosition);
@@ -73,7 +73,7 @@ public class LayoutEngineEdgeTest extends LayoutTestBase {
     public void largeContainerNoOverflow() {
         MockNode a = node("a", 100, 50);
         MockNode b = node("b", 150, 75);
-        layout(row(AlignItems.STRETCH).gap(0), 10000, 5000, a, b);
+        layout(row(AlignItems.STRETCH).toBuilder().gap(0).build(), 10000, 5000, a, b);
         assertAll(
             () -> assertEquals(0f, a.xPosition), () -> assertEquals(100f, a.width),
             () -> assertEquals(0f, a.yPosition), () -> assertEquals(5000f, a.height),
@@ -86,7 +86,7 @@ public class LayoutEngineEdgeTest extends LayoutTestBase {
     public void largeNodeSizes() {
         MockNode a = node("a", 5000, 3000);
         MockNode b = node("b", 4000, 2000);
-        layout(row(AlignItems.STRETCH).gap(0), 10000, 5000, a, b);
+        layout(row(AlignItems.STRETCH).toBuilder().gap(0).build(), 10000, 5000, a, b);
         assertAll(
             () -> assertEquals(0f, a.xPosition), () -> assertEquals(5000f, a.width),
             () -> assertEquals(0f, a.yPosition), () -> assertEquals(5000f, a.height),
@@ -101,7 +101,7 @@ public class LayoutEngineEdgeTest extends LayoutTestBase {
     public void subPixelValuesRow() {
         MockNode a = node("a", 10.5f, 5.25f);
         MockNode b = node("b", 20.75f, 8.33f);
-        layout(row().gap(0), 100, 50, a, b);
+        layout(row().toBuilder().gap(0).build(), 100, 50, a, b);
         assertEquals(0f, a.xPosition);
         assertEquals(10.5f, a.width, EPS);
         assertEquals(0f, a.yPosition);
@@ -116,7 +116,7 @@ public class LayoutEngineEdgeTest extends LayoutTestBase {
     public void subPixelValuesColumn() {
         MockNode a = node("a", 15.33f, 10.67f);
         MockNode b = node("b", 22.22f, 14.44f);
-        layout(column().gap(0), 100, 100, a, b);
+        layout(column().toBuilder().gap(0).build(), 100, 100, a, b);
         assertEquals(0f, a.xPosition);
         assertEquals(15.33f, a.width, EPS);
         assertEquals(89.33f, a.yPosition, EPS);
@@ -132,8 +132,8 @@ public class LayoutEngineEdgeTest extends LayoutTestBase {
         MockNode a = node("a", 10, 10);
         MockNode b = node("b", 15, 15);
         MockNode c = node("c", 12, 12);
-        layout(row().gap(1.5f), 50, 30, a, b, c);
-        assertInvariants(row().gap(1.5f), list(a, b, c), 0, 0, 50, 30);
+        layout(row().toBuilder().gap(1.5f).build(), 50, 30, a, b, c);
+        assertInvariants(row().toBuilder().gap(1.5f).build(), list(a, b, c), 0, 0, 50, 30);
     }
 
     // ===== NEGATIVE GAP / PADDING =====
@@ -142,7 +142,7 @@ public class LayoutEngineEdgeTest extends LayoutTestBase {
     public void negativeGapRow() {
         MockNode a = node("a", 30, 15);
         MockNode b = node("b", 30, 20);
-        layout(row(AlignItems.STRETCH).gap(-10), 60, 50, a, b);
+        layout(row(AlignItems.STRETCH).toBuilder().gap(-10).build(), 60, 50, a, b);
         assertAll(
             () -> assertEquals(0f, a.xPosition), () -> assertEquals(30f, a.width),
             () -> assertEquals(0f, a.yPosition), () -> assertEquals(50f, a.height),
@@ -155,7 +155,7 @@ public class LayoutEngineEdgeTest extends LayoutTestBase {
     public void negativeGapColumn() {
         MockNode a = node("a", 30, 20);
         MockNode b = node("b", 40, 30);
-        layout(column().gap(-5), 100, 60, a, b);
+        layout(column().toBuilder().gap(-5).build(), 100, 60, a, b);
         assertAll(
             () -> assertEquals(0f, a.xPosition), () -> assertEquals(30f, a.width),
             () -> assertEquals(40f, a.yPosition), () -> assertEquals(20f, a.height),
@@ -166,7 +166,7 @@ public class LayoutEngineEdgeTest extends LayoutTestBase {
 
     @Test
     public void negativePaddingRow() {
-        LayoutSpec spec = new LayoutSpec().row().padding(-5).gap(0);
+        LayoutSpec spec = LayoutSpec.builder().row().padding(-5).gap(0).build();
         MockNode a = node("a", 20, 15);
         layout(spec, 100, 50, a);
         assertEquals(0f, a.xPosition);
@@ -177,7 +177,7 @@ public class LayoutEngineEdgeTest extends LayoutTestBase {
 
     @Test
     public void negativePaddingColumn() {
-        LayoutSpec spec = new LayoutSpec().column().padding(-3).gap(0);
+        LayoutSpec spec = LayoutSpec.builder().column().padding(-3).gap(0).build();
         MockNode a = node("a", 30, 20);
         layout(spec, 100, 80, a);
         assertEquals(0f, a.xPosition);
@@ -192,7 +192,7 @@ public class LayoutEngineEdgeTest extends LayoutTestBase {
     public void oneHundredChildrenRow() {
         MockNode[] ns = new MockNode[100];
         for (int i = 0; i < 100; i++) ns[i] = node("n" + i, 5, 3);
-        layout(row(AlignItems.STRETCH).gap(1), 1000, 50, ns);
+        layout(row(AlignItems.STRETCH).toBuilder().gap(1).build(), 1000, 50, ns);
         for (int i = 0; i < 100; i++) {
             assertEquals(i * 6f, ns[i].xPosition, EPS);
             assertEquals(5f, ns[i].width);
@@ -205,7 +205,7 @@ public class LayoutEngineEdgeTest extends LayoutTestBase {
     public void oneHundredChildrenColumn() {
         MockNode[] ns = new MockNode[100];
         for (int i = 0; i < 100; i++) ns[i] = node("n" + i, 3, 5);
-        layout(column(AlignItems.STRETCH).gap(1), 100, 1000, ns);
+        layout(column(AlignItems.STRETCH).toBuilder().gap(1).build(), 100, 1000, ns);
         for (int i = 0; i < 100; i++) {
             assertEquals(995f - i * 6f, ns[i].yPosition, EPS);
             assertEquals(5f, ns[i].height);
@@ -218,16 +218,16 @@ public class LayoutEngineEdgeTest extends LayoutTestBase {
     public void fiftyChildrenWrap() {
         MockNode[] ns = new MockNode[50];
         for (int i = 0; i < 50; i++) ns[i] = node("n" + i, 40, 10);
-        layout(row().wrap().gap(2), 100, 500, ns);
-        assertInvariants(row().wrap().gap(2), list(ns), 0, 0, 100, 500);
+        layout(row().toBuilder().wrap().gap(2).build(), 100, 500, ns);
+        assertInvariants(row().toBuilder().wrap().gap(2).build(), list(ns), 0, 0, 100, 500);
     }
 
     @Test
     public void fiftyGrowChildren() {
         MockNode[] ns = new MockNode[50];
         for (int i = 0; i < 50; i++)
-            ns[i] = nodeWithSizing("n" + i, sizing(LayoutSpec.SizeMode.GROW, 0, 5).growWeightHorizontal(1));
-        layout(row().gap(0), 500, 50, ns);
+            ns[i] = nodeWithSizing("n" + i, sizing(LayoutSpec.SizeMode.GROW, 0, 5).toBuilder().growWeightHorizontal(1).build());
+        layout(row().toBuilder().gap(0).build(), 500, 50, ns);
         for (int i = 0; i < 50; i++) {
             assertEquals(10f, ns[i].width, EPS);
             assertEquals(i * 10f, ns[i].xPosition, EPS);
@@ -245,7 +245,7 @@ public class LayoutEngineEdgeTest extends LayoutTestBase {
         MockNode e = node("e", 15, 12);
         a.set("visible", false);
         c.set("visible", false);
-        layout(row(AlignItems.CENTER).gap(5), 120, 50, a, b, c, d, e);
+        layout(row(AlignItems.CENTER).toBuilder().gap(5).build(), 120, 50, a, b, c, d, e);
         assertAll(
             () -> assertEquals(-1f, a.width),
             () -> assertEquals(-1f, c.width),
@@ -253,25 +253,25 @@ public class LayoutEngineEdgeTest extends LayoutTestBase {
             () -> assertEquals(35f, d.xPosition), () -> assertEquals(25f, d.width),
             () -> assertEquals(65f, e.xPosition), () -> assertEquals(15f, e.width)
         );
-        assertInvariants(row(AlignItems.CENTER).gap(5), list(a, b, c, d, e), 0, 0, 120, 50);
+        assertInvariants(row(AlignItems.CENTER).toBuilder().gap(5).build(), list(a, b, c, d, e), 0, 0, 120, 50);
     }
 
     // ===== NESTED-LIKE COMPLEX COMBOS =====
 
     @Test
     public void allFeaturesCombinedRow() {
-        LayoutSpec spec = new LayoutSpec().row()
+        LayoutSpec spec = LayoutSpec.builder().row()
             .justifyContent(LayoutSpec.JustifyContent.SPACE_AROUND)
             .alignItems(LayoutSpec.AlignItems.CENTER)
             .padding(5)
             .gap(3)
-            .noWrap();
+            .noWrap().build();
         MockNode a = node("a", 15, 10);
-        MockNode b = nodeWithSizing("b", sizing(LayoutSpec.SizeMode.GROW, 0, 20).growWeightHorizontal(2));
+        MockNode b = nodeWithSizing("b", sizing(LayoutSpec.SizeMode.GROW, 0, 20).toBuilder().growWeightHorizontal(2).build());
         MockNode c = nodeWithSizing("c", sizing(LayoutSpec.SizeMode.WRAP, 0, 0));
         MockNode d = node("d", 20, 15);
         c.set("prefW", 25f); c.set("prefH", 15f);
-        MockNode e = nodeWithSizing("e", sizing(LayoutSpec.SizeMode.GROW, 0, 25).growWeightHorizontal(1));
+        MockNode e = nodeWithSizing("e", sizing(LayoutSpec.SizeMode.GROW, 0, 25).toBuilder().growWeightHorizontal(1).build());
         a.set("visible", false);
         layout(spec, 150, 60, a, b, c, d, e);
         assertInvariants(spec, list(a, b, c, d, e), 0, 0, 150, 60);
@@ -279,14 +279,14 @@ public class LayoutEngineEdgeTest extends LayoutTestBase {
 
     @Test
     public void allFeaturesCombinedColumn() {
-        LayoutSpec spec = new LayoutSpec().column()
+        LayoutSpec spec = LayoutSpec.builder().column()
             .justifyContent(LayoutSpec.JustifyContent.SPACE_EVENLY)
             .alignItems(LayoutSpec.AlignItems.CENTER)
             .padding(3, 6, 3, 6)
             .gap(2)
-            .noWrap();
+            .noWrap().build();
         MockNode a = node("a", 20, 10);
-        MockNode b = nodeWithSizing("b", sizing(LayoutSpec.SizeMode.GROW, 30, 0).growWeightVertical(3));
+        MockNode b = nodeWithSizing("b", sizing(LayoutSpec.SizeMode.GROW, 30, 0).toBuilder().growWeightVertical(3).build());
         MockNode c = nodeWithSizing("c", sizing(LayoutSpec.SizeMode.WRAP, 0, 0));
         c.set("prefW", 35f); c.set("prefH", 18f);
         MockNode d = node("d", 25, 15);
@@ -299,8 +299,8 @@ public class LayoutEngineEdgeTest extends LayoutTestBase {
 
     @Test
     public void singleChildGrowWeighted() {
-        MockNode a = nodeWithSizing("a", sizing(LayoutSpec.SizeMode.GROW, 30, 20).growWeightHorizontal(5));
-        layout(row().gap(0), 100, 50, a);
+        MockNode a = nodeWithSizing("a", sizing(LayoutSpec.SizeMode.GROW, 30, 20).toBuilder().growWeightHorizontal(5).build());
+        layout(row().toBuilder().gap(0).build(), 100, 50, a);
         assertEquals(0f, a.xPosition);
         assertEquals(100f, a.width);
     }
@@ -308,7 +308,7 @@ public class LayoutEngineEdgeTest extends LayoutTestBase {
     @Test
     public void singleChildFixedStretch() {
         MockNode a = node("a", 40, 30);
-        layout(row(AlignItems.STRETCH).gap(0), 100, 60, a);
+        layout(row(AlignItems.STRETCH).toBuilder().gap(0).build(), 100, 60, a);
         assertEquals(0f, a.xPosition);
         assertEquals(40f, a.width);
         assertEquals(0f, a.yPosition);
@@ -321,7 +321,7 @@ public class LayoutEngineEdgeTest extends LayoutTestBase {
     public void childrenOverflowContainerPositive() {
         MockNode a = node("a", 60, 10);
         MockNode b = node("b", 60, 10);
-        layout(row().gap(0), 100, 50, a, b);
+        layout(row().toBuilder().gap(0).build(), 100, 50, a, b);
         assertEquals(0f, a.xPosition);
         assertEquals(60f, b.xPosition);
     }
@@ -330,7 +330,7 @@ public class LayoutEngineEdgeTest extends LayoutTestBase {
     public void childrenHugelyOverflowContainer() {
         MockNode a = node("a", 300, 10);
         MockNode b = node("b", 300, 10);
-        layout(row().gap(0), 50, 50, a, b);
+        layout(row().toBuilder().gap(0).build(), 50, 50, a, b);
         assertEquals(0f, a.xPosition);
         assertEquals(300f, b.xPosition);
     }
@@ -339,7 +339,7 @@ public class LayoutEngineEdgeTest extends LayoutTestBase {
     public void columnChildrenOverflow() {
         MockNode a = node("a", 30, 60);
         MockNode b = node("b", 40, 60);
-        layout(column().gap(0), 100, 100, a, b);
+        layout(column().toBuilder().gap(0).build(), 100, 100, a, b);
         assertEquals(40f, a.yPosition);
         assertEquals(60f, a.height);
         assertEquals(-20f, b.yPosition);
@@ -350,7 +350,7 @@ public class LayoutEngineEdgeTest extends LayoutTestBase {
 
     @Test
     public void justifyEndOverflowLeftSide() {
-        LayoutSpec spec = new LayoutSpec().row().justifyContent(LayoutSpec.JustifyContent.END).gap(0);
+        LayoutSpec spec = LayoutSpec.builder().row().justifyContent(LayoutSpec.JustifyContent.END).gap(0).build();
         MockNode a = node("a", 70, 10);
         MockNode b = node("b", 70, 10);
         layout(spec, 100, 50, a, b);
@@ -366,7 +366,7 @@ public class LayoutEngineEdgeTest extends LayoutTestBase {
     public void minEqualsMax() {
         MockNode a = node("a", 20, 15);
         a.minimumWidth(30).maximumWidth(30);
-        layout(row().gap(0), 100, 50, a);
+        layout(row().toBuilder().gap(0).build(), 100, 50, a);
         assertEquals(30f, a.width);
     }
 
@@ -374,7 +374,7 @@ public class LayoutEngineEdgeTest extends LayoutTestBase {
     public void minEqualsMaxColumn() {
         MockNode a = node("a", 30, 20);
         a.minimumHeight(25).maximumHeight(25);
-        layout(column().gap(0), 100, 100, a);
+        layout(column().toBuilder().gap(0).build(), 100, 100, a);
         assertEquals(25f, a.height);
     }
 
@@ -382,7 +382,7 @@ public class LayoutEngineEdgeTest extends LayoutTestBase {
 
     @Test
     public void paddingWithWrap() {
-        LayoutSpec spec = new LayoutSpec().row().padding(10).wrap().gap(0);
+        LayoutSpec spec = LayoutSpec.builder().row().padding(10).wrap().gap(0).build();
         MockNode a = node("a", 60, 20);
         MockNode b = node("b", 60, 25);
         MockNode c = node("c", 60, 30);
@@ -391,7 +391,7 @@ public class LayoutEngineEdgeTest extends LayoutTestBase {
 
     @Test
     public void paddingWithWrapColumn() {
-        LayoutSpec spec = new LayoutSpec().column().padding(10).wrap().gap(0);
+        LayoutSpec spec = LayoutSpec.builder().column().padding(10).wrap().gap(0).build();
         MockNode a = node("a", 40, 40);
         MockNode b = node("b", 50, 40);
         MockNode c = node("c", 60, 40);
@@ -405,8 +405,8 @@ public class LayoutEngineEdgeTest extends LayoutTestBase {
     public void oneHundredGrowChildrenWeighted() {
         MockNode[] ns = new MockNode[100];
         for (int i = 0; i < 100; i++)
-            ns[i] = nodeWithSizing("n" + i, sizing(LayoutSpec.SizeMode.GROW, 0, 3).growWeightHorizontal(i + 1));
-        layout(row().gap(0), 5050, 50, ns);
+            ns[i] = nodeWithSizing("n" + i, sizing(LayoutSpec.SizeMode.GROW, 0, 3).toBuilder().growWeightHorizontal(i + 1).build());
+        layout(row().toBuilder().gap(0).build(), 5050, 50, ns);
         float totalW = 0;
         for (int i = 0; i < 100; i++) totalW += ns[i].width;
         assertEquals(5050f, totalW, 1f);
@@ -417,7 +417,7 @@ public class LayoutEngineEdgeTest extends LayoutTestBase {
     @Test
     public void rowComplexInvariantMega() {
         MockNode a = node("a", 18, 12);
-        MockNode b = nodeWithSizing("b", sizing(LayoutSpec.SizeMode.GROW, 0, 22).growWeightHorizontal(3));
+        MockNode b = nodeWithSizing("b", sizing(LayoutSpec.SizeMode.GROW, 0, 22).toBuilder().growWeightHorizontal(3).build());
         MockNode c = nodeWithSizing("c", sizing(LayoutSpec.SizeMode.WRAP, 0, 0));
         c.set("prefW", 28f); c.set("prefH", 16f);
         c.padding(4);
@@ -425,14 +425,14 @@ public class LayoutEngineEdgeTest extends LayoutTestBase {
         d.minimumWidth(20).minimumHeight(15);
         MockNode e = node("e", 10, 8);
         e.set("visible", false);
-        layout(row(AlignItems.CENTER, JustifyContent.SPACE_AROUND).gap(2).padding(3), 200, 60, a, b, c, d, e);
-        assertInvariants(row(AlignItems.CENTER, JustifyContent.SPACE_AROUND).gap(2).padding(3), list(a, b, c, d, e), 0, 0, 200, 60);
+        layout(row(AlignItems.CENTER, JustifyContent.SPACE_AROUND).toBuilder().gap(2).padding(3).build(), 200, 60, a, b, c, d, e);
+        assertInvariants(row(AlignItems.CENTER, JustifyContent.SPACE_AROUND).toBuilder().gap(2).padding(3).build(), list(a, b, c, d, e), 0, 0, 200, 60);
     }
 
     @Test
     public void columnComplexInvariantMega() {
         MockNode a = node("a", 25, 14);
-        MockNode b = nodeWithSizing("b", sizing(LayoutSpec.SizeMode.GROW, 30, 0).growWeightVertical(2));
+        MockNode b = nodeWithSizing("b", sizing(LayoutSpec.SizeMode.GROW, 30, 0).toBuilder().growWeightVertical(2).build());
         MockNode c = nodeWithSizing("c", sizing(LayoutSpec.SizeMode.WRAP, 0, 0));
         c.set("prefW", 32f); c.set("prefH", 20f);
         c.padding(3, 6, 3, 6);
@@ -440,8 +440,8 @@ public class LayoutEngineEdgeTest extends LayoutTestBase {
         d.minimumWidth(28).minimumHeight(16);
         MockNode e = node("e", 12, 9);
         e.set("visible", false);
-        layout(column(AlignItems.END, JustifyContent.SPACE_EVENLY).gap(3).padding(4, 2, 4, 2), 100, 200, a, b, c, d, e);
-        assertInvariants(column(AlignItems.END, JustifyContent.SPACE_EVENLY).gap(3).padding(4, 2, 4, 2), list(a, b, c, d, e), 0, 0, 100, 200);
+        layout(column(AlignItems.END, JustifyContent.SPACE_EVENLY).toBuilder().gap(3).padding(4, 2, 4, 2).build(), 100, 200, a, b, c, d, e);
+        assertInvariants(column(AlignItems.END, JustifyContent.SPACE_EVENLY).toBuilder().gap(3).padding(4, 2, 4, 2).build(), list(a, b, c, d, e), 0, 0, 100, 200);
     }
 
     // ===== PARAMETERIZED STRESS =====
@@ -458,7 +458,7 @@ public class LayoutEngineEdgeTest extends LayoutTestBase {
     public void rowStressWithCount(int count) {
         MockNode[] ns = new MockNode[count];
         for (int i = 0; i < count; i++) ns[i] = node("n" + i, 10, 5);
-        layout(row(AlignItems.STRETCH).gap(1), count * 11, 30, ns);
+        layout(row(AlignItems.STRETCH).toBuilder().gap(1).build(), count * 11, 30, ns);
         for (int i = 0; i < count; i++) {
             assertEquals(i * 11f, ns[i].xPosition, EPS);
             assertEquals(10f, ns[i].width);
@@ -472,7 +472,7 @@ public class LayoutEngineEdgeTest extends LayoutTestBase {
     public void columnStressWithCount(int count) {
         MockNode[] ns = new MockNode[count];
         for (int i = 0; i < count; i++) ns[i] = node("n" + i, 5, 10);
-        layout(column(AlignItems.STRETCH).gap(1), 50, count * 11, ns);
+        layout(column(AlignItems.STRETCH).toBuilder().gap(1).build(), 50, count * 11, ns);
         for (int i = 0; i < count; i++) {
             assertEquals(count * 11f - 10f - i * 11f, ns[i].yPosition, EPS);
             assertEquals(10f, ns[i].height);
@@ -490,7 +490,7 @@ public class LayoutEngineEdgeTest extends LayoutTestBase {
     @ParameterizedTest
     @MethodSource("allModesCombo")
     public void rowComboInvariants(LayoutSpec.JustifyContent jc, LayoutSpec.AlignItems ai, LayoutSpec.SizeMode smA, LayoutSpec.SizeMode smB) {
-        LayoutSpec spec = new LayoutSpec().row().justifyContent(jc).alignItems(ai).gap(2).padding(1);
+        LayoutSpec spec = LayoutSpec.builder().row().justifyContent(jc).alignItems(ai).gap(2).padding(1).build();
         MockNode a = nodeWithSizing("a", sizing(smA, 15, 10));
         MockNode b = nodeWithSizing("b", sizing(smB, 25, 20));
         if (smA == LayoutSpec.SizeMode.GROW) a.growWeightHorizontal(1);
@@ -504,7 +504,7 @@ public class LayoutEngineEdgeTest extends LayoutTestBase {
     @ParameterizedTest
     @MethodSource("allModesCombo")
     public void columnComboInvariants(LayoutSpec.JustifyContent jc, LayoutSpec.AlignItems ai, LayoutSpec.SizeMode smA, LayoutSpec.SizeMode smB) {
-        LayoutSpec spec = new LayoutSpec().column().justifyContent(jc).alignItems(ai).gap(2).padding(1);
+        LayoutSpec spec = LayoutSpec.builder().column().justifyContent(jc).alignItems(ai).gap(2).padding(1).build();
         MockNode a = nodeWithSizing("a", sizing(smA, 20, 12));
         MockNode b = nodeWithSizing("b", sizing(smB, 30, 18));
         if (smA == LayoutSpec.SizeMode.GROW) a.growWeightVertical(1);
@@ -522,8 +522,8 @@ public class LayoutEngineEdgeTest extends LayoutTestBase {
         MockNode[] ns = new MockNode[7];
         for (int i = 0; i < 7; i++)
             ns[i] = node("n" + i, 7.33f + i * 1.1f, 4.44f + i * 0.77f);
-        layout(row().gap(0.5f), 100, 50, ns);
-        assertInvariants(row().gap(0.5f), list(ns), 0, 0, 100, 50);
+        layout(row().toBuilder().gap(0.5f).build(), 100, 50, ns);
+        assertInvariants(row().toBuilder().gap(0.5f).build(), list(ns), 0, 0, 100, 50);
     }
 
     // ===== NO OVERLAP: COMPLEX LAYOUTS =====
@@ -531,22 +531,22 @@ public class LayoutEngineEdgeTest extends LayoutTestBase {
     @Test
     public void noOverlapComplexRow() {
         MockNode a = node("a", 20, 15);
-        MockNode b = nodeWithSizing("b", sizing(LayoutSpec.SizeMode.GROW, 0, 20).growWeightHorizontal(1));
+        MockNode b = nodeWithSizing("b", sizing(LayoutSpec.SizeMode.GROW, 0, 20).toBuilder().growWeightHorizontal(1).build());
         MockNode c = nodeWithSizing("c", sizing(LayoutSpec.SizeMode.WRAP, 0, 0));
         c.set("prefW", 25f); c.set("prefH", 18f);
         MockNode d = node("d", 15, 12);
-        layout(row(AlignItems.CENTER, JustifyContent.SPACE_BETWEEN).gap(3).padding(2), 150, 60, a, b, c, d);
+        layout(row(AlignItems.CENTER, JustifyContent.SPACE_BETWEEN).toBuilder().gap(3).padding(2).build(), 150, 60, a, b, c, d);
         assertNoOverlap(list(a, b, c, d));
     }
 
     @Test
     public void noOverlapComplexColumn() {
         MockNode a = node("a", 30, 15);
-        MockNode b = nodeWithSizing("b", sizing(LayoutSpec.SizeMode.GROW, 40, 0).growWeightVertical(1));
+        MockNode b = nodeWithSizing("b", sizing(LayoutSpec.SizeMode.GROW, 40, 0).toBuilder().growWeightVertical(1).build());
         MockNode c = nodeWithSizing("c", sizing(LayoutSpec.SizeMode.WRAP, 0, 0));
         c.set("prefW", 35f); c.set("prefH", 20f);
         MockNode d = node("d", 25, 12);
-        layout(column(AlignItems.START, JustifyContent.SPACE_EVENLY).gap(2).padding(3), 100, 150, a, b, c, d);
+        layout(column(AlignItems.START, JustifyContent.SPACE_EVENLY).toBuilder().gap(2).padding(3).build(), 100, 150, a, b, c, d);
         assertNoOverlap(list(a, b, c, d), true);
     }
 }
