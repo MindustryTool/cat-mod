@@ -93,7 +93,7 @@ public class CustomComponent implements Component {
         public float noiseAmount;
 
         @Override
-        protected NodeSpec sizing() {
+        protected NodeSpec<?> sizing() {
             return sizing;
         }
 
@@ -314,7 +314,7 @@ public class CustomComponent implements Component {
         }
     }
 
-    protected final NodeSpec sizing = new NodeSpec();
+    protected final NodeSpec<?> sizing = new NodeSpec<>();
     public final Style style = new Style();
     protected final CustomDraw drawer = new CustomDraw();
 
@@ -421,7 +421,7 @@ public class CustomComponent implements Component {
     }
 
     @Override
-    public NodeSpec sizing() {
+    public NodeSpec<?> sizing() {
         return sizing;
     }
 

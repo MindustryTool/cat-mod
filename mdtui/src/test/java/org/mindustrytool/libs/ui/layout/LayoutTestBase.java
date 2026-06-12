@@ -11,7 +11,7 @@ public abstract class LayoutTestBase {
 
     protected static class MockNode {
         final String name;
-        final NodeSpec sizing = new NodeSpec();
+        final NodeSpec<?> sizing = new NodeSpec<>();
         boolean visible = true;
         boolean returnNullSizing = false;
         float preferredWidth;
@@ -28,7 +28,7 @@ public abstract class LayoutTestBase {
             this.preferredHeight = preferredHeight;
         }
 
-        NodeSpec getSizingObj() { return sizing; }
+        NodeSpec<?> getSizingObj() { return sizing; }
 
         void set(String key, Object value) {
             switch (key) {
@@ -50,8 +50,8 @@ public abstract class LayoutTestBase {
             c.returnNullSizing = returnNullSizing;
             c.xPosition = xPosition; c.yPosition = yPosition;
             c.width = width; c.height = height; c.boundsSet = boundsSet;
-            NodeSpec t = c.sizing;
-            NodeSpec s = sizing;
+            NodeSpec<?> t = c.sizing;
+            NodeSpec<?> s = sizing;
             t.widthMode(s.getWidthMode()); t.heightMode(s.getHeightMode());
             t.fixedWidth(s.getFixedWidth()); t.fixedHeight(s.getFixedHeight());
             t.growWeightHorizontal(s.getGrowWeightHorizontal());
@@ -73,7 +73,7 @@ public abstract class LayoutTestBase {
         @Override public boolean isVisible(MockNode node) { return node.visible; }
         @Override public float getPreferredWidth(MockNode node) { return node.preferredWidth; }
         @Override public float getPreferredHeight(MockNode node) { return node.preferredHeight; }
-        @Override public NodeSpec getSizing(MockNode node) { return node.returnNullSizing ? null : node.sizing; }
+        @Override public NodeSpec<?> getSizing(MockNode node) { return node.returnNullSizing ? null : node.sizing; }
         @Override
         public void setBounds(MockNode node, float xPosition, float yPosition, float width, float height) {
             node.xPosition = xPosition; node.yPosition = yPosition; node.width = width; node.height = height;
@@ -190,8 +190,8 @@ public abstract class LayoutTestBase {
         return new LayoutSpec().column().alignItems(ai).justifyContent(jc);
     }
 
-    protected static NodeSpec sizing(NodeSpec.SizeMode mode, float pw, float ph) {
-        NodeSpec s = new NodeSpec();
+    protected static NodeSpec<?> sizing(NodeSpec.SizeMode mode, float pw, float ph) {
+        NodeSpec<?> s = new NodeSpec<>();
         switch (mode) {
             case FIXED:
                 s.fixedWidth(pw).fixedHeight(ph).widthMode(NodeSpec.SizeMode.FIXED).heightMode(NodeSpec.SizeMode.FIXED);
@@ -206,9 +206,9 @@ public abstract class LayoutTestBase {
         return s;
     }
 
-    protected static MockNode nodeWithSizing(String name, NodeSpec customSizing) {
+    protected static MockNode nodeWithSizing(String name, NodeSpec<?> customSizing) {
         MockNode n = new MockNode(name, customSizing.getFixedWidth(), customSizing.getFixedHeight());
-        NodeSpec target = n.sizing;
+        NodeSpec<?> target = n.sizing;
         target.fixedWidth(customSizing.getFixedWidth());
         target.fixedHeight(customSizing.getFixedHeight());
         target.widthMode(customSizing.getWidthMode());

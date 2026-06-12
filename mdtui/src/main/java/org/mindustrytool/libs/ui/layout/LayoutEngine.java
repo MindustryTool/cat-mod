@@ -67,7 +67,7 @@ public class LayoutEngine {
         }
 
         @Override
-        public NodeSpec getSizing(Element node) {
+        public NodeSpec<?> getSizing(Element node) {
             return LayoutEngine.sizingOf(node);
         }
     };
@@ -78,15 +78,15 @@ public class LayoutEngine {
     private interface Axis {
         <T> float getPreferred(T node, LayoutAccessor<T> accessor);
 
-        float getFixed(NodeSpec sizing);
+        float getFixed(NodeSpec<?> sizing);
 
-        SizeMode getMode(NodeSpec sizing);
+        SizeMode getMode(NodeSpec<?> sizing);
 
-        float getGrowWeight(NodeSpec sizing);
+        float getGrowWeight(NodeSpec<?> sizing);
 
-        float getPadding(NodeSpec sizing);
+        float getPadding(NodeSpec<?> sizing);
 
-        float constrain(NodeSpec sizing, float value);
+        float constrain(NodeSpec<?> sizing, float value);
     }
 
     private static final Axis AXIS_X = new Axis() {
@@ -96,27 +96,27 @@ public class LayoutEngine {
         }
 
         @Override
-        public float getFixed(NodeSpec s) {
+        public float getFixed(NodeSpec<?> s) {
             return s.getFixedWidth();
         }
 
         @Override
-        public SizeMode getMode(NodeSpec s) {
+        public SizeMode getMode(NodeSpec<?> s) {
             return s.getWidthMode();
         }
 
         @Override
-        public float getGrowWeight(NodeSpec s) {
+        public float getGrowWeight(NodeSpec<?> s) {
             return s.getGrowWeightHorizontal();
         }
 
         @Override
-        public float getPadding(NodeSpec s) {
+        public float getPadding(NodeSpec<?> s) {
             return s.getHorizontalPadding();
         }
 
         @Override
-        public float constrain(NodeSpec s, float value) {
+        public float constrain(NodeSpec<?> s, float value) {
             return s.constrainWidth(value);
         }
     };
@@ -128,27 +128,27 @@ public class LayoutEngine {
         }
 
         @Override
-        public float getFixed(NodeSpec s) {
+        public float getFixed(NodeSpec<?> s) {
             return s.getFixedHeight();
         }
 
         @Override
-        public SizeMode getMode(NodeSpec s) {
+        public SizeMode getMode(NodeSpec<?> s) {
             return s.getHeightMode();
         }
 
         @Override
-        public float getGrowWeight(NodeSpec s) {
+        public float getGrowWeight(NodeSpec<?> s) {
             return s.getGrowWeightVertical();
         }
 
         @Override
-        public float getPadding(NodeSpec s) {
+        public float getPadding(NodeSpec<?> s) {
             return s.getVerticalPadding();
         }
 
         @Override
-        public float constrain(NodeSpec s, float value) {
+        public float constrain(NodeSpec<?> s, float value) {
             return s.constrainHeight(value);
         }
     };
@@ -156,12 +156,12 @@ public class LayoutEngine {
     // --- Backward Compatible Overloads for Element ---
 
     /** Computes preferred width using the default {@link #ELEMENT_ACCESSOR}. */
-    public static float prefWidth(NodeSpec spec, boolean isColumn, float gap, Iterable<Element> children) {
+    public static float prefWidth(NodeSpec<?> spec, boolean isColumn, float gap, Iterable<Element> children) {
         return prefWidth(spec, isColumn, gap, children, ELEMENT_ACCESSOR);
     }
 
     /** Computes preferred height using the default {@link #ELEMENT_ACCESSOR}. */
-    public static float prefHeight(NodeSpec spec, boolean isColumn, float gap, Iterable<Element> children) {
+    public static float prefHeight(NodeSpec<?> spec, boolean isColumn, float gap, Iterable<Element> children) {
         return prefHeight(spec, isColumn, gap, children, ELEMENT_ACCESSOR);
     }
 
@@ -173,16 +173,16 @@ public class LayoutEngine {
     // --- Core Generalized Layout Algorithms ---
 
     /** Computes the preferred width for the given children with a custom accessor. */
-    public static <T> float prefWidth(NodeSpec spec, boolean isColumn, float gap, Iterable<T> children, LayoutAccessor<T> accessor) {
+    public static <T> float prefWidth(NodeSpec<?> spec, boolean isColumn, float gap, Iterable<T> children, LayoutAccessor<T> accessor) {
         return preferredAxis(spec, isColumn, AXIS_X, gap, children, accessor);
     }
 
     /** Computes the preferred height for the given children with a custom accessor. */
-    public static <T> float prefHeight(NodeSpec spec, boolean isColumn, float gap, Iterable<T> children, LayoutAccessor<T> accessor) {
+    public static <T> float prefHeight(NodeSpec<?> spec, boolean isColumn, float gap, Iterable<T> children, LayoutAccessor<T> accessor) {
         return preferredAxis(spec, isColumn, AXIS_Y, gap, children, accessor);
     }
 
-    private static <T> float preferredAxis(NodeSpec spec,
+    private static <T> float preferredAxis(NodeSpec<?> spec,
                                            boolean isColumn,
                                            Axis axis,
                                            float gapSpacing,
@@ -197,7 +197,7 @@ public class LayoutEngine {
 
         for (T childNode : children) {
             if (!accessor.isVisible(childNode)) continue;
-            NodeSpec childSizing = accessor.getSizing(childNode);
+            NodeSpec<?> childSizing = accessor.getSizing(childNode);
 
             float childValue = childSizing == null
                 ? axis.getPreferred(childNode, accessor)
@@ -272,7 +272,7 @@ public class LayoutEngine {
 
         for (T childNode : children) {
             if (!accessor.isVisible(childNode)) continue;
-            NodeSpec childSizing = accessor.getSizing(childNode);
+            NodeSpec<?> childSizing = accessor.getSizing(childNode);
 
             float mainSize = childSizing == null
                 ? mainAxis.getPreferred(childNode, accessor)
@@ -308,7 +308,7 @@ public class LayoutEngine {
             float extraMain = mainLimit - line.mainSize;
             if (line.growCount > 0 && extraMain > 0.0f) {
                 for (LayoutItem<T> item : line.items) {
-                    NodeSpec childSizing = accessor.getSizing(item.node);
+                    NodeSpec<?> childSizing = accessor.getSizing(item.node);
                     if (childSizing != null && mainAxis.getMode(childSizing) == SizeMode.GROW)
                         item.mainSize = (line.totalGrowWeight > 0.0f ? (mainAxis.getGrowWeight(childSizing) / line.totalGrowWeight) : (1.0f / line.growCount)) * extraMain;
                 }
@@ -349,7 +349,7 @@ public class LayoutEngine {
 
             int index = 0;
             for (LayoutItem<T> item : line.items) {
-                NodeSpec childSizing = accessor.getSizing(item.node);
+                NodeSpec<?> childSizing = accessor.getSizing(item.node);
                 AlignItems childAlignment = getChildAlignment(childSizing, spec.getAlignItems());
 
                 if (childAlignment == AlignItems.STRETCH) item.crossSize = line.crossSize;
@@ -375,12 +375,12 @@ public class LayoutEngine {
         }
     }
 
-    private static <T> float getChildSizeOnAxis(T node, NodeSpec sizing, Axis axis, LayoutAccessor<T> accessor) {
+    private static <T> float getChildSizeOnAxis(T node, NodeSpec<?> sizing, Axis axis, LayoutAccessor<T> accessor) {
         float fixedValue = (axis.getMode(sizing) == SizeMode.FIXED) ? axis.getFixed(sizing) : axis.getPreferred(node, accessor);
         return axis.constrain(sizing, fixedValue);
     }
 
-    private static AlignItems getChildAlignment(NodeSpec sizing, AlignItems fallback) {
+    private static AlignItems getChildAlignment(NodeSpec<?> sizing, AlignItems fallback) {
         if (sizing == null) return fallback;
         return switch (sizing.getAlignSelf()) {
             case START -> AlignItems.START;
@@ -440,7 +440,7 @@ public class LayoutEngine {
      * @param element the element to inspect
      * @return the associated NodeSpec, or null if the element has no component
      */
-    public static NodeSpec sizingOf(Element element) {
+    public static NodeSpec<?> sizingOf(Element element) {
         Object object = element.userObject;
         return object instanceof Component ? ((Component) object).sizing() : null;
     }

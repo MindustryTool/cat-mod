@@ -32,7 +32,7 @@ public class Text implements Component {
     public class Style extends ComponentStyle<Style> {
 
         @Override
-        protected NodeSpec sizing() {
+        protected NodeSpec<?> sizing() {
             return sizing;
         }
 
@@ -198,7 +198,7 @@ public class Text implements Component {
         }
     }
 
-    protected final NodeSpec sizing = new NodeSpec();
+    protected final NodeSpec<?> sizing = new NodeSpec<>();
     public final Style style = new Style();
 
     private final EffectHost effects = new EffectHost();
@@ -241,7 +241,7 @@ public class Text implements Component {
     }
 
     @Override
-    public NodeSpec sizing() {
+    public NodeSpec<?> sizing() {
         return sizing;
     }
 

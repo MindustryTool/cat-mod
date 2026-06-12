@@ -2,54 +2,20 @@ package org.mindustrytool.libs.ui.layout;
 
 import lombok.Getter;
 
-/**
- * NodeSpec defines the sizing policies, padding, and size constraints for a layout element (Node).
- * It provides a fluent builder-like API to configure layout options.
- * All properties are documented in detail, and abbreviations are strictly avoided.
- */
-public class NodeSpec {
+@SuppressWarnings({"UnusedReturnValue", "unchecked"})
+public class NodeSpec<T extends NodeSpec<T>> {
 
-    /**
-     * Sizing mode determines how the node's dimensions are calculated.
-     */
     public enum SizeMode {
-        /**
-         * Size is based on the preferred size of the node's content (wrap content).
-         */
         WRAP,
-        /**
-         * Size expands to fill the remaining available space in the parent container.
-         */
         GROW,
-        /**
-         * Size is fixed to a specific coordinate value.
-         */
         FIXED
     }
 
-    /**
-     * AlignSelf allows an individual child to override the cross-axis alignment of its parent container.
-     */
     public enum AlignSelf {
-        /**
-         * Inherit cross-axis alignment from the parent container.
-         */
         AUTO,
-        /**
-         * Align to the start boundary of the cross axis.
-         */
         START,
-        /**
-         * Align to the center of the cross axis.
-         */
         CENTER,
-        /**
-         * Align to the end boundary of the cross axis.
-         */
         END,
-        /**
-         * Stretch to fill the entire cross-axis space of the line.
-         */
         STRETCH
     }
 
@@ -73,190 +39,151 @@ public class NodeSpec {
     private @Getter float minimumHeight = -1.0f;
     private @Getter float maximumHeight = -1.0f;
 
-    /**
-     * Sets the callback to be triggered when any layout property changes.
-     *
-     * @param callback the invalidation callback runnable
-     */
     public void onInvalidate(Runnable callback) {
         this.onInvalidateCallback = callback;
     }
 
-    /**
-     * Triggers the invalidation callback to notify the parent container of changes.
-     */
     protected void invalidate() {
         if (onInvalidateCallback != null) onInvalidateCallback.run();
     }
 
-    // --- Fluent Setters ---
-
-    /** Sets the width sizing mode. */
-    public NodeSpec widthMode(SizeMode mode) {
+    public T widthMode(SizeMode mode) {
         this.widthMode = mode;
         invalidate();
-        return this;
+        return (T) this;
     }
 
-    /** Sets the height sizing mode. */
-    public NodeSpec heightMode(SizeMode mode) {
+    public T heightMode(SizeMode mode) {
         this.heightMode = mode;
         invalidate();
-        return this;
+        return (T) this;
     }
 
-    /** Sets a fixed width and switches width mode to {@link SizeMode#FIXED}. */
-    public NodeSpec fixedWidth(float width) {
+    public T fixedWidth(float width) {
         this.widthMode = SizeMode.FIXED;
         this.fixedWidth = width;
         invalidate();
-        return this;
+        return (T) this;
     }
 
-    /** Sets a fixed height and switches height mode to {@link SizeMode#FIXED}. */
-    public NodeSpec fixedHeight(float height) {
+    public T fixedHeight(float height) {
         this.heightMode = SizeMode.FIXED;
         this.fixedHeight = height;
         invalidate();
-        return this;
+        return (T) this;
     }
 
-    /** Sets the relative grow weight for horizontal distribution. */
-    public NodeSpec growWeightHorizontal(float weight) {
+    public T growWeightHorizontal(float weight) {
         this.growWeightHorizontal = weight;
         invalidate();
-        return this;
+        return (T) this;
     }
 
-    /** Sets the relative grow weight for vertical distribution. */
-    public NodeSpec growWeightVertical(float weight) {
+    public T growWeightVertical(float weight) {
         this.growWeightVertical = weight;
         invalidate();
-        return this;
+        return (T) this;
     }
 
-    /** Overrides the parent's cross-axis alignment for this node. */
-    public NodeSpec alignSelf(AlignSelf alignSelf) {
+    public T alignSelf(AlignSelf alignSelf) {
         this.alignSelf = alignSelf;
         invalidate();
-        return this;
+        return (T) this;
     }
 
-    /** Sets both width and height modes to {@link SizeMode#GROW}. */
-    public NodeSpec grow() {
+    public T grow() {
         this.widthMode = SizeMode.GROW;
         this.heightMode = SizeMode.GROW;
         invalidate();
-        return this;
+        return (T) this;
     }
 
-    /** Sets width mode to {@link SizeMode#GROW}. */
-    public NodeSpec growX() {
+    public T growX() {
         this.widthMode = SizeMode.GROW;
         invalidate();
-        return this;
+        return (T) this;
     }
 
-    /** Sets height mode to {@link SizeMode#GROW}. */
-    public NodeSpec growY() {
+    public T growY() {
         this.heightMode = SizeMode.GROW;
         invalidate();
-        return this;
+        return (T) this;
     }
 
-    /** Alias for {@link #fixedWidth(float)}. */
-    public NodeSpec width(float width) {
+    public T width(float width) {
         return fixedWidth(width);
     }
 
-    /** Alias for {@link #fixedHeight(float)}. */
-    public NodeSpec height(float height) {
+    public T height(float height) {
         return fixedHeight(height);
     }
 
-    /** Sets uniform padding on all four sides. */
-    public NodeSpec padding(float all) {
+    public T padding(float all) {
         return padding(all, all, all, all);
     }
 
-    /** Sets vertical and horizontal padding (top=bottom, left=right). */
-    public NodeSpec padding(float vertical, float horizontal) {
+    public T padding(float vertical, float horizontal) {
         return padding(vertical, horizontal, vertical, horizontal);
     }
 
-    /** Sets independent padding for each side. */
-    public NodeSpec padding(float top, float right, float bottom, float left) {
+    public T padding(float top, float right, float bottom, float left) {
         this.paddingTop = top;
         this.paddingRight = right;
         this.paddingBottom = bottom;
         this.paddingLeft = left;
         invalidate();
-        return this;
+        return (T) this;
     }
 
-    /** Sets the top padding. */
-    public NodeSpec paddingTop(float padding) {
+    public T paddingTop(float padding) {
         this.paddingTop = padding;
         invalidate();
-        return this;
+        return (T) this;
     }
 
-    /** Sets the bottom padding. */
-    public NodeSpec paddingBottom(float padding) {
+    public T paddingBottom(float padding) {
         this.paddingBottom = padding;
         invalidate();
-        return this;
+        return (T) this;
     }
 
-    /** Sets the left padding. */
-    public NodeSpec paddingLeft(float padding) {
+    public T paddingLeft(float padding) {
         this.paddingLeft = padding;
         invalidate();
-        return this;
+        return (T) this;
     }
 
-    /** Sets the right padding. */
-    public NodeSpec paddingRight(float padding) {
+    public T paddingRight(float padding) {
         this.paddingRight = padding;
         invalidate();
-        return this;
+        return (T) this;
     }
 
-    /** Sets a minimum width constraint (-1 disables). */
-    public NodeSpec minimumWidth(float width) {
+    public T minimumWidth(float width) {
         this.minimumWidth = width;
         invalidate();
-        return this;
+        return (T) this;
     }
 
-    /** Sets a maximum width constraint (-1 disables). */
-    public NodeSpec maximumWidth(float width) {
+    public T maximumWidth(float width) {
         this.maximumWidth = width;
         invalidate();
-        return this;
+        return (T) this;
     }
 
-    /** Sets a minimum height constraint (-1 disables). */
-    public NodeSpec minimumHeight(float height) {
+    public T minimumHeight(float height) {
         this.minimumHeight = height;
         invalidate();
-        return this;
+        return (T) this;
     }
 
-    /** Sets a maximum height constraint (-1 disables). */
-    public NodeSpec maximumHeight(float height) {
+    public T maximumHeight(float height) {
         this.maximumHeight = height;
         invalidate();
-        return this;
+        return (T) this;
     }
 
-    /**
-     * Resets all properties to their default values.
-     *
-     * @param invalidate whether to trigger the invalidation callback after reset
-     * @return this instance for chaining
-     */
-    public NodeSpec reset(boolean invalidate) {
+    public T reset(boolean invalidate) {
         widthMode = SizeMode.WRAP;
         heightMode = SizeMode.WRAP;
         fixedWidth = 0f;
@@ -274,22 +201,17 @@ public class NodeSpec {
         maximumHeight = -1f;
 
         if (invalidate) invalidate();
-        return this;
+        return (T) this;
     }
 
-    // --- Helpers / Utilities ---
-
-    /** Returns the sum of left and right padding. */
     public float getHorizontalPadding() {
         return paddingLeft + paddingRight;
     }
 
-    /** Returns the sum of top and bottom padding. */
     public float getVerticalPadding() {
         return paddingTop + paddingBottom;
     }
 
-    /** Clamps the given width within the min/max constraints. */
     public float constrainWidth(float value) {
         if (minimumWidth >= 0.0f && value < minimumWidth) {
             value = minimumWidth;
@@ -300,7 +222,6 @@ public class NodeSpec {
         return value;
     }
 
-    /** Clamps the given height within the min/max constraints. */
     public float constrainHeight(float value) {
         if (minimumHeight >= 0.0f && value < minimumHeight) {
             value = minimumHeight;

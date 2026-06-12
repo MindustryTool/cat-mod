@@ -21,7 +21,7 @@ public abstract class ComponentStyle<S extends ComponentStyle<S>> {
      * Returns the {@link NodeSpec} to which configuration methods delegate.
      * Implementations return the owning component's sizing instance.
      */
-    protected abstract NodeSpec sizing();
+    protected abstract NodeSpec<?> sizing();
 
     /**
      * Returns the arc {@link Element} whose visual properties (visibility,
@@ -40,7 +40,7 @@ public abstract class ComponentStyle<S extends ComponentStyle<S>> {
         return (S) this;
     }
 
-    // --- Core Element Configuration Builders ---
+    //! Core Element Configuration Builders
 
     /**
      * Sets the visibility status of the element.
@@ -75,7 +75,7 @@ public abstract class ComponentStyle<S extends ComponentStyle<S>> {
         return (S) this;
     }
 
-    // --- NodeSpec Sizing & Padding Builders ---
+    //! NodeSpec Sizing & Padding Builders
 
     /**
      * Sets the width sizing mode.

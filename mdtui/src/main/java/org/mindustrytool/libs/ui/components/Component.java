@@ -18,7 +18,7 @@ public interface Component {
 
     Element element();
 
-    NodeSpec sizing();
+    NodeSpec<?> sizing();
 
     void dispose();
 

@@ -53,7 +53,7 @@ public class Layout implements Component {
 
             @Override
             public float getPrefWidth() {
-                NodeSpec nodeSpec = spec;
+                NodeSpec<?> nodeSpec = spec;
                 if (nodeSpec.getWidthMode() == SizeMode.FIXED)
                     return nodeSpec.constrainWidth(nodeSpec.getFixedWidth());
                 if (nodeSpec.getWidthMode() == SizeMode.GROW)
@@ -64,7 +64,7 @@ public class Layout implements Component {
 
             @Override
             public float getPrefHeight() {
-                NodeSpec nodeSpec = spec;
+                NodeSpec<?> nodeSpec = spec;
                 if (nodeSpec.getHeightMode() == SizeMode.FIXED)
                     return nodeSpec.constrainHeight(nodeSpec.getFixedHeight());
                 if (nodeSpec.getHeightMode() == SizeMode.GROW)
@@ -157,7 +157,7 @@ public class Layout implements Component {
      */
     public class Style extends ContainerStyle<Style> {
         @Override
-        protected NodeSpec sizing() {
+        protected NodeSpec<?> sizing() {
             return spec;
         }
 
@@ -215,7 +215,7 @@ public class Layout implements Component {
     }
 
     @Override
-    public NodeSpec sizing() {
+    public NodeSpec<?> sizing() {
         return spec;
     }
 

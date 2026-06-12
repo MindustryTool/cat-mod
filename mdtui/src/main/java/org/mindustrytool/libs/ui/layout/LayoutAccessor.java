@@ -15,6 +15,7 @@ public interface LayoutAccessor<T> {
      * @param node the layout node
      * @return true if visible, false otherwise
      */
+    @SuppressWarnings("BooleanMethodIsAlwaysInverted")
     boolean isVisible(T node);
 
     /**
@@ -50,5 +51,5 @@ public interface LayoutAccessor<T> {
      * @param node the layout node
      * @return the node sizing instance, or null if none is specified
      */
-    NodeSpec getSizing(T node);
+    NodeSpec<?> getSizing(T node);
 }
