@@ -148,21 +148,21 @@ class LayoutElementNode extends ElementNode {
             @Override
             public float getPrefWidth() {
                 LayoutSpec spec = sizing();
-                if (spec.getWidthMode() == LayoutSpec.SizeMode.FIXED && spec.getFixedWidth() > 0f) return spec.constrainWidth(spec.getFixedWidth());
-                if (spec.getWidthMode() == LayoutSpec.SizeMode.GROW) return 0f;
+                if (spec.widthMode() == LayoutSpec.SizeMode.FIXED && spec.fixedWidth() > 0f) return spec.constrainWidth(spec.fixedWidth());
+                if (spec.widthMode() == LayoutSpec.SizeMode.GROW) return 0f;
                 
                 return spec.constrainWidth(
-                    LayoutEngine.prefWidth(spec, spec.isColumn(), spec.getGap(), foregroundElements()));
+                    LayoutEngine.prefWidth(spec, spec.isColumn(), spec.gap(), foregroundElements()));
             }
 
             @Override
             public float getPrefHeight() {
                 LayoutSpec spec = sizing();
-                if (spec.getHeightMode() == LayoutSpec.SizeMode.FIXED && spec.getFixedHeight() > 0f) return spec.constrainHeight(spec.getFixedHeight());
-                if (spec.getHeightMode() == LayoutSpec.SizeMode.GROW) return 0f;
+                if (spec.heightMode() == LayoutSpec.SizeMode.FIXED && spec.fixedHeight() > 0f) return spec.constrainHeight(spec.fixedHeight());
+                if (spec.heightMode() == LayoutSpec.SizeMode.GROW) return 0f;
                 
                 return spec.constrainHeight(
-                    LayoutEngine.prefHeight(spec, spec.isColumn(), spec.getGap(), foregroundElements()));
+                    LayoutEngine.prefHeight(spec, spec.isColumn(), spec.gap(), foregroundElements()));
             }
 
             @Override
@@ -179,7 +179,7 @@ class LayoutElementNode extends ElementNode {
                 float lh = Math.max(0f, ch - spec.getVerticalPadding());
                 
                 LayoutEngine.layout(spec, foregroundElements(),
-                    spec.getPaddingLeft(), spec.getPaddingBottom(), lw, lh);
+                    spec.paddingLeft(), spec.paddingBottom(), lw, lh);
             }
         };
 

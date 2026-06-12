@@ -68,17 +68,17 @@ public class LayoutEngine {
 
         @Override
         public float getFixed(LayoutSpec s) {
-            return s.getFixedWidth();
+            return s.fixedWidth();
         }
 
         @Override
         public SizeMode getMode(LayoutSpec s) {
-            return s.getWidthMode();
+            return s.widthMode();
         }
 
         @Override
         public float getGrowWeight(LayoutSpec s) {
-            return s.getGrowWeightHorizontal();
+            return s.growWeightHorizontal();
         }
 
         @Override
@@ -100,17 +100,17 @@ public class LayoutEngine {
 
         @Override
         public float getFixed(LayoutSpec s) {
-            return s.getFixedHeight();
+            return s.fixedHeight();
         }
 
         @Override
         public SizeMode getMode(LayoutSpec s) {
-            return s.getHeightMode();
+            return s.heightMode();
         }
 
         @Override
         public float getGrowWeight(LayoutSpec s) {
-            return s.getGrowWeightVertical();
+            return s.growWeightVertical();
         }
 
         @Override
@@ -230,7 +230,7 @@ public class LayoutEngine {
                                   float width,
                                   float height,
                                   LayoutAccessor<T> accessor) {
-        float gapSpacing = spec.getGap();
+        float gapSpacing = spec.gap();
         boolean isColumn = spec.isColumn();
         Axis mainAxis = isColumn ? AXIS_Y : AXIS_X;
         Axis crossAxis = isColumn ? AXIS_X : AXIS_Y;
@@ -312,7 +312,7 @@ public class LayoutEngine {
 
         for (LayoutLine<T> line : layoutLines) {
             float extraMainSpace = mainLimit - line.mainSize;
-            float[] offsets = computeJustifyOffsets(extraMainSpace, line.items.size(), gapSpacing, spec.getJustifyContent());
+            float[] offsets = computeJustifyOffsets(extraMainSpace, line.items.size(), gapSpacing, spec.justifyContent());
 
             float cursorPosition = isForwardDirection
                 ? (isColumn ? yPosition : xPosition) + offsets[0]
@@ -321,7 +321,7 @@ public class LayoutEngine {
             int index = 0;
             for (LayoutItem<T> item : line.items) {
                 LayoutSpec childSizing = accessor.getSizing(item.node);
-                AlignItems childAlignment = getChildAlignment(childSizing, spec.getAlignItems());
+                AlignItems childAlignment = getChildAlignment(childSizing, spec.alignItems());
 
                 if (childAlignment == AlignItems.STRETCH) item.crossSize = line.crossSize;
 
@@ -353,7 +353,7 @@ public class LayoutEngine {
 
     private static AlignItems getChildAlignment(LayoutSpec sizing, AlignItems fallback) {
         if (sizing == null) return fallback;
-        return switch (sizing.getAlignSelf()) {
+        return switch (sizing.alignSelf()) {
             case START -> AlignItems.START;
             case CENTER -> AlignItems.CENTER;
             case END -> AlignItems.END;

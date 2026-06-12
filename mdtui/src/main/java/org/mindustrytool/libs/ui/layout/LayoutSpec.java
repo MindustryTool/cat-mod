@@ -141,51 +141,6 @@ public record LayoutSpec(
              false, false, false, 0.0f, JustifyContent.START, AlignItems.STRETCH);
     }
 
-    // --- Compatibility Getters ---
-
-    /** @return the horizontal sizing mode. */
-    public SizeMode getWidthMode() { return widthMode; }
-    /** @return the vertical sizing mode. */
-    public SizeMode getHeightMode() { return heightMode; }
-    /** @return the fixed width. */
-    public float getFixedWidth() { return fixedWidth; }
-    /** @return the fixed height. */
-    public float getFixedHeight() { return fixedHeight; }
-    /** @return the horizontal grow weight. */
-    public float getGrowWeightHorizontal() { return growWeightHorizontal; }
-    /** @return the vertical grow weight. */
-    public float getGrowWeightVertical() { return growWeightVertical; }
-    /** @return the cross-axis alignment override. */
-    public AlignSelf getAlignSelf() { return alignSelf; }
-    /** @return the top padding space. */
-    public float getPaddingTop() { return paddingTop; }
-    /** @return the bottom padding space. */
-    public float getPaddingBottom() { return paddingBottom; }
-    /** @return the left padding space. */
-    public float getPaddingLeft() { return paddingLeft; }
-    /** @return the right padding space. */
-    public float getPaddingRight() { return paddingRight; }
-    /** @return the minimum width constraint. */
-    public float getMinimumWidth() { return minimumWidth; }
-    /** @return the maximum width constraint. */
-    public float getMaximumWidth() { return maximumWidth; }
-    /** @return the minimum height constraint. */
-    public float getMinimumHeight() { return minimumHeight; }
-    /** @return the maximum height constraint. */
-    public float getMaximumHeight() { return maximumHeight; }
-    /** @return true if column layout. */
-    public boolean isColumn() { return isColumn; }
-    /** @return true if wrapping is enabled. */
-    public boolean isWrap() { return isWrap; }
-    /** @return true if reverse layout flow. */
-    public boolean isReverse() { return isReverse; }
-    /** @return the layout gap between items. */
-    public float getGap() { return gap; }
-    /** @return the main axis justification. */
-    public JustifyContent getJustifyContent() { return justifyContent; }
-    /** @return the cross axis items alignment. */
-    public AlignItems getAlignItems() { return alignItems; }
-
     // --- Fluent Wither-style Setters for Test and Configuration Compatibility ---
 
     /** @param widthMode new width size mode. @return new LayoutSpec. */

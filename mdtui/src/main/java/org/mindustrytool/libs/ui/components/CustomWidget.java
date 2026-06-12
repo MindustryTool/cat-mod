@@ -172,7 +172,7 @@ class CustomElementNode extends ElementNode {
             
             @Override
             public float getPrefWidth() {
-                float fw = sizing().getFixedWidth();
+                float fw = sizing().fixedWidth();
                 if (fw > 0f) return fw;
                 
                 return 0f;
@@ -180,7 +180,7 @@ class CustomElementNode extends ElementNode {
 
             @Override
             public float getPrefHeight() {
-                float fh = sizing().getFixedHeight();
+                float fh = sizing().fixedHeight();
                 if (fh > 0f) return fh;
                 
                 return 0f;

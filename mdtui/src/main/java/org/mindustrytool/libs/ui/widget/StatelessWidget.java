@@ -1,6 +1,5 @@
 package org.mindustrytool.libs.ui.widget;
 
-import arc.scene.Element;
 import org.mindustrytool.libs.ui.layout.LayoutSpec;
 
 /**
@@ -49,7 +48,7 @@ class StatelessElementNode extends ElementNode {
         Widget childWidget = ((StatelessWidget) widget).build();
         childNode = childWidget.createElement();
         childNode.mount(this);
-        
+
         this.arcElement = childNode.getArcElement();
     }
 
@@ -66,7 +65,7 @@ class StatelessElementNode extends ElementNode {
         childNode.dispose();
         childNode = childWidget.createElement();
         childNode.mount(this);
-        
+
         this.arcElement = childNode.getArcElement();
     }
 
@@ -81,7 +80,7 @@ class StatelessElementNode extends ElementNode {
             childNode.dispose();
             childNode = null;
         }
-        
+
         super.dispose();
     }
 }
