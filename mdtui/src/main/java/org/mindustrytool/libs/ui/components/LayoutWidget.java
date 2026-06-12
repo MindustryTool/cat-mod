@@ -50,8 +50,7 @@ public record LayoutWidget(
     boolean smoothScrolling,
     boolean clip,
     Widget background,
-    Seq<Widget> children,
-    Runnable onClick
+    Seq<Widget> children
 ) implements Widget {
 
     /**
@@ -126,7 +125,6 @@ class LayoutElementNode extends ElementNode {
     private final ScrollElement group;
     private final WidgetGroup contentGroup;
     private ElementNode backgroundNode;
-    private final Seq<EventListener> eventListeners = new Seq<>();
     private Seq<ElementNode> children = new Seq<>();
 
     LayoutElementNode(LayoutWidget widget) {
@@ -213,7 +211,6 @@ class LayoutElementNode extends ElementNode {
         group.applyLayoutConfig(w);
         mountBackground(w);
         reconcile(w.children());
-        applyListeners(w);
     }
 
     @Override
@@ -224,7 +221,6 @@ class LayoutElementNode extends ElementNode {
         group.applyLayoutConfig(w);
         updateBackground(w);
         reconcile(w.children());
-        applyListeners(w);
         
         contentGroup.invalidateHierarchy();
     }
@@ -342,24 +338,6 @@ class LayoutElementNode extends ElementNode {
             result.add(children.get(i).getArcElement());
         }
         return result;
-    }
-
-    private void applyListeners(LayoutWidget w) {
-        for (EventListener l : eventListeners) {
-            group.removeListener(l);
-        }
-        eventListeners.clear();
-        
-        if (w.onClick() != null) {
-            ClickListener cl = new ClickListener() {
-                @Override
-                public void clicked(InputEvent event, float x, float y) {
-                    w.onClick().run();
-                }
-            };
-            group.addListener(cl);
-            eventListeners.add(cl);
-        }
     }
 }
 

@@ -28,12 +28,6 @@ public class CustomDraw implements Disposable {
     private FrameBuffer blurFrameBufferB;
 
     /**
-     * Constructs a new CustomDraw instance.
-     */
-    public CustomDraw() {
-    }
-
-    /**
      * Captures the current frame buffer content (screen pixels) into a downscaled texture
      * for backdrop blur calculations.
      *

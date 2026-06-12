@@ -13,6 +13,7 @@ import org.mindustrytool.libs.ui.widget.Widget;
 import org.mindustrytool.libs.ui.components.CustomWidget;
 import org.mindustrytool.libs.ui.components.LayoutWidget;
 import org.mindustrytool.libs.ui.components.TextWidget;
+import org.mindustrytool.libs.ui.components.GestureDetector;
 import org.mindustrytool.libs.ui.widget.ElementNode;
 import org.mindustrytool.libs.ui.layout.LayoutSpec;
 
@@ -112,17 +113,19 @@ public class DemoUI {
         boolean isActive = s.activeTab() == tabIndex;
         Color bg = isActive ? Color.valueOf("ff79c6") : Color.valueOf("303042");
         Color textColor = isActive ? Color.white : Color.lightGray;
-        return LayoutWidget.builder()
-            .background(CustomWidget.builder().backgroundMode(CustomWidget.BackgroundMode.SOLID)
-                .fillColor(bg).topLeftRadius(6f).topRightRadius(6f).bottomRightRadius(6f).bottomLeftRadius(6f).build())
-            .layoutSpec(LayoutSpec.builder()
-                .alignItems(LayoutSpec.AlignItems.CENTER).justifyContent(LayoutSpec.JustifyContent.CENTER)
-                .fixedHeight(28f).widthMode(LayoutSpec.SizeMode.GROW)
+        return GestureDetector.builder()
+            .onTap(() -> state.set(state.get().withActiveTab(tabIndex)))
+            .child(LayoutWidget.builder()
+                .background(CustomWidget.builder().backgroundMode(CustomWidget.BackgroundMode.SOLID)
+                    .fillColor(bg).topLeftRadius(6f).topRightRadius(6f).bottomRightRadius(6f).bottomLeftRadius(6f).build())
+                .layoutSpec(LayoutSpec.builder()
+                    .alignItems(LayoutSpec.AlignItems.CENTER).justifyContent(LayoutSpec.JustifyContent.CENTER)
+                    .fixedHeight(28f).widthMode(LayoutSpec.SizeMode.GROW)
+                    .build())
+                .children(Seq.with(
+                    TextWidget.builder().text(title).fontScale(0.8f).color(textColor).build()
+                ))
                 .build())
-            .onClick(() -> state.set(state.get().withActiveTab(tabIndex)))
-            .children(Seq.with(
-                TextWidget.builder().text(title).fontScale(0.8f).color(textColor).build()
-            ))
             .build();
     }
 
@@ -356,18 +359,20 @@ public class DemoUI {
                 LayoutWidget.builder().layoutSpec(LayoutSpec.builder().widthMode(LayoutSpec.SizeMode.GROW).build()).children(Seq.with(
                     TextWidget.builder().text(label).fontScale(0.8f).labelAlign(Align.left).build()
                 )).build(),
-                LayoutWidget.builder()
-                    .background(CustomWidget.builder().backgroundMode(CustomWidget.BackgroundMode.SOLID)
-                        .fillColor(bgColor).topLeftRadius(8f).topRightRadius(8f)
-                        .bottomRightRadius(8f).bottomLeftRadius(8f).build())
-                    .layoutSpec(LayoutSpec.builder()
-                        .alignItems(LayoutSpec.AlignItems.CENTER).justifyContent(LayoutSpec.JustifyContent.CENTER)
-                        .widthMode(LayoutSpec.SizeMode.FIXED).fixedWidth(45f).heightMode(LayoutSpec.SizeMode.FIXED).fixedHeight(20f)
+                GestureDetector.builder()
+                    .onTap(() -> onChange.accept(!value))
+                    .child(LayoutWidget.builder()
+                        .background(CustomWidget.builder().backgroundMode(CustomWidget.BackgroundMode.SOLID)
+                            .fillColor(bgColor).topLeftRadius(8f).topRightRadius(8f)
+                            .bottomRightRadius(8f).bottomLeftRadius(8f).build())
+                        .layoutSpec(LayoutSpec.builder()
+                            .alignItems(LayoutSpec.AlignItems.CENTER).justifyContent(LayoutSpec.JustifyContent.CENTER)
+                            .widthMode(LayoutSpec.SizeMode.FIXED).fixedWidth(45f).heightMode(LayoutSpec.SizeMode.FIXED).fixedHeight(20f)
+                            .build())
+                        .children(Seq.with(
+                            TextWidget.builder().text(value ? "ON" : "OFF").fontScale(0.7f).color(Color.white).build()
+                        ))
                         .build())
-                    .onClick(() -> onChange.accept(!value))
-                    .children(Seq.with(
-                        TextWidget.builder().text(value ? "ON" : "OFF").fontScale(0.7f).color(Color.white).build()
-                    ))
                     .build()
             ))
             .build();
@@ -399,30 +404,34 @@ public class DemoUI {
     }
 
     private Widget minusButton(float min, float step, float value, java.util.function.Consumer<Float> onChange) {
-        return LayoutWidget.builder()
-            .background(CustomWidget.builder().backgroundMode(CustomWidget.BackgroundMode.SOLID)
-                .fillColor(Color.valueOf("303042")).topLeftRadius(4f).topRightRadius(4f)
-                .bottomRightRadius(4f).bottomLeftRadius(4f).build())
-            .layoutSpec(LayoutSpec.builder()
-                .alignItems(LayoutSpec.AlignItems.CENTER).justifyContent(LayoutSpec.JustifyContent.CENTER)
-                .widthMode(LayoutSpec.SizeMode.FIXED).fixedWidth(28f).heightMode(LayoutSpec.SizeMode.FIXED).fixedHeight(22f)
+        return GestureDetector.builder()
+            .onTap(() -> onChange.accept(Math.max(min, value - step)))
+            .child(LayoutWidget.builder()
+                .background(CustomWidget.builder().backgroundMode(CustomWidget.BackgroundMode.SOLID)
+                    .fillColor(Color.valueOf("303042")).topLeftRadius(4f).topRightRadius(4f)
+                    .bottomRightRadius(4f).bottomLeftRadius(4f).build())
+                .layoutSpec(LayoutSpec.builder()
+                    .alignItems(LayoutSpec.AlignItems.CENTER).justifyContent(LayoutSpec.JustifyContent.CENTER)
+                    .widthMode(LayoutSpec.SizeMode.FIXED).fixedWidth(28f).heightMode(LayoutSpec.SizeMode.FIXED).fixedHeight(22f)
+                    .build())
+                .children(Seq.with(TextWidget.builder().text("-").fontScale(0.85f).build()))
                 .build())
-            .onClick(() -> onChange.accept(Math.max(min, value - step)))
-            .children(Seq.with(TextWidget.builder().text("-").fontScale(0.85f).build()))
             .build();
     }
 
     private Widget plusButton(float max, float step, float value, java.util.function.Consumer<Float> onChange) {
-        return LayoutWidget.builder()
-            .background(CustomWidget.builder().backgroundMode(CustomWidget.BackgroundMode.SOLID)
-                .fillColor(Color.valueOf("303042")).topLeftRadius(4f).topRightRadius(4f)
-                .bottomRightRadius(4f).bottomLeftRadius(4f).build())
-            .layoutSpec(LayoutSpec.builder()
-                .alignItems(LayoutSpec.AlignItems.CENTER).justifyContent(LayoutSpec.JustifyContent.CENTER)
-                .widthMode(LayoutSpec.SizeMode.FIXED).fixedWidth(28f).heightMode(LayoutSpec.SizeMode.FIXED).fixedHeight(22f)
+        return GestureDetector.builder()
+            .onTap(() -> onChange.accept(Math.min(max, value + step)))
+            .child(LayoutWidget.builder()
+                .background(CustomWidget.builder().backgroundMode(CustomWidget.BackgroundMode.SOLID)
+                    .fillColor(Color.valueOf("303042")).topLeftRadius(4f).topRightRadius(4f)
+                    .bottomRightRadius(4f).bottomLeftRadius(4f).build())
+                .layoutSpec(LayoutSpec.builder()
+                    .alignItems(LayoutSpec.AlignItems.CENTER).justifyContent(LayoutSpec.JustifyContent.CENTER)
+                    .widthMode(LayoutSpec.SizeMode.FIXED).fixedWidth(28f).heightMode(LayoutSpec.SizeMode.FIXED).fixedHeight(22f)
+                    .build())
+                .children(Seq.with(TextWidget.builder().text("+").fontScale(0.85f).build()))
                 .build())
-            .onClick(() -> onChange.accept(Math.min(max, value + step)))
-            .children(Seq.with(TextWidget.builder().text("+").fontScale(0.85f).build()))
             .build();
     }
 
@@ -451,14 +460,16 @@ public class DemoUI {
         boolean isActive = current.equals(color);
         float border = isActive ? 1.5f : 0f;
         Color borderC = isActive ? Color.white : Color.clear;
-        return LayoutWidget.builder()
-            .onClick(() -> onChange.accept(color))
-            .layoutSpec(LayoutSpec.builder()
-                .widthMode(LayoutSpec.SizeMode.FIXED).fixedWidth(18f).heightMode(LayoutSpec.SizeMode.FIXED).fixedHeight(18f)
+        return GestureDetector.builder()
+            .onTap(() -> onChange.accept(color))
+            .child(LayoutWidget.builder()
+                .layoutSpec(LayoutSpec.builder()
+                    .widthMode(LayoutSpec.SizeMode.FIXED).fixedWidth(18f).heightMode(LayoutSpec.SizeMode.FIXED).fixedHeight(18f)
+                    .build())
+                .background(CustomWidget.builder().backgroundMode(CustomWidget.BackgroundMode.SOLID)
+                    .fillColor(color).topLeftRadius(4f).topRightRadius(4f).bottomRightRadius(4f).bottomLeftRadius(4f)
+                    .borderWidth(border).borderColor(borderC).build())
                 .build())
-            .background(CustomWidget.builder().backgroundMode(CustomWidget.BackgroundMode.SOLID)
-                .fillColor(color).topLeftRadius(4f).topRightRadius(4f).bottomRightRadius(4f).bottomLeftRadius(4f)
-                .borderWidth(border).borderColor(borderC).build())
             .build();
     }
 
@@ -488,17 +499,19 @@ public class DemoUI {
         boolean isActive = current.equals(option);
         Color bg = isActive ? Color.valueOf("ff79c6") : Color.valueOf("303042");
         Color textColor = isActive ? Color.white : Color.lightGray;
-        return LayoutWidget.builder()
-            .onClick(() -> onChange.accept(option))
-            .background(CustomWidget.builder().backgroundMode(CustomWidget.BackgroundMode.SOLID)
-                .fillColor(bg).topLeftRadius(4f).topRightRadius(4f).bottomRightRadius(4f).bottomLeftRadius(4f).build())
-            .layoutSpec(LayoutSpec.builder()
-                .alignItems(LayoutSpec.AlignItems.CENTER).justifyContent(LayoutSpec.JustifyContent.CENTER)
-                .fixedHeight(22f).widthMode(LayoutSpec.SizeMode.GROW)
+        return GestureDetector.builder()
+            .onTap(() -> onChange.accept(option))
+            .child(LayoutWidget.builder()
+                .background(CustomWidget.builder().backgroundMode(CustomWidget.BackgroundMode.SOLID)
+                    .fillColor(bg).topLeftRadius(4f).topRightRadius(4f).bottomRightRadius(4f).bottomLeftRadius(4f).build())
+                .layoutSpec(LayoutSpec.builder()
+                    .alignItems(LayoutSpec.AlignItems.CENTER).justifyContent(LayoutSpec.JustifyContent.CENTER)
+                    .fixedHeight(22f).widthMode(LayoutSpec.SizeMode.GROW)
+                    .build())
+                .children(Seq.with(
+                    TextWidget.builder().text(displayName).fontScale(0.7f).color(textColor).build()
+                ))
                 .build())
-            .children(Seq.with(
-                TextWidget.builder().text(displayName).fontScale(0.7f).color(textColor).build()
-            ))
             .build();
     }
 }

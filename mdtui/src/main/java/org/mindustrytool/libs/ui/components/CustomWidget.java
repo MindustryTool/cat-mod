@@ -155,37 +155,29 @@ class CustomElementNode extends ElementNode {
      */
     CustomElementNode(CustomWidget widget) {
         super(widget);
-        
+
         this.arcElement = new Element() {
             {
                 userObject = CustomElementNode.this;
             }
-            
+
             @Override
             public float getPrefWidth() {
                 float fw = sizing().fixedWidth();
-                if (fw > 0f) {
-                    return fw;
-                }
-                
-                return 0f;
+                return Math.max(fw, 0f);
             }
 
             @Override
             public float getPrefHeight() {
                 float fh = sizing().fixedHeight();
-                if (fh > 0f) {
-                    return fh;
-                }
-                
-                return 0f;
+                return Math.max(fh, 0f);
             }
 
             @Override
             protected void setScene(Scene scene) {
                 boolean hadScene = getScene() != null;
                 super.setScene(scene);
-                
+
                 if (hadScene && scene == null) {
                     CustomElementNode.this.dispose();
                 }
@@ -195,8 +187,8 @@ class CustomElementNode extends ElementNode {
             public void draw() {
                 float w = getWidth(), h = getHeight();
                 if (w <= 0f || h <= 0f) return;
-                
-                drawer.draw(x, y, w, h, (CustomWidget) widget);
+
+                drawer.draw(x, y, w, h, widget);
             }
         };
     }

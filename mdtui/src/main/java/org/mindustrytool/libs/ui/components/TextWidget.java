@@ -57,28 +57,28 @@ public record TextWidget(
 
     @Override
     public ElementNode createElement() {
-        return new TextElementNode(this);
+        return new TextNode(this);
     }
 }
 
 /**
- * Backing ElementNode that binds a {@link TextWidget} to a mutable {@link TextElement}.
+ * Backing ElementNode that binds a {@link TextWidget} to a mutable {@link Text}.
  */
-class TextElementNode extends ElementNode {
+class TextNode extends ElementNode {
 
     /**
      * The backing Arc element for rendering text.
      */
-    private final TextElement element = new TextElement();
+    private final Text element = new Text();
 
     /**
      * Constructs a text element node.
      *
      * @param widget the text widget blueprint.
      */
-    TextElementNode(TextWidget widget) {
+    TextNode(TextWidget widget) {
         super(widget);
-        
+
         arcElement = element;
         arcElement.userObject = this;
     }
@@ -92,7 +92,7 @@ class TextElementNode extends ElementNode {
     @Override
     public void update(Widget newWidget) {
         super.update(newWidget);
-        
+
         element.setWidget((TextWidget) newWidget);
         element.color.set(((TextWidget) newWidget).color());
     }
@@ -107,7 +107,7 @@ class TextElementNode extends ElementNode {
  * Backing Arc scene Element representing text rendering.
  * Operates glyph text calculation and layout rendering on demand.
  */
-class TextElement extends Element {
+class Text extends Element {
 
     /**
      * Shared glyph layout instance for calculating preferred dimensions.
@@ -159,7 +159,7 @@ class TextElement extends Element {
     public void draw() {
         validate();
         if (cache == null) return;
-        
+
         cache.tint(color);
         cache.setPosition(x, y);
         cache.draw();
@@ -168,12 +168,12 @@ class TextElement extends Element {
     @Override
     public void layout() {
         if (cache == null) return;
-        
+
         Font font = cache.getFont();
         float baseScaleX = font.getScaleX();
         float baseScaleY = font.getScaleY();
         boolean scaleChanged = widget.fontScale() != 1f;
-        
+
         if (scaleChanged) {
             font.getData().setScale(baseScaleX * widget.fontScale(), baseScaleY * widget.fontScale());
         }
@@ -193,7 +193,7 @@ class TextElement extends Element {
 
         GlyphLayout layout = this.layout;
         float textWidth, textHeight;
-        
+
         if (wrap || text.contains("\n")) {
             layout.setText(font, text, 0, text.length(), Color.white, width, widget.lineAlign(), wrap, widget.ellipsis());
             textWidth = layout.width;
@@ -220,7 +220,7 @@ class TextElement extends Element {
         } else {
             y += (height - textHeight) / 2;
         }
-        
+
         if (!cache.getFont().isFlipped()) {
             y += textHeight;
         }
@@ -240,7 +240,7 @@ class TextElement extends Element {
         if (prefSizeInvalid) {
             computePrefSize();
         }
-        
+
         return prefSize.x;
     }
 
@@ -250,17 +250,17 @@ class TextElement extends Element {
         if (prefSizeInvalid) {
             computePrefSize();
         }
-        
+
         Font font = cache.getFont();
         float descent = font.getDescent();
-        
+
         if (widget.fontScale() != 1f) {
             float baseScaleY = font.getScaleY();
             font.getData().setScale(baseScaleY * widget.fontScale(), baseScaleY * widget.fontScale());
             descent *= widget.fontScale();
             font.getData().setScale(baseScaleY, baseScaleY);
         }
-        
+
         return prefSize.y - descent * 2;
     }
 
@@ -271,12 +271,12 @@ class TextElement extends Element {
      */
     void setWidget(TextWidget w) {
         this.widget = w;
-        
+
         if (w.font() != lastFont) {
             cache = w.font() == null ? null : w.font().newFontCache();
             lastFont = w.font();
         }
-        
+
         invalidateHierarchy();
     }
 
@@ -285,25 +285,25 @@ class TextElement extends Element {
      */
     private void computePrefSize() {
         prefSizeInvalid = false;
-        
+
         Font font = cache.getFont();
         float baseScaleX = font.getScaleX();
         float baseScaleY = font.getScaleY();
         boolean scaleChanged = widget.fontScale() != 1f;
-        
+
         if (scaleChanged) {
             font.getData().setScale(baseScaleX * widget.fontScale(), baseScaleY * widget.fontScale());
         }
 
-        GlyphLayout ps = TextElement.prefSizeLayout;
+        GlyphLayout ps = Text.prefSizeLayout;
         String text = widget.text();
-        
+
         if (widget.wrap() && widget.ellipsis() == null) {
             ps.setText(font, text, Color.white, getWidth(), Align.left, true);
         } else {
             ps.setText(font, text, 0, text.length(), Color.white, 0, widget.lineAlign(), widget.wrap(), widget.ellipsis());
         }
-        
+
         prefSize.set(ps.width, ps.height);
 
         if (scaleChanged) {

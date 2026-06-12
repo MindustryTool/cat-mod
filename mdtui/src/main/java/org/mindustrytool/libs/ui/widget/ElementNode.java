@@ -11,11 +11,8 @@ import org.mindustrytool.libs.ui.layout.LayoutSpec;
  */
 public abstract class ElementNode {
 
-    @Getter
-    protected Widget widget;
-
-    @Getter
-    protected Element arcElement;
+    protected @Getter Widget widget;
+    protected @Getter Element arcElement;
 
     /**
      * Constructs an element node bound to a widget configuration.
