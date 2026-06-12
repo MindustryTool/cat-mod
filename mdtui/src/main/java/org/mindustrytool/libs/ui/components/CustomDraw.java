@@ -12,6 +12,11 @@ import arc.util.Disposable;
 
 import mindustry.Vars;
 
+/**
+ * Handles custom rendering operations for {@link CustomWidget}, integrating advanced
+ * features like rounded corner clipping, borders, gradients, textures, shadows, glows,
+ * backdrop blur, filters, and noise shaders.
+ */
 public class CustomDraw implements Disposable {
 
     private static Shader mainShader;
@@ -19,30 +24,21 @@ public class CustomDraw implements Disposable {
     private static boolean shadersLoaded;
     private static FrameBuffer captureFrameBuffer;
 
-    private static void ensureShaders() {
-        if (shadersLoaded) return;
+    private FrameBuffer blurFrameBufferA;
+    private FrameBuffer blurFrameBufferB;
 
-        mainShader = new Shader(
-            Vars.tree.get("shaders/custom_element.vert").readString(),
-            Vars.tree.get("shaders/custom_element.frag").readString()
-        );
-
-        mainShader.bind();
-        mainShader.setUniformi("u_gradientTex0", 1);
-        mainShader.setUniformi("u_fillTexture", 2);
-        mainShader.setUniformi("u_backdropTex", 3);
-        mainShader.setUniformi("u_gradientTex1", 4);
-        mainShader.setUniformi("u_gradientTex2", 5);
-        mainShader.setUniformi("u_gradientTex3", 6);
-
-        blurShader = new Shader(
-            Vars.tree.get("shaders/blur.vert").readString(),
-            Vars.tree.get("shaders/blur.frag").readString()
-        );
-
-        shadersLoaded = true;
+    /**
+     * Constructs a new CustomDraw instance.
+     */
+    public CustomDraw() {
     }
 
+    /**
+     * Captures the current frame buffer content (screen pixels) into a downscaled texture
+     * for backdrop blur calculations.
+     *
+     * @return the captured screen texture
+     */
     public static Texture captureScreen() {
         int width = Math.max(Core.graphics.getWidth() / 2, 2);
         int height = Math.max(Core.graphics.getHeight() / 2, 2);
@@ -50,7 +46,9 @@ public class CustomDraw implements Disposable {
         if (captureFrameBuffer == null
             || captureFrameBuffer.getWidth() != width
             || captureFrameBuffer.getHeight() != height) {
-            if (captureFrameBuffer != null) captureFrameBuffer.dispose();
+            if (captureFrameBuffer != null) {
+                captureFrameBuffer.dispose();
+            }
             captureFrameBuffer = new FrameBuffer(width, height);
         }
 
@@ -61,12 +59,18 @@ public class CustomDraw implements Disposable {
         return captureFrameBuffer.getTexture();
     }
 
+    /**
+     * Disposes of the static frame buffer used for screen capture.
+     */
     public static void disposeCapture() {
         if (captureFrameBuffer == null) return;
         captureFrameBuffer.dispose();
         captureFrameBuffer = null;
     }
 
+    /**
+     * Disposes of the shared static shaders loaded into memory.
+     */
     public static void disposeShared() {
         if (mainShader != null) {
             mainShader.dispose();
@@ -79,9 +83,15 @@ public class CustomDraw implements Disposable {
         shadersLoaded = false;
     }
 
-    private FrameBuffer blurFrameBufferA;
-    private FrameBuffer blurFrameBufferB;
-
+    /**
+     * Renders the custom widget on the screen using custom shaders and framebuffers.
+     *
+     * @param x      the absolute x coordinate
+     * @param y      the absolute y coordinate
+     * @param width  the width of the element
+     * @param height the height of the element
+     * @param w      the custom widget configuration
+     */
     public void draw(float x, float y, float width, float height, CustomWidget w) {
         if (width <= 0f || height <= 0f) return;
         ensureShaders();
@@ -131,6 +141,66 @@ public class CustomDraw implements Disposable {
         if (blurFrameBufferB != null) {
             blurFrameBufferB.dispose();
             blurFrameBufferB = null;
+        }
+    }
+
+    private static void ensureShaders() {
+        if (shadersLoaded) return;
+
+        mainShader = new Shader(
+            Vars.tree.get("shaders/custom_element.vert").readString(),
+            Vars.tree.get("shaders/custom_element.frag").readString()
+        );
+
+        mainShader.bind();
+        mainShader.setUniformi("u_gradientTex0", 1);
+        mainShader.setUniformi("u_fillTexture", 2);
+        mainShader.setUniformi("u_backdropTex", 3);
+        mainShader.setUniformi("u_gradientTex1", 4);
+        mainShader.setUniformi("u_gradientTex2", 5);
+        mainShader.setUniformi("u_gradientTex3", 6);
+
+        blurShader = new Shader(
+            Vars.tree.get("shaders/blur.vert").readString(),
+            Vars.tree.get("shaders/blur.frag").readString()
+        );
+
+        shadersLoaded = true;
+    }
+
+    private void ensureBlurFrameBuffers(int width, int height) {
+        if (blurFrameBufferA != null
+            && blurFrameBufferA.getWidth() == width
+            && blurFrameBufferA.getHeight() == height) return;
+        if (blurFrameBufferA != null) {
+            blurFrameBufferA.dispose();
+        }
+        if (blurFrameBufferB != null) {
+            blurFrameBufferB.dispose();
+        }
+        blurFrameBufferA = new FrameBuffer(width, height);
+        blurFrameBufferB = new FrameBuffer(width, height);
+    }
+
+    private void doBlur(int fboWidth, int fboHeight, int iterations) {
+        float texelSizeU = 1f / fboWidth;
+        float texelSizeV = 1f / fboHeight;
+
+        blurShader.bind();
+        blurShader.setUniformf("u_texelSize", texelSizeU, texelSizeV);
+
+        for (int i = 0; i < iterations; i++) {
+            blurShader.setUniformf("u_offset", i * 0.5f + 0.5f);
+
+            blurFrameBufferB.begin();
+            Draw.color(Color.white);
+            Draw.blit(blurFrameBufferA.getTexture(), blurShader);
+            Draw.flush();
+            blurFrameBufferB.end();
+
+            FrameBuffer tmp = blurFrameBufferA;
+            blurFrameBufferA = blurFrameBufferB;
+            blurFrameBufferB = tmp;
         }
     }
 
@@ -241,38 +311,6 @@ public class CustomDraw implements Disposable {
 
         Draw.flush();
         Draw.shader(previousShader);
-    }
-
-    private void ensureBlurFrameBuffers(int width, int height) {
-        if (blurFrameBufferA != null
-            && blurFrameBufferA.getWidth() == width
-            && blurFrameBufferA.getHeight() == height) return;
-        if (blurFrameBufferA != null) blurFrameBufferA.dispose();
-        if (blurFrameBufferB != null) blurFrameBufferB.dispose();
-        blurFrameBufferA = new FrameBuffer(width, height);
-        blurFrameBufferB = new FrameBuffer(width, height);
-    }
-
-    private void doBlur(int fboWidth, int fboHeight, int iterations) {
-        float texelSizeU = 1f / fboWidth;
-        float texelSizeV = 1f / fboHeight;
-
-        blurShader.bind();
-        blurShader.setUniformf("u_texelSize", texelSizeU, texelSizeV);
-
-        for (int i = 0; i < iterations; i++) {
-            blurShader.setUniformf("u_offset", i * 0.5f + 0.5f);
-
-            blurFrameBufferB.begin();
-            Draw.color(Color.white);
-            Draw.blit(blurFrameBufferA.getTexture(), blurShader);
-            Draw.flush();
-            blurFrameBufferB.end();
-
-            FrameBuffer tmp = blurFrameBufferA;
-            blurFrameBufferA = blurFrameBufferB;
-            blurFrameBufferB = tmp;
-        }
     }
 
     private void bindGradient(int index, Gradient g) {

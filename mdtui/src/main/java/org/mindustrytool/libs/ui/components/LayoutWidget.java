@@ -112,13 +112,6 @@ public record LayoutWidget(
         }
     }
 
-    /**
-     * Default constructor creating a default LayoutWidget.
-     */
-    public LayoutWidget() {
-        this(LayoutSpec.defaultSpec(), false, false, true, true, false, null, new Seq<>(), null);
-    }
-
     @Override
     public ElementNode createElement() {
         return new LayoutElementNode(this);
@@ -148,8 +141,12 @@ class LayoutElementNode extends ElementNode {
             @Override
             public float getPrefWidth() {
                 LayoutSpec spec = sizing();
-                if (spec.widthMode() == LayoutSpec.SizeMode.FIXED && spec.fixedWidth() > 0f) return spec.constrainWidth(spec.fixedWidth());
-                if (spec.widthMode() == LayoutSpec.SizeMode.GROW) return 0f;
+                if (spec.widthMode() == LayoutSpec.SizeMode.FIXED && spec.fixedWidth() > 0f) {
+                    return spec.constrainWidth(spec.fixedWidth());
+                }
+                if (spec.widthMode() == LayoutSpec.SizeMode.GROW) {
+                    return 0f;
+                }
                 
                 return spec.constrainWidth(
                     LayoutEngine.prefWidth(spec, spec.isColumn(), spec.gap(), foregroundElements()));
@@ -158,8 +155,12 @@ class LayoutElementNode extends ElementNode {
             @Override
             public float getPrefHeight() {
                 LayoutSpec spec = sizing();
-                if (spec.heightMode() == LayoutSpec.SizeMode.FIXED && spec.fixedHeight() > 0f) return spec.constrainHeight(spec.fixedHeight());
-                if (spec.heightMode() == LayoutSpec.SizeMode.GROW) return 0f;
+                if (spec.heightMode() == LayoutSpec.SizeMode.FIXED && spec.fixedHeight() > 0f) {
+                    return spec.constrainHeight(spec.fixedHeight());
+                }
+                if (spec.heightMode() == LayoutSpec.SizeMode.GROW) {
+                    return 0f;
+                }
                 
                 return spec.constrainHeight(
                     LayoutEngine.prefHeight(spec, spec.isColumn(), spec.gap(), foregroundElements()));
@@ -241,6 +242,11 @@ class LayoutElementNode extends ElementNode {
         
         children.clear();
         super.dispose();
+    }
+
+    @Override
+    public LayoutSpec sizing() {
+        return ((LayoutWidget) widget).layoutSpec();
     }
 
     private void reconcile(Seq<? extends Widget> newWidgets) {
@@ -354,11 +360,6 @@ class LayoutElementNode extends ElementNode {
             group.addListener(cl);
             eventListeners.add(cl);
         }
-    }
-
-    @Override
-    public LayoutSpec sizing() {
-        return ((LayoutWidget) widget).layoutSpec();
     }
 }
 

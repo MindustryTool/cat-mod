@@ -55,13 +55,6 @@ public record TextWidget(
         private boolean wrap = false;
     }
 
-    /**
-     * Default constructor creating a default TextWidget.
-     */
-    public TextWidget() {
-        this(LayoutSpec.defaultSpec(), "", Color.white, null, 1f, Align.left, Align.left, false, null);
-    }
-
     @Override
     public ElementNode createElement() {
         return new TextElementNode(this);
@@ -156,22 +149,6 @@ class TextElement extends Element {
      */
     private boolean prefSizeInvalid = true;
 
-    /**
-     * Binds a new text widget configuration and invalidates the layout if font or layout changes.
-     *
-     * @param w the text widget configuration.
-     */
-    void setWidget(TextWidget w) {
-        this.widget = w;
-        
-        if (w.font() != lastFont) {
-            cache = w.font() == null ? null : w.font().newFontCache();
-            lastFont = w.font();
-        }
-        
-        invalidateHierarchy();
-    }
-
     @Override
     public void invalidate() {
         super.invalidate();
@@ -197,7 +174,9 @@ class TextElement extends Element {
         float baseScaleY = font.getScaleY();
         boolean scaleChanged = widget.fontScale() != 1f;
         
-        if (scaleChanged) font.getData().setScale(baseScaleX * widget.fontScale(), baseScaleY * widget.fontScale());
+        if (scaleChanged) {
+            font.getData().setScale(baseScaleX * widget.fontScale(), baseScaleY * widget.fontScale());
+        }
 
         boolean wrap = widget.wrap() && widget.ellipsis() == null;
         if (wrap) {
@@ -242,19 +221,25 @@ class TextElement extends Element {
             y += (height - textHeight) / 2;
         }
         
-        if (!cache.getFont().isFlipped()) y += textHeight;
+        if (!cache.getFont().isFlipped()) {
+            y += textHeight;
+        }
 
         layout.setText(font, text, 0, text.length(), Color.white, textWidth, widget.lineAlign(), wrap, widget.ellipsis());
         cache.setText(layout, x, y);
 
-        if (scaleChanged) font.getData().setScale(baseScaleX, baseScaleY);
+        if (scaleChanged) {
+            font.getData().setScale(baseScaleX, baseScaleY);
+        }
     }
 
     @Override
     public float getPrefWidth() {
         if (cache == null) return 0;
         if (widget.wrap()) return 0;
-        if (prefSizeInvalid) computePrefSize();
+        if (prefSizeInvalid) {
+            computePrefSize();
+        }
         
         return prefSize.x;
     }
@@ -262,7 +247,9 @@ class TextElement extends Element {
     @Override
     public float getPrefHeight() {
         if (cache == null) return 0;
-        if (prefSizeInvalid) computePrefSize();
+        if (prefSizeInvalid) {
+            computePrefSize();
+        }
         
         Font font = cache.getFont();
         float descent = font.getDescent();
@@ -278,6 +265,22 @@ class TextElement extends Element {
     }
 
     /**
+     * Binds a new text widget configuration and invalidates the layout if font or layout changes.
+     *
+     * @param w the text widget configuration.
+     */
+    void setWidget(TextWidget w) {
+        this.widget = w;
+        
+        if (w.font() != lastFont) {
+            cache = w.font() == null ? null : w.font().newFontCache();
+            lastFont = w.font();
+        }
+        
+        invalidateHierarchy();
+    }
+
+    /**
      * Computes the preferred width and height of the text element using the configured font, scale, and constraints.
      */
     private void computePrefSize() {
@@ -288,7 +291,9 @@ class TextElement extends Element {
         float baseScaleY = font.getScaleY();
         boolean scaleChanged = widget.fontScale() != 1f;
         
-        if (scaleChanged) font.getData().setScale(baseScaleX * widget.fontScale(), baseScaleY * widget.fontScale());
+        if (scaleChanged) {
+            font.getData().setScale(baseScaleX * widget.fontScale(), baseScaleY * widget.fontScale());
+        }
 
         GlyphLayout ps = TextElement.prefSizeLayout;
         String text = widget.text();
@@ -301,6 +306,8 @@ class TextElement extends Element {
         
         prefSize.set(ps.width, ps.height);
 
-        if (scaleChanged) font.getData().setScale(baseScaleX, baseScaleY);
+        if (scaleChanged) {
+            font.getData().setScale(baseScaleX, baseScaleY);
+        }
     }
 }

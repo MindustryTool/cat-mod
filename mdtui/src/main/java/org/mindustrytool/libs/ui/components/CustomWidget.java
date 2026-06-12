@@ -132,15 +132,6 @@ public record CustomWidget(
         private float noiseAmount = 0f;
     }
 
-    /**
-     * Default constructor creating a default CustomWidget.
-     */
-    public CustomWidget() {
-        this(LayoutSpec.defaultSpec(), BackgroundMode.SOLID, 8f, 8f, 8f, 8f,
-             null, null, null, null, null, null, 1f, 1f, 0f, 0f, 0f, null, 0,
-             10f, 0.5f, 0f, 0f, null, 0f, null, 1f, 0, 0.8f, 0.8f, 0.8f, 0, 0f, 0f);
-    }
-
     @Override
     public ElementNode createElement() {
         return new CustomElementNode(this);
@@ -173,7 +164,9 @@ class CustomElementNode extends ElementNode {
             @Override
             public float getPrefWidth() {
                 float fw = sizing().fixedWidth();
-                if (fw > 0f) return fw;
+                if (fw > 0f) {
+                    return fw;
+                }
                 
                 return 0f;
             }
@@ -181,7 +174,9 @@ class CustomElementNode extends ElementNode {
             @Override
             public float getPrefHeight() {
                 float fh = sizing().fixedHeight();
-                if (fh > 0f) return fh;
+                if (fh > 0f) {
+                    return fh;
+                }
                 
                 return 0f;
             }
@@ -191,7 +186,9 @@ class CustomElementNode extends ElementNode {
                 boolean hadScene = getScene() != null;
                 super.setScene(scene);
                 
-                if (hadScene && scene == null) CustomElementNode.this.dispose();
+                if (hadScene && scene == null) {
+                    CustomElementNode.this.dispose();
+                }
             }
 
             @Override

@@ -159,7 +159,9 @@ public class LayoutEngine {
                                            float gapSpacing,
                                            Iterable<T> children,
                                            LayoutAccessor<T> accessor) {
-        if (axis.getMode(spec) == SizeMode.FIXED) return axis.constrain(spec, axis.getFixed(spec));
+        if (axis.getMode(spec) == SizeMode.FIXED) {
+            return axis.constrain(spec, axis.getFixed(spec));
+        }
 
         float totalSize = axis.getPadding(spec);
         float maximumChildSize = 0.0f;
@@ -167,20 +169,29 @@ public class LayoutEngine {
         boolean isMainAxis = (isColumn == (axis == AXIS_Y));
 
         for (T childNode : children) {
-            if (!accessor.isVisible(childNode)) continue;
+            if (!accessor.isVisible(childNode)) {
+                continue;
+            }
             LayoutSpec childSizing = accessor.getSizing(childNode);
 
             float childValue = childSizing == null
                 ? axis.getPreferred(childNode, accessor)
                 : axis.constrain(childSizing, (axis.getMode(childSizing) == SizeMode.FIXED) ? axis.getFixed(childSizing) : axis.getPreferred(childNode, accessor));
 
-            if (isMainAxis) totalSize += childValue;
-            else maximumChildSize = Math.max(maximumChildSize, childValue);
+            if (isMainAxis) {
+                totalSize += childValue;
+            } else {
+                maximumChildSize = Math.max(maximumChildSize, childValue);
+            }
             childCount++;
         }
 
-        if (!isMainAxis) totalSize += maximumChildSize;
-        if (childCount > 1) totalSize += gapSpacing * (childCount - 1);
+        if (!isMainAxis) {
+            totalSize += maximumChildSize;
+        }
+        if (childCount > 1) {
+            totalSize += gapSpacing * (childCount - 1);
+        }
         return axis.constrain(spec, totalSize);
     }
 
@@ -254,15 +265,18 @@ public class LayoutEngine {
                 : getChildSizeOnAxis(childNode, childSizing, crossAxis, accessor);
 
             // Create new line if wrapping is enabled and current line overflows
-            if (spec.isWrap() && !currentLayoutLine.items.isEmpty() && currentLayoutLine.mainSize + gapSpacing + mainSize > mainLimit)
+            if (spec.isWrap() && !currentLayoutLine.items.isEmpty() && currentLayoutLine.mainSize + gapSpacing + mainSize > mainLimit) {
                 layoutLines.add(currentLayoutLine = new LayoutLine<>());
+            }
 
             LayoutItem<T> item = new LayoutItem<>(childNode);
             item.mainSize = mainSize;
             item.crossSize = crossSize;
             currentLayoutLine.items.add(item);
 
-            if (currentLayoutLine.items.size() > 1) currentLayoutLine.mainSize += gapSpacing;
+            if (currentLayoutLine.items.size() > 1) {
+                currentLayoutLine.mainSize += gapSpacing;
+            }
             currentLayoutLine.mainSize += mainSize;
 
             if (childSizing != null && mainAxis.getMode(childSizing) == SizeMode.GROW) {
@@ -280,8 +294,9 @@ public class LayoutEngine {
             if (line.growCount > 0 && extraMain > 0.0f) {
                 for (LayoutItem<T> item : line.items) {
                     LayoutSpec childSizing = accessor.getSizing(item.node);
-                    if (childSizing != null && mainAxis.getMode(childSizing) == SizeMode.GROW)
+                    if (childSizing != null && mainAxis.getMode(childSizing) == SizeMode.GROW) {
                         item.mainSize = (line.totalGrowWeight > 0.0f ? (mainAxis.getGrowWeight(childSizing) / line.totalGrowWeight) : (1.0f / line.growCount)) * extraMain;
+                    }
                 }
                 line.mainSize = mainLimit;
             }
@@ -292,8 +307,9 @@ public class LayoutEngine {
         }
 
         // If not wrapping or only one line exists, let the single line occupy the full cross container space
-        if (!spec.isWrap() || layoutLines.size() == 1)
+        if (!spec.isWrap() || layoutLines.size() == 1) {
             layoutLines.get(0).crossSize = isColumn ? width : height;
+        }
 
         // Step 3: Stack layout lines sequentially along the cross axis
         float currentCrossPosition = isColumn ? xPosition : yPosition + height;
@@ -323,7 +339,9 @@ public class LayoutEngine {
                 LayoutSpec childSizing = accessor.getSizing(item.node);
                 AlignItems childAlignment = getChildAlignment(childSizing, spec.alignItems());
 
-                if (childAlignment == AlignItems.STRETCH) item.crossSize = line.crossSize;
+                if (childAlignment == AlignItems.STRETCH) {
+                    item.crossSize = line.crossSize;
+                }
 
                 // Determine local cross offset inside the layout line space
                 item.crossPosition = line.crossPosition + calculateItemCrossPositionOffset(0.0f,
@@ -339,8 +357,11 @@ public class LayoutEngine {
                     cursorPosition -= item.mainSize + offsets[index + 1];
                 }
 
-                if (isColumn) accessor.setBounds(item.node, item.crossPosition, item.mainPosition, item.crossSize, item.mainSize);
-                else accessor.setBounds(item.node, item.mainPosition, item.crossPosition, item.mainSize, item.crossSize);
+                if (isColumn) {
+                    accessor.setBounds(item.node, item.crossPosition, item.mainPosition, item.crossSize, item.mainSize);
+                } else {
+                    accessor.setBounds(item.node, item.mainPosition, item.crossPosition, item.mainSize, item.crossSize);
+                }
                 index++;
             }
         }
@@ -408,7 +429,9 @@ public class LayoutEngine {
 
     public static LayoutSpec sizingOf(Element element) {
         Object object = element.userObject;
-        if (object instanceof ElementNode) return ((ElementNode) object).sizing();
+        if (object instanceof ElementNode) {
+            return ((ElementNode) object).sizing();
+        }
         return null;
     }
 }

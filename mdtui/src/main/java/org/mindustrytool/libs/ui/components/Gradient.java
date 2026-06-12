@@ -62,7 +62,9 @@ public record Gradient(Texture texture, float... params) implements Disposable {
      */
     @Override
     public void dispose() {
-        if (texture != null) texture.dispose();
+        if (texture != null) {
+            texture.dispose();
+        }
     }
 
     /**
@@ -232,9 +234,13 @@ public record Gradient(Texture texture, float... params) implements Disposable {
 
         private Color sampleStops(float t) {
             Stop first = stops.first();
-            if (t <= first.position()) return first.color();
+            if (t <= first.position()) {
+                return first.color();
+            }
             Stop last = stops.peek();
-            if (t >= last.position()) return last.color();
+            if (t >= last.position()) {
+                return last.color();
+            }
 
             for (int i = 0; i < stops.size - 1; i++) {
                 Stop s0 = stops.get(i);
