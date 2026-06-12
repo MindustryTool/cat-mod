@@ -11,17 +11,268 @@ import arc.scene.style.*;
 import arc.scene.ui.*;
 import arc.scene.ui.layout.WidgetGroup;
 import arc.scene.utils.*;
+import arc.struct.Seq;
+
+import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
 
+import org.mindustrytool.libs.ui.widget.ElementNode;
+import org.mindustrytool.libs.ui.widget.Widget;
+import org.mindustrytool.libs.ui.layout.LayoutEngine;
+import org.mindustrytool.libs.ui.layout.LayoutSpec;
+
+import java.util.HashMap;
+import java.util.HashSet;
+
 import static arc.Core.*;
 
-/**
- * A direct port of Arc's ScrollPane source code with per-axis scroll configuration.
- * Extends WidgetGroup directly, behaves as a pure-property element. Each axis (X and Y)
- * can be independently configured for scrolling, overscroll, force scroll, and scrollbar visibility.
- */
-public class ScrollElement extends WidgetGroup {
+@Builder(toBuilder = true)
+public record LayoutWidget(
+    LayoutSpec layoutSpec,
+    boolean scrollX,
+    boolean scrollY,
+    boolean fadeScrollBars,
+    boolean smoothScrolling,
+    boolean clip,
+    Widget background,
+    Seq<Widget> children,
+    Runnable onClick
+) implements Widget {
+
+    public static class LayoutWidgetBuilder {
+        private LayoutSpec layoutSpec = LayoutSpec.defaultSpec();
+        private boolean scrollX = false;
+        private boolean scrollY = false;
+        private boolean fadeScrollBars = true;
+        private boolean smoothScrolling = true;
+        private boolean clip = false;
+        private Seq<Widget> children = new Seq<>();
+    }
+
+    public LayoutWidget() {
+        this(LayoutSpec.defaultSpec(), false, false, true, true, false, null, new Seq<>(), null);
+    }
+
+    @Override
+    public LayoutSpec getLayoutSpec() {
+        return layoutSpec;
+    }
+
+    @Override
+    public ElementNode createElement() {
+        return new LayoutElementNode(this);
+    }
+}
+
+class LayoutElementNode extends ElementNode {
+    private final ScrollElement group;
+    private final WidgetGroup contentGroup;
+    private ElementNode backgroundNode;
+    private final Seq<EventListener> eventListeners = new Seq<>();
+    private Seq<ElementNode> children = new Seq<>();
+
+    LayoutElementNode(LayoutWidget widget) {
+        super(widget);
+
+        contentGroup = new WidgetGroup() {
+            {
+                setTransform(true);
+                userObject = LayoutElementNode.this;
+            }
+
+            @Override
+            public float getPrefWidth() {
+                LayoutSpec spec = sizing();
+                if (spec.getWidthMode() == LayoutSpec.SizeMode.FIXED && spec.getFixedWidth() > 0f)
+                    return spec.constrainWidth(spec.getFixedWidth());
+                if (spec.getWidthMode() == LayoutSpec.SizeMode.GROW) return 0f;
+                return spec.constrainWidth(
+                    LayoutEngine.prefWidth(spec, spec.isColumn(), spec.getGap(), foregroundElements()));
+            }
+
+            @Override
+            public float getPrefHeight() {
+                LayoutSpec spec = sizing();
+                if (spec.getHeightMode() == LayoutSpec.SizeMode.FIXED && spec.getFixedHeight() > 0f)
+                    return spec.constrainHeight(spec.getFixedHeight());
+                if (spec.getHeightMode() == LayoutSpec.SizeMode.GROW) return 0f;
+                return spec.constrainHeight(
+                    LayoutEngine.prefHeight(spec, spec.isColumn(), spec.getGap(), foregroundElements()));
+            }
+
+            @Override
+            public void layout() {
+                LayoutSpec spec = sizing();
+                float cw = getWidth(), ch = getHeight();
+                if (backgroundNode != null) {
+                    backgroundNode.getArcElement().setSize(cw, ch);
+                    backgroundNode.getArcElement().setPosition(0f, 0f);
+                }
+                float lw = Math.max(0f, cw - spec.getHorizontalPadding());
+                float lh = Math.max(0f, ch - spec.getVerticalPadding());
+                LayoutEngine.layout(spec, foregroundElements(),
+                    spec.getPaddingLeft(), spec.getPaddingBottom(), lw, lh);
+            }
+        };
+
+        group = new ScrollElement(contentGroup) {
+            {
+                userObject = LayoutElementNode.this;
+            }
+
+            @Override
+            protected void setScene(Scene scene) {
+                boolean hadScene = getScene() != null;
+                super.setScene(scene);
+                if (hadScene && scene == null) LayoutElementNode.this.dispose();
+            }
+        };
+
+        group.getX().setDisabled(true);
+        group.getY().setDisabled(true);
+
+        arcElement = group;
+    }
+
+    @Override
+    public void mount(ElementNode parent) {
+        LayoutWidget w = (LayoutWidget) widget;
+        group.applyLayoutConfig(w);
+        mountBackground(w);
+        reconcile(w.children());
+        applyListeners(w);
+    }
+
+    @Override
+    public void update(Widget newWidget) {
+        super.update(newWidget);
+        LayoutWidget w = (LayoutWidget) newWidget;
+        group.applyLayoutConfig(w);
+        updateBackground(w);
+        reconcile(w.children());
+        applyListeners(w);
+        contentGroup.invalidateHierarchy();
+    }
+
+    @Override
+    public void dispose() {
+        if (backgroundNode != null) {
+            backgroundNode.dispose();
+            backgroundNode = null;
+        }
+        for (int i = children.size - 1; i >= 0; i--)
+            children.get(i).dispose();
+        children.clear();
+        super.dispose();
+    }
+
+    private void reconcile(Seq<? extends Widget> newWidgets) {
+        int oldLen = children.size;
+        int newLen = newWidgets.size;
+
+        HashMap<Object, ElementNode> keyed = new HashMap<>();
+        for (int i = 0; i < oldLen; i++) {
+            Object k = children.get(i).widget.key();
+            if (k != null) keyed.put(k, children.get(i));
+        }
+
+        HashSet<ElementNode> consumed = new HashSet<>();
+        Seq<ElementNode> result = new Seq<>();
+
+        for (int i = 0; i < newLen; i++) {
+            Widget w = newWidgets.get(i);
+            ElementNode match = null;
+
+            if (w.key() != null) {
+                match = keyed.get(w.key());
+                if (match != null && !match.widget.canUpdate(w)) {
+                    match.dispose();
+                    keyed.remove(w.key());
+                    match = null;
+                }
+                if (match != null) keyed.remove(w.key());
+            }
+
+            if (match == null && i < oldLen) {
+                ElementNode candidate = children.get(i);
+                if (!consumed.contains(candidate) && candidate.widget.canUpdate(w)) {
+                    match = candidate;
+                }
+            }
+
+            if (match != null) {
+                match.update(w);
+                result.add(match);
+                consumed.add(match);
+            } else {
+                ElementNode n = w.createElement();
+                n.mount(this);
+                contentGroup.addChild(n.getArcElement());
+                result.add(n);
+            }
+        }
+
+        for (int i = oldLen - 1; i >= 0; i--) {
+            if (!consumed.contains(children.get(i)))
+                children.get(i).dispose();
+        }
+
+        children = result;
+    }
+
+    private void mountBackground(LayoutWidget w) {
+        if (w.background() == null) return;
+        backgroundNode = w.background().createElement();
+        backgroundNode.mount(this);
+        backgroundNode.getArcElement().toBack();
+    }
+
+    private void updateBackground(LayoutWidget w) {
+        if (w.background() != null) {
+            if (backgroundNode == null) {
+                backgroundNode = w.background().createElement();
+                backgroundNode.mount(this);
+                backgroundNode.getArcElement().toBack();
+            } else if (backgroundNode.getWidget().canUpdate(w.background())) {
+                backgroundNode.update(w.background());
+            } else {
+                backgroundNode.dispose();
+                backgroundNode = w.background().createElement();
+                backgroundNode.mount(this);
+                backgroundNode.getArcElement().toBack();
+            }
+        } else if (backgroundNode != null) {
+            backgroundNode.dispose();
+            backgroundNode = null;
+        }
+    }
+
+    private Seq<Element> foregroundElements() {
+        Seq<Element> result = new Seq<>();
+        for (int i = 0; i < children.size; i++)
+            result.add(children.get(i).getArcElement());
+        return result;
+    }
+
+    private void applyListeners(LayoutWidget w) {
+        for (EventListener l : eventListeners)
+            group.removeListener(l);
+        eventListeners.clear();
+        if (w.onClick() != null) {
+            ClickListener cl = new ClickListener() {
+                @Override
+                public void clicked(InputEvent event, float x, float y) {
+                    w.onClick().run();
+                }
+            };
+            group.addListener(cl);
+            eventListeners.add(cl);
+        }
+    }
+}
+
+class ScrollElement extends WidgetGroup {
 
     @Getter @Setter
     public static class ScrollAxis {
@@ -62,21 +313,22 @@ public class ScrollElement extends WidgetGroup {
 
     @Getter Element widget;
     private ElementGestureListener flickScrollListener;
-    @Getter boolean fadeScrollBars = false;
-    @Getter @Setter boolean smoothScrolling = true;
     float overscrollDistance = 50f;
     float overscrollSpeedMin = 30f;
     float overscrollSpeedMax = 200f;
     boolean clamp = true;
     boolean variableSizeKnobs = true;
     @Getter boolean scrollbarsOnTop;
-    @Setter boolean clip = true;
 
-    /**
-     * Creates a scroll element wrapping the given widget.
-     * @param widget the child element to make scrollable, or null
-     */
-    public ScrollElement(Element widget) {
+    void applyLayoutConfig(LayoutWidget w) {
+        fade.delaySeconds = 0.5f;
+        fade.alphaSeconds = 2.0f;
+        getX().setDisabled(!w.scrollX());
+        getY().setDisabled(!w.scrollY());
+        invalidateHierarchy();
+    }
+
+    ScrollElement(Element widget) {
         setWidget(widget);
         setSize(150, 150);
         setTransform(true);
@@ -239,15 +491,6 @@ public class ScrollElement extends WidgetGroup {
         });
     }
 
-    // ==========================================
-    // Public Setters & Getters (Properties)
-    // ==========================================
-
-    /**
-     * Sets the widget to be made scrollable. Replaces any existing widget.
-     * @param widget the child element to wrap, or null to clear
-     * @throws IllegalArgumentException if widget is this ScrollElement
-     */
     public void setWidget(Element widget) {
         if (widget == this) throw new IllegalArgumentException("widget cannot be the ScrollElement.");
         if (this.widget != null) super.removeChild(this.widget);
@@ -255,49 +498,17 @@ public class ScrollElement extends WidgetGroup {
         if (widget != null) super.addChild(widget);
     }
 
-    /**
-     * Sets whether scroll bars fade out when not in use.
-     * When enabled, fade delay and speed default to 0.5s and 2.0s respectively.
-     * @param fadeScrollBars true to enable fade effect
-     */
-    public void setFadeScrollBars(boolean fadeScrollBars) {
-        if (this.fadeScrollBars == fadeScrollBars) return;
-        this.fadeScrollBars = fadeScrollBars;
-        if (fadeScrollBars) {
-            setupFadeScrollBars(0.5f, 2.0f);
-        }
-        invalidateHierarchy();
-    }
-
-    /**
-     * Configures the delay and duration for scroll bar fading.
-     * @param delay  seconds before fade starts after last interaction
-     * @param seconds duration of the fade transition
-     */
-    public void setupFadeScrollBars(float delay, float seconds) {
+    void setupFadeScrollBars(float delay, float seconds) {
         fade.delaySeconds = delay;
         fade.alphaSeconds = seconds;
     }
 
-    /**
-     * Sets whether scroll bars are drawn on top of the content rather than beside it.
-     * Enabling this disables fade scroll bars if active.
-     * @param scrollbarsOnTop true to draw scroll bars over content
-     */
     public void setScrollbarsOnTop(boolean scrollbarsOnTop) {
         if (this.scrollbarsOnTop == scrollbarsOnTop) return;
         this.scrollbarsOnTop = scrollbarsOnTop;
-        if (scrollbarsOnTop && fadeScrollBars) {
-            setFadeScrollBars(false);
-        }
         invalidateHierarchy();
     }
 
-    /**
-     * Sets whether flick/gesture scrolling is enabled.
-     * When enabled, the user can drag to scroll and fling to continue momentum.
-     * @param flickScroll true to enable gesture-based scrolling
-     */
     public void setFlickScroll(boolean flickScroll) {
         if (this.flickScroll == flickScroll) return;
         this.flickScroll = flickScroll;
@@ -308,114 +519,59 @@ public class ScrollElement extends WidgetGroup {
         }
     }
 
-    /**
-     * Forces scroll bars to always be shown for the specified axes,
-     * even when content does not exceed the viewport.
-     * @param xForce true to force X scroll bar
-     * @param yForce true to force Y scroll bar
-     */
     public void setForceScroll(boolean xForce, boolean yForce) {
         x.forceScroll = xForce;
         y.forceScroll = yForce;
         invalidateHierarchy();
     }
 
-    /**
-     * Enables or disables overscroll (bounce-back effect) for both axes.
-     * @param overscroll true to allow overscrolling past content bounds
-     */
     public void setOverscroll(boolean overscroll) {
         x.overscroll = overscroll;
         y.overscroll = overscroll;
     }
 
-    /**
-     * Sets the X scroll position in pixels, clamped to valid range.
-     * @param pixels the scroll offset along the X axis
-     */
     public void setScrollX(float pixels) {
         x.amount = Mathf.clamp(pixels, 0, x.max);
     }
 
-    /**
-     * Sets the Y scroll position in pixels, clamped to valid range.
-     * @param pixels the scroll offset along the Y axis
-     */
     public void setScrollY(float pixels) {
         y.amount = Mathf.clamp(pixels, 0, y.max);
     }
 
-    /**
-     * Sets the X scroll position immediately, bypassing smooth scrolling interpolation.
-     * @param pixels the absolute scroll offset along the X axis
-     */
     public void setScrollXForce(float pixels) {
         x.visualAmount = pixels;
         x.amount = pixels;
     }
 
-    /**
-     * Sets the Y scroll position immediately, bypassing smooth scrolling interpolation.
-     * @param pixels the absolute scroll offset along the Y axis
-     */
     public void setScrollYForce(float pixels) {
         y.visualAmount = pixels;
         y.amount = pixels;
     }
 
-    /**
-     * Sets the X scroll position as a percentage of the total scroll range.
-     * @param percentX scroll percentage from 0 to 1
-     */
     public void setScrollPercentX(float percentX) {
         setScrollX(x.max * Mathf.clamp(percentX, 0, 1));
     }
 
-    /**
-     * Sets the Y scroll position as a percentage of the total scroll range.
-     * @param percentY scroll percentage from 0 to 1
-     */
     public void setScrollPercentY(float percentY) {
         setScrollY(y.max * Mathf.clamp(percentY, 0, 1));
     }
 
-    /**
-     * @return the current X scroll position as a percentage (0 to 1)
-     */
     public float getScrollPercentX() {
         return safePercent(x.amount, x.max);
     }
 
-    /**
-     * @return the current Y scroll position as a percentage (0 to 1)
-     */
     public float getScrollPercentY() {
         return safePercent(y.amount, y.max);
     }
 
-    /**
-     * @return the visual (animated) X scroll percentage (0 to 1)
-     */
     public float getVisualScrollPercentX() {
         return safePercent(x.visualAmount, x.max);
     }
 
-    /**
-     * @return the visual (animated) Y scroll percentage (0 to 1)
-     */
     public float getVisualScrollPercentY() {
         return safePercent(y.visualAmount, y.max);
     }
 
-    // ==========================================
-    // Arc Element Lifecycle Overrides
-    // ==========================================
-
-    /**
-     * Advances the scroll element by one frame. Handles fade animation of scroll bars,
-     * fling momentum, smooth scrolling interpolation, and overscroll bounce-back.
-     * @param delta time in seconds since the last frame
-     */
     @Override
     public void act(float delta) {
         super.act(delta);
@@ -423,7 +579,9 @@ public class ScrollElement extends WidgetGroup {
         boolean panning = flickScrollListener.getGestureDetector().isPanning();
         boolean animating = false;
 
-        if (fade.alpha > 0 && fadeScrollBars && !panning && !x.touchScroll && !y.touchScroll) {
+        Object uo = userObject;
+        boolean fadeSB = uo instanceof LayoutElementNode && ((LayoutWidget)((LayoutElementNode) uo).widget).fadeScrollBars();
+        if (fade.alpha > 0 && !panning && !x.touchScroll && !y.touchScroll) {
             fade.delay -= delta;
             if (fade.delay <= 0) fade.alpha = Math.max(0, fade.alpha - delta);
             animating = true;
@@ -446,6 +604,7 @@ public class ScrollElement extends WidgetGroup {
             animating = true;
         }
 
+        boolean smoothScrolling = uo instanceof LayoutElementNode && ((LayoutWidget)((LayoutElementNode) uo).widget).smoothScrolling();
         if (smoothScrolling && flingTimer <= 0 && !panning && !x.touchScroll && !y.touchScroll) {
             animating |= smoothApproach(x.visualAmount, x.amount, delta, val -> x.visualAmount = val);
             animating |= smoothApproach(y.visualAmount, y.amount, delta, val -> y.visualAmount = val);
@@ -463,10 +622,6 @@ public class ScrollElement extends WidgetGroup {
         }
     }
 
-    /**
-     * Computes layout for the widget and scroll bars. Determines scroll ranges,
-     * calculates bar and knob bounds, and sizes the widget to its preferred dimensions.
-     */
     @Override
     public void layout() {
         float width = getWidth();
@@ -503,10 +658,6 @@ public class ScrollElement extends WidgetGroup {
         widget.validate();
     }
 
-    /**
-     * Draws the scroll element: applies transform, positions the widget,
-     * clips to the viewport area, and draws scroll bars with current fade alpha.
-     */
     @Override
     public void draw() {
         if (widget == null) return;
@@ -535,6 +686,8 @@ public class ScrollElement extends WidgetGroup {
 
         scene.calculateScissors(widgetAreaBounds, scissorBounds);
 
+        Object uo = userObject;
+        boolean clip = uo instanceof LayoutElementNode && ((LayoutWidget)((LayoutElementNode) uo).widget).clip();
         if (clip) {
             if (ScissorStack.push(scissorBounds)) {
                 drawChildren();
@@ -562,9 +715,6 @@ public class ScrollElement extends WidgetGroup {
         resetTransform();
     }
 
-    /**
-     * @return the preferred width of the wrapped widget, or 0 if none
-     */
     @Override
     public float getPrefWidth() {
         if (widget != null) {
@@ -574,9 +724,6 @@ public class ScrollElement extends WidgetGroup {
         return 0;
     }
 
-    /**
-     * @return the preferred height of the wrapped widget, or 0 if none
-     */
     @Override
     public float getPrefHeight() {
         if (widget != null) {
@@ -586,38 +733,21 @@ public class ScrollElement extends WidgetGroup {
         return 0;
     }
 
-    /**
-     * @return minimum width, always 0 (scroll element can shrink to nothing)
-     */
     @Override
     public float getMinWidth() {
         return 0;
     }
 
-    /**
-     * @return minimum height, always 0 (scroll element can shrink to nothing)
-     */
     @Override
     public float getMinHeight() {
         return 0;
     }
 
-    /**
-     * Removes a child element. Delegates to the two-argument overload with unfocus=true.
-     * @param actor the child to remove
-     * @return true if the actor was removed
-     */
     @Override
     public boolean removeChild(Element actor) {
         return removeChild(actor, true);
     }
 
-    /**
-     * Removes a child element. Only succeeds if the actor is the current widget.
-     * @param actor  the child to remove
-     * @param unfocus whether to unfocus the actor
-     * @return true if the actor was removed
-     */
     @Override
     public boolean removeChild(Element actor, boolean unfocus) {
         if (actor == null) throw new IllegalArgumentException("actor cannot be null.");
@@ -626,14 +756,6 @@ public class ScrollElement extends WidgetGroup {
         return super.removeChild(actor, unfocus);
     }
 
-    /**
-     * Returns the topmost element at the given coordinates.
-     * Scroll bar regions return this ScrollElement rather than the widget.
-     * @param tx the X coordinate in the element's local space
-     * @param ty the Y coordinate in the element's local space
-     * @param touchable whether to only consider touchable elements
-     * @return the hit element, or null if outside bounds
-     */
     @Override
     public Element hit(float tx, float ty, boolean touchable) {
         if (tx < 0 || tx >= getWidth() || ty < 0 || ty >= getHeight()) return null;
@@ -641,19 +763,11 @@ public class ScrollElement extends WidgetGroup {
         return super.hit(tx, ty, touchable);
     }
 
-    /**
-     * Cancels touch focus for all listeners except the flick scroll gesture listener.
-     * Prevents other inputs from interfering with scrolling.
-     */
     public void cancelTouchFocus() {
         Scene stage = getScene();
         if (stage != null) stage.cancelTouchFocusExcept(flickScrollListener, this);
     }
 
-    /**
-     * Cancels any active scroll drag or fling on all axes.
-     * Resets dragging pointer and touch scroll state.
-     */
     public void cancel() {
         draggingPointer = -1;
         x.touchScroll = false;
@@ -697,41 +811,47 @@ public class ScrollElement extends WidgetGroup {
             return;
         }
 
+        float areaWidth = parentWidth;
+        float areaHeight = parentHeight;
+
         if (isX) {
-            float hHeight = scrollbarSize;
-            float boundsX = y.scrollBarOnEdge ? 0 : scrollbarW();
-            float boundsY = axis.scrollBarOnEdge ? 0 : parentHeight - hHeight;
-            axis.barBounds.set(boundsX, boundsY, axis.areaSize - (y.scrolling ? scrollbarW() : 0), hHeight);
-
-            axis.knobBounds.width = variableSizeKnobs ?
-                Math.max(axis.knob.getMinWidth(), axis.barBounds.width * axis.areaSize / widgetSize) : axis.knob.getMinWidth();
-            axis.knobBounds.height = hHeight;
-            axis.knobBounds.x = axis.barBounds.x + (axis.barBounds.width - axis.knobBounds.width) * getScrollPercentX();
-            axis.knobBounds.y = axis.barBounds.y;
+            float barHeight = scrollbarSize;
+            axis.barBounds.set(0, 0, areaWidth, barHeight);
+            float knobWidth = areaWidth * (areaWidth / widgetSize);
+            if (variableSizeKnobs) {
+                knobWidth = Math.max(axis.knob.getMinWidth(), knobWidth);
+            } else {
+                knobWidth = axis.knob.getMinWidth();
+            }
+            knobWidth = Math.min(areaWidth, knobWidth);
+            axis.knobBounds.set(0, 0, knobWidth, barHeight);
         } else {
-            float vWidth = scrollbarSize;
-            float boundsX = axis.scrollBarOnEdge ? parentWidth - vWidth : 0;
-            float boundsY = x.scrollBarOnEdge ? scrollbarH() : 0;
-            axis.barBounds.set(boundsX, boundsY, vWidth, axis.areaSize - (x.scrolling ? scrollbarH() : 0));
-
-            axis.knobBounds.width = vWidth;
-            axis.knobBounds.height = variableSizeKnobs ?
-                Math.max(axis.knob.getMinHeight(), axis.barBounds.height * axis.areaSize / widgetSize) : axis.knob.getMinHeight();
-            axis.knobBounds.x = boundsX;
-            axis.knobBounds.y = axis.barBounds.y + (axis.barBounds.height - axis.knobBounds.height) * (1 - getScrollPercentY());
+            float barWidth = scrollbarSize;
+            axis.barBounds.set(areaWidth - barWidth, 0, barWidth, areaHeight);
+            float knobHeight = areaHeight * (areaHeight / widgetSize);
+            if (variableSizeKnobs) {
+                knobHeight = Math.max(axis.knob.getMinHeight(), knobHeight);
+            } else {
+                knobHeight = axis.knob.getMinHeight();
+            }
+            knobHeight = Math.min(areaHeight, knobHeight);
+            axis.knobBounds.set(areaWidth - barWidth, 0, barWidth, knobHeight);
         }
+    }
+
+    private float safePercent(float val, float max) {
+        if (max == 0) return 0;
+        return Mathf.clamp(val / max, 0, 1);
     }
 
     private boolean applyOverscroll(ScrollAxis axis, float delta) {
         if (!axis.overscroll || !axis.scrolling) return false;
         if (axis.amount < 0) {
-            fade.reset();
-            axis.amount += (overscrollSpeedMin + (overscrollSpeedMax - overscrollSpeedMin) * -axis.amount / overscrollDistance) * delta;
+            axis.amount += (overscrollSpeedMin + (overscrollSpeedMax - overscrollSpeedMin) * (-axis.amount / overscrollDistance)) * delta;
             if (axis.amount > 0) axis.amount = 0;
             return true;
         } else if (axis.amount > axis.max) {
-            fade.reset();
-            axis.amount -= (overscrollSpeedMin + (overscrollSpeedMax - overscrollSpeedMin) * -(axis.max - axis.amount) / overscrollDistance) * delta;
+            axis.amount -= (overscrollSpeedMin + (overscrollSpeedMax - overscrollSpeedMin) * ((axis.amount - axis.max) / overscrollDistance)) * delta;
             if (axis.amount < axis.max) axis.amount = axis.max;
             return true;
         }
@@ -741,8 +861,11 @@ public class ScrollElement extends WidgetGroup {
     private boolean smoothApproach(float visual, float target, float delta, java.util.function.Consumer<Float> setter) {
         if (visual == target) return false;
         float diff = target - visual;
-        float step = Math.copySign(Math.max(200f * delta, Math.abs(diff) * 7f * delta), diff);
-        setter.accept(Mathf.clamp(visual + step, Math.min(visual, target), Math.max(visual, target)));
+        if (Math.abs(diff) < 0.1f) {
+            setter.accept(target);
+            return true;
+        }
+        setter.accept(visual + diff * (1 - (float) Math.exp(-15 * delta)));
         return true;
     }
 
@@ -752,10 +875,6 @@ public class ScrollElement extends WidgetGroup {
 
     protected float getMouseWheelY() {
         return Math.min(y.areaSize, Math.max(y.areaSize * 0.9f, y.max * 0.1f) / 4);
-    }
-
-    private static float safePercent(float amount, float max) {
-        return max == 0 ? 1f : Mathf.clamp(amount / max, 0, 1);
     }
 
     private static class RectDrawable extends BaseDrawable {
