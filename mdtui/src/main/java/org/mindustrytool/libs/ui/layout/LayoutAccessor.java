@@ -51,5 +51,6 @@ public interface LayoutAccessor<T> {
      * @param node the layout node
      * @return the node sizing instance, or null if none is specified
      */
-    NodeSpec<?> getSizing(T node);
+    LayoutSpec getSizing(T node);
 }
+

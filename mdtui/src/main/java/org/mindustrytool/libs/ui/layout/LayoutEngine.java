@@ -2,43 +2,14 @@ package org.mindustrytool.libs.ui.layout;
 
 import arc.scene.Element;
 
-import org.mindustrytool.libs.ui.components.Component;
-import org.mindustrytool.libs.ui.layout.NodeSpec.SizeMode;
+import org.mindustrytool.libs.ui.widget.ElementNode;
+import org.mindustrytool.libs.ui.layout.LayoutSpec.SizeMode;
 import org.mindustrytool.libs.ui.layout.LayoutSpec.AlignItems;
 import org.mindustrytool.libs.ui.layout.LayoutSpec.JustifyContent;
 
 /**
  * LayoutEngine is the core layout calculation processor.
  * It distributes positions and dimensions to child nodes based on flexbox rules.
- *
- * <p>=== ARCHITECTURAL RULES & CHANGELOG ===</p>
- *
- * <p>Rules for Modification:</p>
- * <ul>
- *   <li><b>1. Zero Allocation Principle:</b> To maintain smooth UI rendering in Mindustry,
- *       avoid unnecessary object creation in performance-sensitive layout loops. The current wrapping algorithm
- *       allocates temporary lines; if GC pressure becomes an issue, migrate to object pools or static buffers.</li>
- *   <li><b>2. Single-Threaded Constraints:</b> This layout engine is designed for single-threaded UI execution loops.
- *       Do not add volatile qualifiers, synchronized locks, or ThreadLocal storage, as they degrade performance.</li>
- *   <li><b>3. Backward Compatibility:</b> Public API overloads targeting `arc.scene.Element` must remain unchanged
- *       and delegate directly to `ELEMENT_ACCESSOR`.</li>
- *   <li><b>4. Axis Orientation Math:</b> In Arc UI, the coordinates start at the bottom-left corner.
- *       Therefore, along the vertical axis (Y), coordinate values increase upwards.
- *       - Cursors moving down the vertical axis must subtract coordinate values.
- *       - AlignItems.START aligns to the bottom of the line (minimum coordinate).
- *       - AlignItems.END aligns to the top of the line (maximum coordinate).</li>
- * </ul>
- *
- * <p>Changelog:</p>
- * <ul>
- *   <li><b>2026-06-09:</b> Replaced the old Sizing interface with direct NodeSpec references.
- *       Renamed all abbreviated variables and methods to full semantic terms (e.g. x -> xPosition, h -> height).</li>
- *   <li><b>2026-06-09:</b> Implemented wrapping layout logic (FlexWrap), individual cross alignment overrides (AlignSelf),
- *       reverse layout direction (Reverse), and Space Evenly alignment.</li>
- *   <li><b>2026-06-09:</b> Decoupled layout math from the Arc UI framework using LayoutAccessor to allow clean unit testing.</li>
- *   <li><b>2026-06-09:</b> Overrode setScene in Layout's WidgetGroup to intercept detachment from Scene and force component
- *   cleanup/disposal.</li>
- * </ul>
  */
 public class LayoutEngine {
 
@@ -67,7 +38,7 @@ public class LayoutEngine {
         }
 
         @Override
-        public NodeSpec<?> getSizing(Element node) {
+        public LayoutSpec getSizing(Element node) {
             return LayoutEngine.sizingOf(node);
         }
     };
@@ -78,15 +49,15 @@ public class LayoutEngine {
     private interface Axis {
         <T> float getPreferred(T node, LayoutAccessor<T> accessor);
 
-        float getFixed(NodeSpec<?> sizing);
+        float getFixed(LayoutSpec sizing);
 
-        SizeMode getMode(NodeSpec<?> sizing);
+        SizeMode getMode(LayoutSpec sizing);
 
-        float getGrowWeight(NodeSpec<?> sizing);
+        float getGrowWeight(LayoutSpec sizing);
 
-        float getPadding(NodeSpec<?> sizing);
+        float getPadding(LayoutSpec sizing);
 
-        float constrain(NodeSpec<?> sizing, float value);
+        float constrain(LayoutSpec sizing, float value);
     }
 
     private static final Axis AXIS_X = new Axis() {
@@ -96,27 +67,27 @@ public class LayoutEngine {
         }
 
         @Override
-        public float getFixed(NodeSpec<?> s) {
+        public float getFixed(LayoutSpec s) {
             return s.getFixedWidth();
         }
 
         @Override
-        public SizeMode getMode(NodeSpec<?> s) {
+        public SizeMode getMode(LayoutSpec s) {
             return s.getWidthMode();
         }
 
         @Override
-        public float getGrowWeight(NodeSpec<?> s) {
+        public float getGrowWeight(LayoutSpec s) {
             return s.getGrowWeightHorizontal();
         }
 
         @Override
-        public float getPadding(NodeSpec<?> s) {
+        public float getPadding(LayoutSpec s) {
             return s.getHorizontalPadding();
         }
 
         @Override
-        public float constrain(NodeSpec<?> s, float value) {
+        public float constrain(LayoutSpec s, float value) {
             return s.constrainWidth(value);
         }
     };
@@ -128,27 +99,27 @@ public class LayoutEngine {
         }
 
         @Override
-        public float getFixed(NodeSpec<?> s) {
+        public float getFixed(LayoutSpec s) {
             return s.getFixedHeight();
         }
 
         @Override
-        public SizeMode getMode(NodeSpec<?> s) {
+        public SizeMode getMode(LayoutSpec s) {
             return s.getHeightMode();
         }
 
         @Override
-        public float getGrowWeight(NodeSpec<?> s) {
+        public float getGrowWeight(LayoutSpec s) {
             return s.getGrowWeightVertical();
         }
 
         @Override
-        public float getPadding(NodeSpec<?> s) {
+        public float getPadding(LayoutSpec s) {
             return s.getVerticalPadding();
         }
 
         @Override
-        public float constrain(NodeSpec<?> s, float value) {
+        public float constrain(LayoutSpec s, float value) {
             return s.constrainHeight(value);
         }
     };
@@ -156,12 +127,12 @@ public class LayoutEngine {
     // --- Backward Compatible Overloads for Element ---
 
     /** Computes preferred width using the default {@link #ELEMENT_ACCESSOR}. */
-    public static float prefWidth(NodeSpec<?> spec, boolean isColumn, float gap, Iterable<Element> children) {
+    public static float prefWidth(LayoutSpec spec, boolean isColumn, float gap, Iterable<Element> children) {
         return prefWidth(spec, isColumn, gap, children, ELEMENT_ACCESSOR);
     }
 
     /** Computes preferred height using the default {@link #ELEMENT_ACCESSOR}. */
-    public static float prefHeight(NodeSpec<?> spec, boolean isColumn, float gap, Iterable<Element> children) {
+    public static float prefHeight(LayoutSpec spec, boolean isColumn, float gap, Iterable<Element> children) {
         return prefHeight(spec, isColumn, gap, children, ELEMENT_ACCESSOR);
     }
 
@@ -173,16 +144,16 @@ public class LayoutEngine {
     // --- Core Generalized Layout Algorithms ---
 
     /** Computes the preferred width for the given children with a custom accessor. */
-    public static <T> float prefWidth(NodeSpec<?> spec, boolean isColumn, float gap, Iterable<T> children, LayoutAccessor<T> accessor) {
+    public static <T> float prefWidth(LayoutSpec spec, boolean isColumn, float gap, Iterable<T> children, LayoutAccessor<T> accessor) {
         return preferredAxis(spec, isColumn, AXIS_X, gap, children, accessor);
     }
 
     /** Computes the preferred height for the given children with a custom accessor. */
-    public static <T> float prefHeight(NodeSpec<?> spec, boolean isColumn, float gap, Iterable<T> children, LayoutAccessor<T> accessor) {
+    public static <T> float prefHeight(LayoutSpec spec, boolean isColumn, float gap, Iterable<T> children, LayoutAccessor<T> accessor) {
         return preferredAxis(spec, isColumn, AXIS_Y, gap, children, accessor);
     }
 
-    private static <T> float preferredAxis(NodeSpec<?> spec,
+    private static <T> float preferredAxis(LayoutSpec spec,
                                            boolean isColumn,
                                            Axis axis,
                                            float gapSpacing,
@@ -197,7 +168,7 @@ public class LayoutEngine {
 
         for (T childNode : children) {
             if (!accessor.isVisible(childNode)) continue;
-            NodeSpec<?> childSizing = accessor.getSizing(childNode);
+            LayoutSpec childSizing = accessor.getSizing(childNode);
 
             float childValue = childSizing == null
                 ? axis.getPreferred(childNode, accessor)
@@ -272,7 +243,7 @@ public class LayoutEngine {
 
         for (T childNode : children) {
             if (!accessor.isVisible(childNode)) continue;
-            NodeSpec<?> childSizing = accessor.getSizing(childNode);
+            LayoutSpec childSizing = accessor.getSizing(childNode);
 
             float mainSize = childSizing == null
                 ? mainAxis.getPreferred(childNode, accessor)
@@ -308,7 +279,7 @@ public class LayoutEngine {
             float extraMain = mainLimit - line.mainSize;
             if (line.growCount > 0 && extraMain > 0.0f) {
                 for (LayoutItem<T> item : line.items) {
-                    NodeSpec<?> childSizing = accessor.getSizing(item.node);
+                    LayoutSpec childSizing = accessor.getSizing(item.node);
                     if (childSizing != null && mainAxis.getMode(childSizing) == SizeMode.GROW)
                         item.mainSize = (line.totalGrowWeight > 0.0f ? (mainAxis.getGrowWeight(childSizing) / line.totalGrowWeight) : (1.0f / line.growCount)) * extraMain;
                 }
@@ -349,7 +320,7 @@ public class LayoutEngine {
 
             int index = 0;
             for (LayoutItem<T> item : line.items) {
-                NodeSpec<?> childSizing = accessor.getSizing(item.node);
+                LayoutSpec childSizing = accessor.getSizing(item.node);
                 AlignItems childAlignment = getChildAlignment(childSizing, spec.getAlignItems());
 
                 if (childAlignment == AlignItems.STRETCH) item.crossSize = line.crossSize;
@@ -375,12 +346,12 @@ public class LayoutEngine {
         }
     }
 
-    private static <T> float getChildSizeOnAxis(T node, NodeSpec<?> sizing, Axis axis, LayoutAccessor<T> accessor) {
+    private static <T> float getChildSizeOnAxis(T node, LayoutSpec sizing, Axis axis, LayoutAccessor<T> accessor) {
         float fixedValue = (axis.getMode(sizing) == SizeMode.FIXED) ? axis.getFixed(sizing) : axis.getPreferred(node, accessor);
         return axis.constrain(sizing, fixedValue);
     }
 
-    private static AlignItems getChildAlignment(NodeSpec<?> sizing, AlignItems fallback) {
+    private static AlignItems getChildAlignment(LayoutSpec sizing, AlignItems fallback) {
         if (sizing == null) return fallback;
         return switch (sizing.getAlignSelf()) {
             case START -> AlignItems.START;
@@ -409,9 +380,10 @@ public class LayoutEngine {
                 for (int i = 1; i <= count; i++) offsets[i] = gapSpacing + between;
             }
             case SPACE_AROUND -> {
-                float around = extraSpace / count;
-                offsets[0] = around;
-                for (int i = 1; i <= count; i++) offsets[i] = gapSpacing + around * 2.0f;
+                float halfAround = extraSpace / (count * 2);
+                offsets[0] = halfAround;
+                for (int i = 1; i < count; i++) offsets[i] = gapSpacing + halfAround * 2;
+                if (count > 0) offsets[count] = gapSpacing + halfAround;
             }
             case SPACE_EVENLY -> {
                 float evenly = extraSpace / (count + 1);
@@ -434,14 +406,9 @@ public class LayoutEngine {
         };
     }
 
-    /**
-     * Extracts the {@link NodeSpec} from an element's user object if it implements {@link Component}.
-     *
-     * @param element the element to inspect
-     * @return the associated NodeSpec, or null if the element has no component
-     */
-    public static NodeSpec<?> sizingOf(Element element) {
+    public static LayoutSpec sizingOf(Element element) {
         Object object = element.userObject;
-        return object instanceof Component ? ((Component) object).sizing() : null;
+        if (object instanceof ElementNode) return ((ElementNode) object).sizing();
+        return null;
     }
 }
