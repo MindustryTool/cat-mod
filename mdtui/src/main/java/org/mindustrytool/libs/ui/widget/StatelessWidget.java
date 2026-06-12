@@ -1,6 +1,7 @@
 package org.mindustrytool.libs.ui.widget;
 
 import arc.scene.Element;
+import org.mindustrytool.libs.ui.layout.LayoutSpec;
 
 /**
  * A widget that does not maintain its own state and is composed of other widgets.
@@ -13,7 +14,7 @@ public abstract class StatelessWidget implements Widget {
     /**
      * Builds the widget tree representing this widget.
      *
-     * @return the child widget tree
+     * @return the child widget tree configuration.
      */
     public abstract Widget build();
 
@@ -23,9 +24,22 @@ public abstract class StatelessWidget implements Widget {
     }
 }
 
+/**
+ * A mutable element node backing a {@link StatelessWidget}.
+ * Handles mounting, reconciliation, updating, and disposal of its composed child.
+ */
 class StatelessElementNode extends ElementNode {
+
+    /**
+     * The backing element node representing the built child widget.
+     */
     private ElementNode childNode;
 
+    /**
+     * Constructs a stateless element node.
+     *
+     * @param widget the stateless widget blueprint.
+     */
     StatelessElementNode(StatelessWidget widget) {
         super(widget);
     }
@@ -35,6 +49,7 @@ class StatelessElementNode extends ElementNode {
         Widget childWidget = ((StatelessWidget) widget).build();
         childNode = childWidget.createElement();
         childNode.mount(this);
+        
         this.arcElement = childNode.getArcElement();
     }
 
@@ -42,14 +57,22 @@ class StatelessElementNode extends ElementNode {
     public void update(Widget newWidget) {
         super.update(newWidget);
         Widget childWidget = ((StatelessWidget) newWidget).build();
+
         if (childNode.getWidget().canUpdate(childWidget)) {
             childNode.update(childWidget);
-        } else {
-            childNode.dispose();
-            childNode = childWidget.createElement();
-            childNode.mount(this);
-            this.arcElement = childNode.getArcElement();
+            return;
         }
+
+        childNode.dispose();
+        childNode = childWidget.createElement();
+        childNode.mount(this);
+        
+        this.arcElement = childNode.getArcElement();
+    }
+
+    @Override
+    public LayoutSpec sizing() {
+        return childNode != null ? childNode.sizing() : LayoutSpec.defaultSpec();
     }
 
     @Override
@@ -58,7 +81,7 @@ class StatelessElementNode extends ElementNode {
             childNode.dispose();
             childNode = null;
         }
+        
         super.dispose();
     }
 }
-

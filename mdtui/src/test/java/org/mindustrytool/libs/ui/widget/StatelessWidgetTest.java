@@ -2,6 +2,7 @@ package org.mindustrytool.libs.ui.widget;
 
 import arc.scene.Element;
 import org.junit.jupiter.api.Test;
+import org.mindustrytool.libs.ui.layout.LayoutSpec;
 import java.util.concurrent.atomic.AtomicInteger;
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -27,6 +28,11 @@ class StatelessWidgetTest {
             return new ElementNode(this) {
                 {
                     this.arcElement = new Element();
+                }
+
+                @Override
+                public LayoutSpec sizing() {
+                    return LayoutSpec.defaultSpec();
                 }
 
                 @Override
@@ -107,6 +113,7 @@ class StatelessWidgetTest {
             public ElementNode createElement() {
                 return new ElementNode(this) {
                     { this.arcElement = new Element(); }
+                    @Override public LayoutSpec sizing() { return LayoutSpec.defaultSpec(); }
                     @Override public void mount(ElementNode parent) { state2.mounts.incrementAndGet(); }
                 };
             }
