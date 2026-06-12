@@ -6,6 +6,7 @@ import arc.graphics.Texture;
 import arc.scene.Element;
 import arc.scene.Scene;
 
+import org.mindustrytool.libs.signal.Effect;
 import org.mindustrytool.libs.ui.components.Component;
 import org.mindustrytool.libs.ui.components.ComponentStyle;
 import org.mindustrytool.libs.ui.layout.NodeSpec;
@@ -317,6 +318,8 @@ public class CustomComponent implements Component {
     protected final CustomDraw drawer = new CustomDraw();
 
     private Texture ownedTexture;
+    private String currentImageUrl;
+    private Effect activeLoadEffect;
 
     private final EffectHost effects = new EffectHost();
 
@@ -376,14 +379,32 @@ public class CustomComponent implements Component {
      * Disposes any previously loaded owned texture.
      */
     public CustomComponent loadImage(String url, Color tint) {
-        effects.add(() -> {
-            var signal = ImageLoader.get(url);
-            var state = signal.get();
-            if (state.state() != ImageLoader.ImageLoadState.LOADED || state.texture() == null) return;
+        if (url == null) return this;
 
-            disposeImageResources();
-            this.style.background(state.texture(), tint);
-            ownedTexture = state.texture();
+        if (url.equals(currentImageUrl)) {
+            if (ownedTexture != null) {
+                this.style.background(ownedTexture, tint);
+                element.invalidateHierarchy();
+            }
+            return this;
+        }
+
+        currentImageUrl = url;
+
+        if (activeLoadEffect != null) {
+            activeLoadEffect.dispose();
+            activeLoadEffect = null;
+        }
+
+        var signal = ImageLoader.get(url);
+        activeLoadEffect = Effect.ofMain(() -> {
+            var state = signal.get();
+            if (state.state() == ImageLoader.ImageLoadState.LOADED && state.texture() != null) {
+                disposeImageResources();
+                this.style.background(state.texture(), tint);
+                ownedTexture = state.texture();
+                element.invalidateHierarchy();
+            }
         });
 
         return this;
@@ -405,6 +426,10 @@ public class CustomComponent implements Component {
 
     @Override
     public void dispose() {
+        if (activeLoadEffect != null) {
+            activeLoadEffect.dispose();
+            activeLoadEffect = null;
+        }
         effects.disposeAll();
         disposeImageResources();
         drawer.dispose();

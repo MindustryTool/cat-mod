@@ -4,7 +4,5 @@
 openspec
 build
 bin
-/test
-!src/test/
-!src/test/**
 temp
+app-test

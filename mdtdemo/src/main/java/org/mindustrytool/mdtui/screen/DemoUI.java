@@ -46,12 +46,12 @@ public class DemoUI {
     };
 
     private static final String[] IMAGE_URLS = {
-        "https://raw.githubusercontent.com/Anuken/Mindustry/master/core/assets/icons/icon.png",
-        "https://raw.githubusercontent.com/Anuken/Mindustry/master/core/assets/sprites/dagger.png",
-        "https://raw.githubusercontent.com/Anuken/Mindustry/master/core/assets/sprites/block-copper-wall.png"
+        "https://github.com/Anuken.png",
+        "https://github.com/github.png",
+        "https://upload.wikimedia.org/wikipedia/commons/4/4e/Mindustry_Icon.png"
     };
 
-    private static final String[] IMAGE_NAMES = { "Logo", "Dagger", "Copper Wall" };
+    private static final String[] IMAGE_NAMES = { "Anuken", "GitHub", "Mindustry" };
 
     // --- State Signals ---
     private final Signal<Integer> activeTab = new Signal<>(0); // 0=Shape, 1=Shadows, 2=Filters, 3=Layout
@@ -160,12 +160,19 @@ public class DemoUI {
             }
         });
 
-        // Background layout wrapper to give text and center alignment to the preview card
-        Layout previewWrapper = Layout.of()
+        // Preview card container of fixed size 200x200 centered inside previewWrapper
+        Layout previewCardContainer = Layout.of()
             .background(previewCard)
-            .style(s -> s.alignItems(AlignItems.CENTER).justifyContent(JustifyContent.CENTER).grow())
+            .style(s -> s.alignItems(AlignItems.CENTER).justifyContent(JustifyContent.CENTER).fixedWidth(200f).fixedHeight(200f))
             .children(() -> Seq.with(
                 Text.of().style(t -> t.text("[ff79c6]Preview Element[]").size(1.2f).wrap(true))
+            ));
+
+        // Background layout wrapper to give text and center alignment to the preview card
+        Layout previewWrapper = Layout.of()
+            .style(s -> s.alignItems(AlignItems.CENTER).justifyContent(JustifyContent.CENTER).grow())
+            .children(() -> Seq.with(
+                previewCardContainer
             ));
 
         // --- 2. LAYOUT SANDBOX PREVIEW PANEL ---
@@ -189,7 +196,7 @@ public class DemoUI {
         // Right Main Content view that reactively switches depending on activeTab
         Layout mainPreviewArea = Layout.of()
             .background(CustomComponent.of().style(bg -> bg.background(Color.valueOf("101014"))))
-            .style(s -> s.column().grow().padding(24f).alignItems(AlignItems.CENTER).justifyContent(JustifyContent.CENTER))
+            .style(s -> s.column().grow().padding(24f).alignItems(AlignItems.STRETCH).justifyContent(JustifyContent.CENTER))
             .children(() -> {
                 if (activeTab.get() == 3) {
                     return Seq.with(
