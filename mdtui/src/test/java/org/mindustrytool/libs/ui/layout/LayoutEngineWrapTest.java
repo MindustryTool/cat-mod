@@ -284,7 +284,7 @@ public class LayoutEngineWrapTest extends LayoutTestBase {
     public void rowWrapWithGrow() {
         LayoutSpec spec = row().wrap().gap(0);
         MockNode a = node("a", 30, 20);
-        MockNode b = nodeWithSizing("b", sizing(NodeSpec.SizeMode.GROW, 0, 25).growWeightHorizontal(1));
+        MockNode b = nodeWithSizing("b", sizing(LayoutSpec.SizeMode.GROW, 0, 25).growWeightHorizontal(1));
         MockNode c = node("c", 30, 30);
         layout(spec, 100, 80, a, b, c);
         float growW = 100f - 30f - 30f;
@@ -302,7 +302,7 @@ public class LayoutEngineWrapTest extends LayoutTestBase {
     public void columnWrapWithGrow() {
         LayoutSpec spec = column().wrap().gap(0);
         MockNode a = node("a", 40, 30);
-        MockNode b = nodeWithSizing("b", sizing(NodeSpec.SizeMode.GROW, 50, 0).growWeightVertical(1));
+        MockNode b = nodeWithSizing("b", sizing(LayoutSpec.SizeMode.GROW, 50, 0).growWeightVertical(1));
         MockNode c = node("c", 60, 30);
         layout(spec, 150, 80, a, b, c);
         float growH = 80f - 30f - 30f;

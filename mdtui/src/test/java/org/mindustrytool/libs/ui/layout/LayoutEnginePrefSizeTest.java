@@ -26,8 +26,8 @@ public class LayoutEnginePrefSizeTest extends LayoutTestBase {
 
     @Test
     public void rowPrefSizeForWrapNode() {
-        MockNode a = nodeWithSizing("a", sizing(NodeSpec.SizeMode.FIXED, 40, 20));
-        MockNode b = nodeWithSizing("b", sizing(NodeSpec.SizeMode.FIXED, 60, 30));
+        MockNode a = nodeWithSizing("a", sizing(LayoutSpec.SizeMode.FIXED, 40, 20));
+        MockNode b = nodeWithSizing("b", sizing(LayoutSpec.SizeMode.FIXED, 60, 30));
         layout(row().gap(0), 120, 50, a, b);
         assertAll(
             () -> assertEquals(0f, a.xPosition), () -> assertEquals(40f, a.width),
@@ -88,7 +88,7 @@ public class LayoutEnginePrefSizeTest extends LayoutTestBase {
     public void prefSizeClampedByMinWidth() {
         MockNode a = node("a", 20, 15);
         a.set("prefW", 10f);
-        a.getSizingObj().minimumWidth(25);
+        a.minimumWidth(25);
         layout(row().gap(0), 100, 50, a);
         assertEquals(25f, a.width);
         assertEquals(0f, a.xPosition);
@@ -98,7 +98,7 @@ public class LayoutEnginePrefSizeTest extends LayoutTestBase {
     public void prefSizeClampedByMaxWidth() {
         MockNode a = node("a", 20, 15);
         a.set("prefW", 50f);
-        a.getSizingObj().maximumWidth(30);
+        a.maximumWidth(30);
         layout(row().gap(0), 100, 50, a);
         assertEquals(30f, a.width);
     }
@@ -109,7 +109,7 @@ public class LayoutEnginePrefSizeTest extends LayoutTestBase {
     public void prefSizeWithChildPadding() {
         MockNode a = node("a", 20, 15);
         a.set("prefW", 30f);
-        a.getSizingObj().padding(5);
+        a.padding(5);
         layout(row().gap(0), 100, 50, a);
         assertEquals(0f, a.xPosition);
         assertEquals(30f, a.width);
@@ -208,23 +208,23 @@ public class LayoutEnginePrefSizeTest extends LayoutTestBase {
 
     static Stream<Arguments> prefSizeSizingModes() {
         return Stream.of(
-            Arguments.of(NodeSpec.SizeMode.FIXED),
-            Arguments.of(NodeSpec.SizeMode.WRAP),
-            Arguments.of(NodeSpec.SizeMode.GROW)
+            Arguments.of(LayoutSpec.SizeMode.FIXED),
+            Arguments.of(LayoutSpec.SizeMode.WRAP),
+            Arguments.of(LayoutSpec.SizeMode.GROW)
         );
     }
 
     @ParameterizedTest
     @MethodSource("prefSizeSizingModes")
-    public void rowPrefSizeAcrossModes(NodeSpec.SizeMode mode) {
+    public void rowPrefSizeAcrossModes(LayoutSpec.SizeMode mode) {
         LayoutSpec spec = new LayoutSpec().row().gap(0);
         MockNode a = nodeWithSizing("a", sizing(mode, 0, 0).minimumWidth(0).maximumWidth(500));
         MockNode b = nodeWithSizing("b", sizing(mode, 0, 0).minimumWidth(0).maximumWidth(500));
         a.set("prefW", 30f); a.set("prefH", 15f);
         b.set("prefW", 40f); b.set("prefH", 20f);
-        if (mode == NodeSpec.SizeMode.GROW) {
-            a.getSizingObj().growWeightHorizontal(1);
-            b.getSizingObj().growWeightHorizontal(1);
+        if (mode == LayoutSpec.SizeMode.GROW) {
+            a.growWeightHorizontal(1);
+            b.growWeightHorizontal(1);
         }
         layout(spec, 100, 50, a, b);
     }

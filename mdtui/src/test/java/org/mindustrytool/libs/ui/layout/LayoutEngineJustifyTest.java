@@ -73,11 +73,11 @@ public class LayoutEngineJustifyTest extends LayoutTestBase {
         MockNode a = node("a", 20, 20);
         MockNode b = node("b", 30, 25);
         layout(spec, 100, 50, a, b);
-        float around = 50f / 2f;
+        float halfAround = 50f / 4f;
         assertAll(
-            () -> assertEquals(around, a.xPosition, EPS), () -> assertEquals(20f, a.width),
+            () -> assertEquals(halfAround, a.xPosition, EPS), () -> assertEquals(20f, a.width),
             () -> assertEquals(0f, a.yPosition), () -> assertEquals(50f, a.height),
-            () -> assertEquals(around + 20f + around * 2f, b.xPosition, EPS), () -> assertEquals(30f, b.width),
+            () -> assertEquals(halfAround + 20f + halfAround * 2f, b.xPosition, EPS), () -> assertEquals(30f, b.width),
             () -> assertEquals(0f, b.yPosition), () -> assertEquals(50f, b.height)
         );
     }
@@ -161,11 +161,14 @@ public class LayoutEngineJustifyTest extends LayoutTestBase {
         MockNode a = node("a", 30, 20);
         MockNode b = node("b", 40, 30);
         layout(spec, 100, 100, a, b);
+        float total = 20f + 30f;
+        float extra = 100f - total;
+        float halfAround = extra / 4f;
         assertAll(
             () -> assertEquals(0f, a.xPosition), () -> assertEquals(100f, a.width),
-            () -> assertEquals(55f, a.yPosition, EPS), () -> assertEquals(20f, a.height),
+            () -> assertEquals(100f - halfAround - 20f, a.yPosition, EPS), () -> assertEquals(20f, a.height),
             () -> assertEquals(0f, b.xPosition), () -> assertEquals(100f, b.width),
-            () -> assertEquals(-25f, b.yPosition, EPS), () -> assertEquals(30f, b.height)
+            () -> assertEquals(100f - halfAround - 20f - halfAround * 2f - 30f, b.yPosition, EPS), () -> assertEquals(30f, b.height)
         );
     }
 
@@ -252,11 +255,11 @@ public class LayoutEngineJustifyTest extends LayoutTestBase {
         layout(spec, 120, 50, a, b);
         float total = 20f + 10f + 30f;
         float extra = 120f - total;
-        float around = extra / 2f;
+        float halfAround = extra / 4f;
         assertAll(
-            () -> assertEquals(around, a.xPosition, EPS), () -> assertEquals(20f, a.width),
+            () -> assertEquals(halfAround, a.xPosition, EPS), () -> assertEquals(20f, a.width),
             () -> assertEquals(0f, a.yPosition), () -> assertEquals(50f, a.height),
-            () -> assertEquals(around + 20f + 10f + around * 2f, b.xPosition, EPS), () -> assertEquals(30f, b.width),
+            () -> assertEquals(halfAround + 20f + 10f + halfAround * 2f, b.xPosition, EPS), () -> assertEquals(30f, b.width),
             () -> assertEquals(0f, b.yPosition), () -> assertEquals(50f, b.height)
         );
     }
@@ -342,13 +345,13 @@ public class LayoutEngineJustifyTest extends LayoutTestBase {
         MockNode c = node("c", 20, 25);
         layout(spec, 100, 50, a, b, c);
         float extra = 100f - 45f;
-        float around = extra / 3f;
+        float halfAround = extra / 6f;
         assertAll(
-            () -> assertEquals(around, a.xPosition, EPS), () -> assertEquals(10f, a.width),
+            () -> assertEquals(halfAround, a.xPosition, EPS), () -> assertEquals(10f, a.width),
             () -> assertEquals(0f, a.yPosition), () -> assertEquals(50f, a.height),
-            () -> assertEquals(around + 10f + around * 2f, b.xPosition, EPS), () -> assertEquals(15f, b.width),
+            () -> assertEquals(halfAround + 10f + halfAround * 2f, b.xPosition, EPS), () -> assertEquals(15f, b.width),
             () -> assertEquals(0f, b.yPosition), () -> assertEquals(50f, b.height),
-            () -> assertEquals(around + 10f + around * 2f + 15f + around * 2f, c.xPosition, EPS), () -> assertEquals(20f, c.width),
+            () -> assertEquals(halfAround + 10f + halfAround * 2f + 15f + halfAround * 2f, c.xPosition, EPS), () -> assertEquals(20f, c.width),
             () -> assertEquals(0f, c.yPosition), () -> assertEquals(50f, b.height)
         );
     }
@@ -411,7 +414,7 @@ public class LayoutEngineJustifyTest extends LayoutTestBase {
         MockNode a = node("a", 30, 20);
         layout(spec, 100, 50, a);
         float extra = 100f - 30f;
-        assertEquals(extra / 1f, a.xPosition, EPS);
+        assertEquals(extra / 2f, a.xPosition, EPS);
     }
 
     @Test
@@ -462,7 +465,7 @@ public class LayoutEngineJustifyTest extends LayoutTestBase {
             Arguments.of(LayoutSpec.JustifyContent.CENTER, 25f, 45f),
             Arguments.of(LayoutSpec.JustifyContent.END, 50f, 70f),
             Arguments.of(LayoutSpec.JustifyContent.SPACE_BETWEEN, 0f, 70f),
-            Arguments.of(LayoutSpec.JustifyContent.SPACE_AROUND, 25f, 95f),
+            Arguments.of(LayoutSpec.JustifyContent.SPACE_AROUND, 12.5f, 57.5f),
             Arguments.of(LayoutSpec.JustifyContent.SPACE_EVENLY, 50f / 3f, 50f / 3f + 20f + 50f / 3f)
         );
     }
@@ -488,7 +491,7 @@ public class LayoutEngineJustifyTest extends LayoutTestBase {
             Arguments.of(LayoutSpec.JustifyContent.CENTER, 55f, 25f),
             Arguments.of(LayoutSpec.JustifyContent.END, 30f, 0f),
             Arguments.of(LayoutSpec.JustifyContent.SPACE_BETWEEN, 80f, 0f),
-            Arguments.of(LayoutSpec.JustifyContent.SPACE_AROUND, 55f, -25f),
+            Arguments.of(LayoutSpec.JustifyContent.SPACE_AROUND, 67.5f, 12.5f),
             Arguments.of(LayoutSpec.JustifyContent.SPACE_EVENLY, 190f / 3f, 50f / 3f)
         );
     }

@@ -11,7 +11,7 @@ public abstract class LayoutTestBase {
 
     protected static class MockNode {
         final String name;
-        final NodeSpec<?> sizing = new NodeSpec<>();
+        LayoutSpec sizing = LayoutSpec.defaultSpec();
         boolean visible = true;
         boolean returnNullSizing = false;
         float preferredWidth;
@@ -28,17 +28,30 @@ public abstract class LayoutTestBase {
             this.preferredHeight = preferredHeight;
         }
 
-        NodeSpec<?> getSizingObj() { return sizing; }
+        LayoutSpec getSizingObj() { return sizing; }
+
+        MockNode minimumWidth(float w) { sizing = sizing.minimumWidth(w); return this; }
+        MockNode maximumWidth(float w) { sizing = sizing.maximumWidth(w); return this; }
+        MockNode minimumHeight(float h) { sizing = sizing.minimumHeight(h); return this; }
+        MockNode maximumHeight(float h) { sizing = sizing.maximumHeight(h); return this; }
+        MockNode padding(float p) { sizing = sizing.padding(p); return this; }
+        MockNode padding(float top, float right, float bottom, float left) { sizing = sizing.padding(top, right, bottom, left); return this; }
+        MockNode growWeightHorizontal(float w) { sizing = sizing.growWeightHorizontal(w); return this; }
+        MockNode growWeightVertical(float w) { sizing = sizing.growWeightVertical(w); return this; }
+        MockNode growX() { sizing = sizing.growX(); return this; }
+        MockNode growY() { sizing = sizing.growY(); return this; }
+        MockNode grow() { sizing = sizing.grow(); return this; }
+        MockNode alignSelf(LayoutSpec.AlignSelf a) { sizing = sizing.alignSelf(a); return this; }
 
         void set(String key, Object value) {
             switch (key) {
                 case "prefW": preferredWidth = (Float) value; break;
                 case "prefH": preferredHeight = (Float) value; break;
                 case "visible": visible = (Boolean) value; break;
-                case "minW": sizing.minimumWidth((Float) value); break;
-                case "maxW": sizing.maximumWidth((Float) value); break;
-                case "minH": sizing.minimumHeight((Float) value); break;
-                case "maxH": sizing.maximumHeight((Float) value); break;
+                case "minW": sizing = sizing.toBuilder().minimumWidth((Float) value).build(); break;
+                case "maxW": sizing = sizing.toBuilder().maximumWidth((Float) value).build(); break;
+                case "minH": sizing = sizing.toBuilder().minimumHeight((Float) value).build(); break;
+                case "maxH": sizing = sizing.toBuilder().maximumHeight((Float) value).build(); break;
                 case "sizing": returnNullSizing = value == null; break;
                 default: break;
             }
@@ -50,16 +63,7 @@ public abstract class LayoutTestBase {
             c.returnNullSizing = returnNullSizing;
             c.xPosition = xPosition; c.yPosition = yPosition;
             c.width = width; c.height = height; c.boundsSet = boundsSet;
-            NodeSpec<?> t = c.sizing;
-            NodeSpec<?> s = sizing;
-            t.widthMode(s.getWidthMode()); t.heightMode(s.getHeightMode());
-            t.fixedWidth(s.getFixedWidth()); t.fixedHeight(s.getFixedHeight());
-            t.growWeightHorizontal(s.getGrowWeightHorizontal());
-            t.growWeightVertical(s.getGrowWeightVertical());
-            t.alignSelf(s.getAlignSelf());
-            t.padding(s.getPaddingTop(), s.getPaddingRight(), s.getPaddingBottom(), s.getPaddingLeft());
-            t.minimumWidth(s.getMinimumWidth()); t.maximumWidth(s.getMaximumWidth());
-            t.minimumHeight(s.getMinimumHeight()); t.maximumHeight(s.getMaximumHeight());
+            c.sizing = sizing;
             return c;
         }
 
@@ -73,7 +77,7 @@ public abstract class LayoutTestBase {
         @Override public boolean isVisible(MockNode node) { return node.visible; }
         @Override public float getPreferredWidth(MockNode node) { return node.preferredWidth; }
         @Override public float getPreferredHeight(MockNode node) { return node.preferredHeight; }
-        @Override public NodeSpec<?> getSizing(MockNode node) { return node.returnNullSizing ? null : node.sizing; }
+        @Override public LayoutSpec getSizing(MockNode node) { return node.returnNullSizing ? null : node.sizing; }
         @Override
         public void setBounds(MockNode node, float xPosition, float yPosition, float width, float height) {
             node.xPosition = xPosition; node.yPosition = yPosition; node.width = width; node.height = height;
@@ -179,48 +183,36 @@ public abstract class LayoutTestBase {
     }
 
     // Convenience builders
-    protected static LayoutSpec row() { return new LayoutSpec().row().alignItems(LayoutSpec.AlignItems.START); }
-    protected static LayoutSpec row(LayoutSpec.AlignItems ai) { return new LayoutSpec().row().alignItems(ai); }
+    protected static LayoutSpec row() { return new LayoutSpec().toBuilder().isColumn(false).alignItems(LayoutSpec.AlignItems.START).build(); }
+    protected static LayoutSpec row(LayoutSpec.AlignItems ai) { return new LayoutSpec().toBuilder().isColumn(false).alignItems(ai).build(); }
     protected static LayoutSpec row(LayoutSpec.AlignItems ai, LayoutSpec.JustifyContent jc) {
-        return new LayoutSpec().row().alignItems(ai).justifyContent(jc);
+        return new LayoutSpec().toBuilder().isColumn(false).alignItems(ai).justifyContent(jc).build();
     }
-    protected static LayoutSpec column() { return new LayoutSpec().column().alignItems(LayoutSpec.AlignItems.START); }
-    protected static LayoutSpec column(LayoutSpec.AlignItems ai) { return new LayoutSpec().column().alignItems(ai); }
+    protected static LayoutSpec column() { return new LayoutSpec().toBuilder().isColumn(true).alignItems(LayoutSpec.AlignItems.START).build(); }
+    protected static LayoutSpec column(LayoutSpec.AlignItems ai) { return new LayoutSpec().toBuilder().isColumn(true).alignItems(ai).build(); }
     protected static LayoutSpec column(LayoutSpec.AlignItems ai, LayoutSpec.JustifyContent jc) {
-        return new LayoutSpec().column().alignItems(ai).justifyContent(jc);
+        return new LayoutSpec().toBuilder().isColumn(true).alignItems(ai).justifyContent(jc).build();
     }
 
-    protected static NodeSpec<?> sizing(NodeSpec.SizeMode mode, float pw, float ph) {
-        NodeSpec<?> s = new NodeSpec<>();
+    protected static LayoutSpec sizing(LayoutSpec.SizeMode mode, float pw, float ph) {
+        var builder = LayoutSpec.builder().fixedWidth(pw).fixedHeight(ph);
         switch (mode) {
             case FIXED:
-                s.fixedWidth(pw).fixedHeight(ph).widthMode(NodeSpec.SizeMode.FIXED).heightMode(NodeSpec.SizeMode.FIXED);
+                builder.widthMode(LayoutSpec.SizeMode.FIXED).heightMode(LayoutSpec.SizeMode.FIXED);
                 break;
             case GROW:
-                s.fixedWidth(pw).fixedHeight(ph).growX().growY();
+                builder.widthMode(LayoutSpec.SizeMode.GROW).heightMode(LayoutSpec.SizeMode.GROW);
                 break;
             default:
-                s.fixedWidth(pw).fixedHeight(ph);
+                builder.widthMode(LayoutSpec.SizeMode.WRAP).heightMode(LayoutSpec.SizeMode.WRAP);
                 break;
         }
-        return s;
+        return builder.build();
     }
 
-    protected static MockNode nodeWithSizing(String name, NodeSpec<?> customSizing) {
+    protected static MockNode nodeWithSizing(String name, LayoutSpec customSizing) {
         MockNode n = new MockNode(name, customSizing.getFixedWidth(), customSizing.getFixedHeight());
-        NodeSpec<?> target = n.sizing;
-        target.fixedWidth(customSizing.getFixedWidth());
-        target.fixedHeight(customSizing.getFixedHeight());
-        target.widthMode(customSizing.getWidthMode());
-        target.heightMode(customSizing.getHeightMode());
-        target.growWeightHorizontal(customSizing.getGrowWeightHorizontal());
-        target.growWeightVertical(customSizing.getGrowWeightVertical());
-        target.alignSelf(customSizing.getAlignSelf());
-        target.padding(customSizing.getPaddingTop(), customSizing.getPaddingRight(), customSizing.getPaddingBottom(), customSizing.getPaddingLeft());
-        target.minimumWidth(customSizing.getMinimumWidth());
-        target.maximumWidth(customSizing.getMaximumWidth());
-        target.minimumHeight(customSizing.getMinimumHeight());
-        target.maximumHeight(customSizing.getMaximumHeight());
+        n.sizing = customSizing;
         return n;
     }
 
@@ -228,9 +220,9 @@ public abstract class LayoutTestBase {
     protected static Stream<Arguments> comboSource() {
         return justifyModes().flatMap(j ->
             alignModes().flatMap(a ->
-                Stream.of(NodeSpec.SizeMode.values())
+                Stream.of(LayoutSpec.SizeMode.values())
                     .flatMap(smA ->
-                        Stream.of(NodeSpec.SizeMode.values())
+                        Stream.of(LayoutSpec.SizeMode.values())
                             .map(smB -> Arguments.of(j.get()[0], a.get()[0], smA, smB))
                     )
             )
@@ -260,11 +252,11 @@ public abstract class LayoutTestBase {
 
     protected static Stream<Arguments> alignSelfModes() {
         return Stream.of(
-            Arguments.of(NodeSpec.AlignSelf.AUTO),
-            Arguments.of(NodeSpec.AlignSelf.START),
-            Arguments.of(NodeSpec.AlignSelf.CENTER),
-            Arguments.of(NodeSpec.AlignSelf.END),
-            Arguments.of(NodeSpec.AlignSelf.STRETCH)
+            Arguments.of(LayoutSpec.AlignSelf.AUTO),
+            Arguments.of(LayoutSpec.AlignSelf.START),
+            Arguments.of(LayoutSpec.AlignSelf.CENTER),
+            Arguments.of(LayoutSpec.AlignSelf.END),
+            Arguments.of(LayoutSpec.AlignSelf.STRETCH)
         );
     }
 }

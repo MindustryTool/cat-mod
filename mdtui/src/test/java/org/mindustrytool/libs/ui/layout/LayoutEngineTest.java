@@ -29,7 +29,7 @@ public class LayoutEngineTest extends LayoutTestBase {
         LayoutSpec spec = new LayoutSpec().row().alignItems(LayoutSpec.AlignItems.START);
         MockNode node1 = node("node1", 30f, 20f);
         MockNode node2 = node("node2", 40f, 10f);
-        node2.sizing.alignSelf(NodeSpec.AlignSelf.END);
+        node2.alignSelf(LayoutSpec.AlignSelf.END);
         List<MockNode> children = Arrays.asList(node1, node2);
         LayoutEngine.layout(spec, children, 0f, 0f, 100f, 50f, ACCESSOR);
         assertEquals(0f, node1.yPosition);

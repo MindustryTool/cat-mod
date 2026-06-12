@@ -196,8 +196,8 @@ public class LayoutEngineReverseTest extends LayoutTestBase {
     @Test
     public void rowReverseGrow() {
         LayoutSpec spec = new LayoutSpec().row().reverse(true).gap(0);
-        MockNode a = nodeWithSizing("a", sizing(NodeSpec.SizeMode.GROW, 0, 15).growWeightHorizontal(1));
-        MockNode b = nodeWithSizing("b", sizing(NodeSpec.SizeMode.GROW, 0, 25).growWeightHorizontal(3));
+        MockNode a = nodeWithSizing("a", sizing(LayoutSpec.SizeMode.GROW, 0, 15).growWeightHorizontal(1));
+        MockNode b = nodeWithSizing("b", sizing(LayoutSpec.SizeMode.GROW, 0, 25).growWeightHorizontal(3));
         layout(spec, 100, 50, a, b);
         assertAll(
             () -> assertEquals(75f, a.xPosition), () -> assertEquals(25f, a.width),
@@ -210,8 +210,8 @@ public class LayoutEngineReverseTest extends LayoutTestBase {
     @Test
     public void columnReverseGrow() {
         LayoutSpec spec = new LayoutSpec().column().reverse(true).gap(0);
-        MockNode a = nodeWithSizing("a", sizing(NodeSpec.SizeMode.GROW, 30, 0).growWeightVertical(2));
-        MockNode b = nodeWithSizing("b", sizing(NodeSpec.SizeMode.GROW, 40, 0).growWeightVertical(1));
+        MockNode a = nodeWithSizing("a", sizing(LayoutSpec.SizeMode.GROW, 30, 0).growWeightVertical(2));
+        MockNode b = nodeWithSizing("b", sizing(LayoutSpec.SizeMode.GROW, 40, 0).growWeightVertical(1));
         layout(spec, 100, 90, a, b);
         assertAll(
             () -> assertEquals(0f, a.xPosition), () -> assertEquals(100f, a.width),
@@ -265,7 +265,7 @@ public class LayoutEngineReverseTest extends LayoutTestBase {
             Arguments.of(LayoutSpec.JustifyContent.CENTER, 55f, 25f),
             Arguments.of(LayoutSpec.JustifyContent.END, 30f, 0f),
             Arguments.of(LayoutSpec.JustifyContent.SPACE_BETWEEN, 80f, 0f),
-            Arguments.of(LayoutSpec.JustifyContent.SPACE_AROUND, 55f, -25f),
+            Arguments.of(LayoutSpec.JustifyContent.SPACE_AROUND, 67.5f, 12.5f),
             Arguments.of(LayoutSpec.JustifyContent.SPACE_EVENLY, 190f / 3f, 50f / 3f)
         );
     }
@@ -276,7 +276,7 @@ public class LayoutEngineReverseTest extends LayoutTestBase {
             Arguments.of(LayoutSpec.JustifyContent.CENTER, 25f, 45f),
             Arguments.of(LayoutSpec.JustifyContent.END, 50f, 70f),
             Arguments.of(LayoutSpec.JustifyContent.SPACE_BETWEEN, 0f, 70f),
-            Arguments.of(LayoutSpec.JustifyContent.SPACE_AROUND, 25f, 95f),
+            Arguments.of(LayoutSpec.JustifyContent.SPACE_AROUND, 12.5f, 57.5f),
             Arguments.of(LayoutSpec.JustifyContent.SPACE_EVENLY, 50f / 3f, 50f / 3f + 20f + 50f / 3f)
         );
     }
