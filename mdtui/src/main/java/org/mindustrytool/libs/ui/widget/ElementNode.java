@@ -56,9 +56,7 @@ public abstract class ElementNode {
      * and freeing associated resources.
      */
     public void dispose() {
-        if (arcElement == null) {
-            return;
-        }
+        if (arcElement == null) return;
 
         arcElement.remove();
         arcElement = null;

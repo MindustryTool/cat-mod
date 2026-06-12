@@ -148,14 +148,8 @@ class LayoutElementNode extends ElementNode {
             @Override
             public float getPrefWidth() {
                 LayoutSpec spec = sizing();
-                
-                if (spec.getWidthMode() == LayoutSpec.SizeMode.FIXED && spec.getFixedWidth() > 0f) {
-                    return spec.constrainWidth(spec.getFixedWidth());
-                }
-                
-                if (spec.getWidthMode() == LayoutSpec.SizeMode.GROW) {
-                    return 0f;
-                }
+                if (spec.getWidthMode() == LayoutSpec.SizeMode.FIXED && spec.getFixedWidth() > 0f) return spec.constrainWidth(spec.getFixedWidth());
+                if (spec.getWidthMode() == LayoutSpec.SizeMode.GROW) return 0f;
                 
                 return spec.constrainWidth(
                     LayoutEngine.prefWidth(spec, spec.isColumn(), spec.getGap(), foregroundElements()));
@@ -164,14 +158,8 @@ class LayoutElementNode extends ElementNode {
             @Override
             public float getPrefHeight() {
                 LayoutSpec spec = sizing();
-                
-                if (spec.getHeightMode() == LayoutSpec.SizeMode.FIXED && spec.getFixedHeight() > 0f) {
-                    return spec.constrainHeight(spec.getFixedHeight());
-                }
-                
-                if (spec.getHeightMode() == LayoutSpec.SizeMode.GROW) {
-                    return 0f;
-                }
+                if (spec.getHeightMode() == LayoutSpec.SizeMode.FIXED && spec.getFixedHeight() > 0f) return spec.constrainHeight(spec.getFixedHeight());
+                if (spec.getHeightMode() == LayoutSpec.SizeMode.GROW) return 0f;
                 
                 return spec.constrainHeight(
                     LayoutEngine.prefHeight(spec, spec.isColumn(), spec.getGap(), foregroundElements()));
@@ -315,9 +303,7 @@ class LayoutElementNode extends ElementNode {
     }
 
     private void mountBackground(LayoutWidget w) {
-        if (w.background() == null) {
-            return;
-        }
+        if (w.background() == null) return;
         
         backgroundNode = w.background().createElement();
         backgroundNode.mount(this);

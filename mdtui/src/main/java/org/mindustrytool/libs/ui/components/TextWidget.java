@@ -181,28 +181,23 @@ class TextElement extends Element {
     @Override
     public void draw() {
         validate();
+        if (cache == null) return;
         
-        if (cache != null) {
-            cache.tint(color);
-            cache.setPosition(x, y);
-            cache.draw();
-        }
+        cache.tint(color);
+        cache.setPosition(x, y);
+        cache.draw();
     }
 
     @Override
     public void layout() {
-        if (cache == null) {
-            return;
-        }
+        if (cache == null) return;
         
         Font font = cache.getFont();
         float baseScaleX = font.getScaleX();
         float baseScaleY = font.getScaleY();
         boolean scaleChanged = widget.fontScale() != 1f;
         
-        if (scaleChanged) {
-            font.getData().setScale(baseScaleX * widget.fontScale(), baseScaleY * widget.fontScale());
-        }
+        if (scaleChanged) font.getData().setScale(baseScaleX * widget.fontScale(), baseScaleY * widget.fontScale());
 
         boolean wrap = widget.wrap() && widget.ellipsis() == null;
         if (wrap) {
@@ -247,44 +242,27 @@ class TextElement extends Element {
             y += (height - textHeight) / 2;
         }
         
-        if (!cache.getFont().isFlipped()) {
-            y += textHeight;
-        }
+        if (!cache.getFont().isFlipped()) y += textHeight;
 
         layout.setText(font, text, 0, text.length(), Color.white, textWidth, widget.lineAlign(), wrap, widget.ellipsis());
         cache.setText(layout, x, y);
 
-        if (scaleChanged) {
-            font.getData().setScale(baseScaleX, baseScaleY);
-        }
+        if (scaleChanged) font.getData().setScale(baseScaleX, baseScaleY);
     }
 
     @Override
     public float getPrefWidth() {
-        if (cache == null) {
-            return 0;
-        }
-        
-        if (widget.wrap()) {
-            return 0;
-        }
-        
-        if (prefSizeInvalid) {
-            computePrefSize();
-        }
+        if (cache == null) return 0;
+        if (widget.wrap()) return 0;
+        if (prefSizeInvalid) computePrefSize();
         
         return prefSize.x;
     }
 
     @Override
     public float getPrefHeight() {
-        if (cache == null) {
-            return 0;
-        }
-        
-        if (prefSizeInvalid) {
-            computePrefSize();
-        }
+        if (cache == null) return 0;
+        if (prefSizeInvalid) computePrefSize();
         
         Font font = cache.getFont();
         float descent = font.getDescent();
@@ -310,9 +288,7 @@ class TextElement extends Element {
         float baseScaleY = font.getScaleY();
         boolean scaleChanged = widget.fontScale() != 1f;
         
-        if (scaleChanged) {
-            font.getData().setScale(baseScaleX * widget.fontScale(), baseScaleY * widget.fontScale());
-        }
+        if (scaleChanged) font.getData().setScale(baseScaleX * widget.fontScale(), baseScaleY * widget.fontScale());
 
         GlyphLayout ps = TextElement.prefSizeLayout;
         String text = widget.text();
@@ -325,8 +301,6 @@ class TextElement extends Element {
         
         prefSize.set(ps.width, ps.height);
 
-        if (scaleChanged) {
-            font.getData().setScale(baseScaleX, baseScaleY);
-        }
+        if (scaleChanged) font.getData().setScale(baseScaleX, baseScaleY);
     }
 }

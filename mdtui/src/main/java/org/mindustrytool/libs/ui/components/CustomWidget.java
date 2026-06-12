@@ -173,10 +173,7 @@ class CustomElementNode extends ElementNode {
             @Override
             public float getPrefWidth() {
                 float fw = sizing().getFixedWidth();
-                
-                if (fw > 0f) {
-                    return fw;
-                }
+                if (fw > 0f) return fw;
                 
                 return 0f;
             }
@@ -184,10 +181,7 @@ class CustomElementNode extends ElementNode {
             @Override
             public float getPrefHeight() {
                 float fh = sizing().getFixedHeight();
-                
-                if (fh > 0f) {
-                    return fh;
-                }
+                if (fh > 0f) return fh;
                 
                 return 0f;
             }
@@ -197,18 +191,13 @@ class CustomElementNode extends ElementNode {
                 boolean hadScene = getScene() != null;
                 super.setScene(scene);
                 
-                if (hadScene && scene == null) {
-                    CustomElementNode.this.dispose();
-                }
+                if (hadScene && scene == null) CustomElementNode.this.dispose();
             }
 
             @Override
             public void draw() {
                 float w = getWidth(), h = getHeight();
-                
-                if (w <= 0f || h <= 0f) {
-                    return;
-                }
+                if (w <= 0f || h <= 0f) return;
                 
                 drawer.draw(x, y, w, h, (CustomWidget) widget);
             }
